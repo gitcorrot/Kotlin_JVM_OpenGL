@@ -4,6 +4,8 @@ import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL33.*
+import org.lwjgl.stb.STBImage
+import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil.*
 import java.nio.FloatBuffer
 
@@ -16,9 +18,9 @@ private var keyCallback: GLFWKeyCallback? = null
 
 fun init() {
 
-    // Setup an error callback. The default implementation
-    // will print the error message in System.err.
-    errCallback = glfwSetErrorCallback(GLFWErrorCallback.createPrint(System.err))
+    errCallback = glfwSetErrorCallback(GLFWErrorCallback.create { error, description ->
+        println("Error $error: $description")
+    })
 
     if (!glfwInit()) {
         throw IllegalStateException("Unable to initialize GLFW")
@@ -30,7 +32,7 @@ fun init() {
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE)
 
     // Create the window
-    window = glfwCreateWindow(800, 600, "Hello World!", NULL, NULL)
+    window = glfwCreateWindow(600, 600, "Hello World!", NULL, NULL)
     if (window == NULL) {
         throw RuntimeException("Failed to create the GLFW window")
     }
@@ -84,9 +86,14 @@ fun loop() {
 
     // primitive type array
     val vertices = floatArrayOf(
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f, 0.5f, 0.0f,
+        // X    Y   Z   |   R   G   B   |   S   T
+        -0.5f, -0.5f, 0.0f, 0.3f, 0.0f, 0.0f, 0.0f, 0.0f,   // BL
+        -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.3f, 0.0f, 1.0f,    // TL
+        0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.3f, 1.0f, 1.0f,     // TR
+
+        0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.3f, 1.0f, 1.0f,     // TR
+        -0.5f, -0.5f, 0.0f, 0.3f, 0.0f, 0.0f, 0.0f, 0.0f,   // BL
+        0.5f, -0.5f, 0.0f, 0.0f, 0.3f, 0.0f, 1.0f, 0.0f,    // BR
     )
 
     // Create floats buffer and fill with vertices
@@ -95,24 +102,45 @@ fun loop() {
         .put(vertices)
         .flip() // flip resets position to 0
 
-    // VAO and VBO
     val vao = glGenVertexArrays()
     val vbo = glGenBuffers()
 
     glBindVertexArray(vao)
-
     glBindBuffer(GL_ARRAY_BUFFER, vbo)
     glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW)
-
-    glVertexAttribPointer(
-        0,
-        3,
-        GL_FLOAT,
-        false,
-        0, //  If stride is 0, the generic vertex attributes are understood to be tightly packed in the array
-        0
-    )
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, 8 * 4, 0)
     glEnableVertexAttribArray(0)
+    glVertexAttribPointer(1, 3, GL_FLOAT, false, 8 * 4, 3 * 4)
+    glEnableVertexAttribArray(1)
+    glVertexAttribPointer(2, 2, GL_FLOAT, false, 8 * 4, 6 * 4)
+    glEnableVertexAttribArray(2)
+
+    val stack = MemoryStack.stackPush() // stack - we don't need to free it
+    val tmpChannels = stack.mallocInt(1)
+    val tmpWidth = stack.mallocInt(1)
+    val tmpHeight = stack.mallocInt(1)
+
+    STBImage.stbi_set_flip_vertically_on_load(true)
+    val image = STBImage.stbi_load(
+        "src/main/resources/Textures/cat.png",
+        tmpWidth, tmpHeight, tmpChannels, 0
+    ) ?: throw Exception("Can't load image! Ensure that image is in proper resources folder.")
+
+    val imageWidth = tmpWidth.get()
+    val imageHeight = tmpHeight.get()
+
+    println("Successfully loaded ${imageWidth}x${imageHeight}px, ${tmpChannels.get()} channels image")
+
+    val textureID = glGenTextures()
+    glBindTexture(GL_TEXTURE_2D, textureID)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth, imageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image)
+    glGenerateMipmap(textureID)
+
+    STBImage.stbi_image_free(image)
 
     glBindBuffer(GL_ARRAY_BUFFER, 0) // Unbind VBO
     glBindVertexArray(0) // Unbind VAO
@@ -121,12 +149,13 @@ fun loop() {
     shaderProgram.use()
 
     while (!glfwWindowShouldClose(window!!)) {
-        glClearColor(.5f, .6f, .7f, 0.0f)
+        glClearColor(.2f, .7f, .7f, 0.0f)
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
         // Render triangle
         glBindVertexArray(vao)
-        glDrawArrays(GL_TRIANGLES, 0, 3)
+        glBindTexture(GL_TEXTURE_2D, textureID)
+        glDrawArrays(GL_TRIANGLES, 0, 6)
 
         glfwSwapBuffers(window!!)
         glfwPollEvents()

@@ -1,6 +1,6 @@
 import org.lwjgl.opengl.GL33.*
 
-class ShaderProgram() {
+class ShaderProgram {
 
     private var programID: Int = 0
     private var vertexShaderID: Int = 0
