@@ -16,10 +16,12 @@ private var window: Long? = null
 private var errCallback: GLFWErrorCallback? = null
 private var keyCallback: GLFWKeyCallback? = null
 
+const val TAG = "Main"
+
 fun init() {
 
     errCallback = glfwSetErrorCallback(GLFWErrorCallback.create { error, description ->
-        println("Error $error: $description")
+        Debug.loge(TAG, "Error $error: $description")
     })
 
     if (!glfwInit()) {
@@ -42,7 +44,7 @@ fun init() {
         // Center our window
         glfwSetWindowPos(
             window!!,
-            (it.width() - 800) / 2,
+            (it.width() - 600) / 2,
             (it.height() - 600) / 2
         )
     }
@@ -70,8 +72,8 @@ fun init() {
     glfwShowWindow(window!!)
     GL.createCapabilities()
 
-    println("JLWGL Version: ${getVersion()}")
-    println("OpenGL Version: ${glGetString(GL_VERSION)}")
+    Debug.logi(TAG, "JLWGL Version: ${getVersion()}")
+    Debug.logi(TAG, "OpenGL Version: ${glGetString(GL_VERSION)}")
 }
 
 fun loop() {
@@ -87,13 +89,13 @@ fun loop() {
     // primitive type array
     val vertices = floatArrayOf(
         // X    Y   Z   |   R   G   B   |   S   T
-        -0.5f, -0.5f, 0.0f, 0.3f, 0.0f, 0.0f, 0.0f, 0.0f,   // BL
-        -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.3f, 0.0f, 1.0f,    // TL
-        0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.3f, 1.0f, 1.0f,     // TR
+        -0.5f, -0.5f, 0.0f, 0.9f, 0.0f, 0.0f, 0.0f, 0.0f,   // BL
+        -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.9f, 0.0f, 1.0f,    // TL
+        0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.9f, 1.0f, 1.0f,     // TR
 
-        0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.3f, 1.0f, 1.0f,     // TR
-        -0.5f, -0.5f, 0.0f, 0.3f, 0.0f, 0.0f, 0.0f, 0.0f,   // BL
-        0.5f, -0.5f, 0.0f, 0.0f, 0.3f, 0.0f, 1.0f, 0.0f,    // BR
+        0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.9f, 1.0f, 1.0f,     // TR
+        -0.5f, -0.5f, 0.0f, 0.9f, 0.0f, 0.0f, 0.0f, 0.0f,   // BL
+        0.5f, -0.5f, 0.0f, 0.0f, 0.9f, 0.0f, 1.0f, 0.0f,    // BR
     )
 
     // Create floats buffer and fill with vertices
@@ -129,7 +131,7 @@ fun loop() {
     val imageWidth = tmpWidth.get()
     val imageHeight = tmpHeight.get()
 
-    println("Successfully loaded ${imageWidth}x${imageHeight}px, ${tmpChannels.get()} channels image")
+    Debug.logi(TAG, "Successfully loaded ${imageWidth}x${imageHeight}px, ${tmpChannels.get()} channels image")
 
     val textureID = glGenTextures()
     glBindTexture(GL_TEXTURE_2D, textureID)
@@ -139,7 +141,6 @@ fun loop() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth, imageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image)
     glGenerateMipmap(textureID)
-
     STBImage.stbi_image_free(image)
 
     glBindBuffer(GL_ARRAY_BUFFER, 0) // Unbind VBO
@@ -166,17 +167,27 @@ fun loop() {
     shaderProgram.cleanup()
 }
 
+fun readOpenGLError() {
+    var e = glGetError()
+    // For debugging only
+    while (e != GL_NO_ERROR) {
+        Debug.loge(TAG, "OpenGL error: $e")
+        e = glGetError()
+    }
+}
+
 fun main() {
+    Debug.DEBUG_LEVEL = Debug.DebugLevel.DEBUG
     init()
     loop()
 
     // Destroy window
-    println("\nDestroying window...")
+    Debug.logi(TAG, "Destroying window...")
     glfwDestroyWindow(window!!)
     keyCallback?.free()
 
     // Terminate GLFW
     glfwTerminate()
     glfwSetErrorCallback(null)?.free()
-    println("Window destroyed!")
+    Debug.logi(TAG, "Window destroyed!")
 }

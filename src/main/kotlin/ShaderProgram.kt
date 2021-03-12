@@ -1,6 +1,7 @@
 import org.lwjgl.opengl.GL33.*
 
 class ShaderProgram {
+    private val TAG: String = this::class.java.name
 
     private var programID: Int = 0
     private var vertexShaderID: Int = 0
@@ -37,6 +38,8 @@ class ShaderProgram {
         }
 
         glAttachShader(programID, shaderID)
+
+        Debug.logd(TAG, "Shader (id=$shaderID) created successfully!")
     }
 
     @Throws
@@ -45,10 +48,13 @@ class ShaderProgram {
         if (glGetProgrami(programID, GL_LINK_STATUS) == 0) {
             throw Exception("Program linking error: ${glGetProgramInfoLog(programID)}")
         }
+
+        Debug.logd(TAG, "Program (id=$programID) linked successfully!")
     }
 
     fun use() {
         glUseProgram(programID)
+        Debug.logd(TAG, "Program (id=$programID) activated!")
     }
 
     fun cleanup() {
