@@ -1,8 +1,14 @@
+import glm_.glm
+import glm_.mat4x4.Mat4
+import glm_.mat4x4.Mat4x4t
+import glm_.vec3.Vec3
+import glm_.vec4.Vec4
 import org.lwjgl.Version.getVersion
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.opengl.GL
+import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.stb.STBImage
 import org.lwjgl.system.MemoryStack
@@ -110,6 +116,7 @@ fun loop() {
     glBindVertexArray(vao)
     glBindBuffer(GL_ARRAY_BUFFER, vbo)
     glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW)
+    memFree(verticesBuffer)
     glVertexAttribPointer(0, 3, GL_FLOAT, false, 8 * 4, 0)
     glEnableVertexAttribArray(0)
     glVertexAttribPointer(1, 3, GL_FLOAT, false, 8 * 4, 3 * 4)
@@ -117,35 +124,11 @@ fun loop() {
     glVertexAttribPointer(2, 2, GL_FLOAT, false, 8 * 4, 6 * 4)
     glEnableVertexAttribArray(2)
 
-    val stack = MemoryStack.stackPush() // stack - we don't need to free it
-    val tmpChannels = stack.mallocInt(1)
-    val tmpWidth = stack.mallocInt(1)
-    val tmpHeight = stack.mallocInt(1)
-
-    STBImage.stbi_set_flip_vertically_on_load(true)
-    val image = STBImage.stbi_load(
-        "src/main/resources/Textures/cat.png",
-        tmpWidth, tmpHeight, tmpChannels, 0
-    ) ?: throw Exception("Can't load image! Ensure that image is in proper resources folder.")
-
-    val imageWidth = tmpWidth.get()
-    val imageHeight = tmpHeight.get()
-
-    Debug.logi(TAG, "Successfully loaded ${imageWidth}x${imageHeight}px, ${tmpChannels.get()} channels image")
-
-    val textureID = glGenTextures()
-    glBindTexture(GL_TEXTURE_2D, textureID)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imageWidth, imageHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image)
-    glGenerateMipmap(textureID)
-    STBImage.stbi_image_free(image)
+    val texture = Texture()
+    texture.createTexture("src/main/resources/Textures/cat.png")
 
     glBindBuffer(GL_ARRAY_BUFFER, 0) // Unbind VBO
     glBindVertexArray(0) // Unbind VAO
-    memFree(verticesBuffer)
 
     shaderProgram.use()
 
@@ -153,9 +136,14 @@ fun loop() {
         glClearColor(.2f, .7f, .7f, 0.0f)
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
-        // Render triangle
+        // Transform
+        val rot: Float = glfwGetTime().toFloat()
+        val transform = Mat4(1.0f).rotate_(rot, Vec3(0f, 0f, 1f) )
+        shaderProgram.setUniformMat4f("transform", transform)
+
+        // Render
         glBindVertexArray(vao)
-        glBindTexture(GL_TEXTURE_2D, textureID)
+        texture.bind()
         glDrawArrays(GL_TRIANGLES, 0, 6)
 
         glfwSwapBuffers(window!!)
@@ -178,6 +166,7 @@ fun readOpenGLError() {
 
 fun main() {
     Debug.DEBUG_LEVEL = Debug.DebugLevel.DEBUG
+
     init()
     loop()
 

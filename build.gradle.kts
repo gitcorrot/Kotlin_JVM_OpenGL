@@ -8,6 +8,7 @@ plugins {
 group = "me.corrot"
 version = "1.0-SNAPSHOT"
 
+val glmVersion = "v1.0.1"
 val lwjglVersion = "3.2.3"
 val lwjglNatives = "natives-linux"
 
@@ -17,6 +18,7 @@ application {
 
 repositories {
     mavenCentral()
+    maven("https://jitpack.io")
 }
 
 tasks.withType<KotlinCompile>() {
@@ -24,6 +26,7 @@ tasks.withType<KotlinCompile>() {
 }
 
 dependencies {
+    // LWJGL
     implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
 
     implementation("org.lwjgl", "lwjgl")
@@ -38,4 +41,7 @@ dependencies {
     runtimeOnly("org.lwjgl", "lwjgl-stb", classifier = lwjglNatives)
 //    runtimeOnly("org.lwjgl", "lwjgl-assimp", classifier = lwjglNatives)
 //    runtimeOnly("org.lwjgl", "lwjgl-openal", classifier = lwjglNatives)
+
+    // GLM Math
+    implementation("com.github.kotlin-graphics:glm:$glmVersion")
 }
