@@ -4,13 +4,11 @@ import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL33.*
-import org.lwjgl.system.MemoryUtil.NULL
-import org.lwjgl.system.MemoryUtil.memAllocFloat
+import org.lwjgl.system.MemoryUtil.*
 import java.nio.FloatBuffer
 
 // https://github.com/Zi0P4tch0/LWJGL-Kotlin-Example/blob/master/src/main/kotlin/com/example/Engine.kt
 
-const val FPS = 60
 private var window: Long? = null
 
 private var errCallback: GLFWErrorCallback? = null
@@ -65,20 +63,9 @@ fun init() {
         }
     })
 
-    // Make the OpenGL context current
     glfwMakeContextCurrent(window!!)
-
-    // Enable v-sync
-    glfwSwapInterval(1)
-
-    // Make the window visible
+    glfwSwapInterval(1) // Enable v-sync
     glfwShowWindow(window!!)
-
-    // This line is critical for LWJGL's interoperation with GLFW's
-    // OpenGL context, or any context that is managed externally.
-    // LWJGL detects the context that is current in the current thread,
-    // creates the GLCapabilities instance and makes the OpenGL
-    // bindings available for use.
     GL.createCapabilities()
 
     println("JLWGL Version: ${getVersion()}")
@@ -87,34 +74,13 @@ fun init() {
 
 fun loop() {
 
-    var lastLoopTime = glfwGetTime()
-
-    // Load vertex shader
-    val vertexShaderString = {}.javaClass.getResource("Shaders/vertex_shader.glsl").readText()
-    val vertexShader = glCreateShader(GL_VERTEX_SHADER)
-    glShaderSource(vertexShader, vertexShaderString)
-    glCompileShader(vertexShader)
-    if (glGetShaderi(vertexShader, GL_COMPILE_STATUS) != 1) {
-        println("Vertex Shader Info Log: ${glGetShaderInfoLog(vertexShader)}")
-    }
-
-    // Load fragment shader
-    val fragmentShaderString = {}.javaClass.getResource("Shaders/fragment_shader.glsl").readText()
-    val fragmentShader = glCreateShader(GL_FRAGMENT_SHADER)
-    glShaderSource(fragmentShader, fragmentShaderString)
-    glCompileShader(fragmentShader)
-    if (glGetShaderi(fragmentShader, GL_COMPILE_STATUS) != 1) {
-        println("Fragment Shader Info Log: ${glGetShaderInfoLog(fragmentShader)}")
-    }
-
-    // Create program
-    val program = glCreateProgram()
-    glAttachShader(program, vertexShader)
-    glAttachShader(program, fragmentShader)
-    glLinkProgram(program)
-    if (glGetProgrami(program, GL_LINK_STATUS) != 1) {
-        println("Program Info Log: ${glGetProgramInfoLog(fragmentShader)}")
-    }
+    // Create program with shaders
+    val shaderProgram = ShaderProgram()
+    val vertexShaderString = ResourcesUtils.loadStringFromFile("Shaders/vertex_shader.glsl")
+    val fragmentShaderString = ResourcesUtils.loadStringFromFile("Shaders/fragment_shader.glsl")
+    shaderProgram.createShader(vertexShaderString, GL_VERTEX_SHADER)
+    shaderProgram.createShader(fragmentShaderString, GL_FRAGMENT_SHADER)
+    shaderProgram.link()
 
     // primitive type array
     val vertices = floatArrayOf(
@@ -138,39 +104,37 @@ fun loop() {
     glBindBuffer(GL_ARRAY_BUFFER, vbo)
     glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW)
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0)
+    glVertexAttribPointer(
+        0,
+        3,
+        GL_FLOAT,
+        false,
+        0, //  If stride is 0, the generic vertex attributes are understood to be tightly packed in the array
+        0
+    )
+    glEnableVertexAttribArray(0)
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0) // Unbind VBO
+    glBindVertexArray(0) // Unbind VAO
+    memFree(verticesBuffer)
+
+    shaderProgram.use()
 
     while (!glfwWindowShouldClose(window!!)) {
-
-        // Set the clear color
         glClearColor(.5f, .6f, .7f, 0.0f)
-        // Clear the frame buffer
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
         // Render triangle
-        glUseProgram(program)
         glBindVertexArray(vao)
-        glEnableVertexAttribArray(0)
         glDrawArrays(GL_TRIANGLES, 0, 3)
 
-        // Swap the color buffers
         glfwSwapBuffers(window!!)
-
-        // Poll for window events. The key callback above will only be
-        // invoked during this call.
         glfwPollEvents()
-
-//        Not neccesary until we have v -sync and call glfwSwapBuffers
-//        Thread.sleep(((lastLoopTime + 1000 / FPS) - glfwGetTime()).toLong())
-//        lastLoopTime = glfwGetTime()
     }
 
     // Cleanup
     glDeleteVertexArrays(vao)
-    glDeleteBuffers(vbo)
-    glDeleteProgram(program)
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    shaderProgram.cleanup()
 }
 
 fun main() {
