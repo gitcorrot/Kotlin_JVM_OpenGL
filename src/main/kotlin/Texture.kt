@@ -1,7 +1,5 @@
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.stb.STBImage
-import org.lwjgl.system.MemoryStack
-import java.nio.ByteBuffer
 
 class Texture {
     private val TAG: String = this::class.java.name
@@ -10,10 +8,10 @@ class Texture {
 
     init {
         STBImage.stbi_set_flip_vertically_on_load(true)
-        textureID = glGenTextures()
     }
 
     fun createTexture(path: String) {
+        textureID = glGenTextures()
         glBindTexture(GL_TEXTURE_2D, textureID)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
