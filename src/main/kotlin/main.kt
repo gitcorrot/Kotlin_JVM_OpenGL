@@ -1,19 +1,15 @@
 import glm_.glm
 import glm_.mat4x4.Mat4
-import glm_.mat4x4.Mat4x4t
 import glm_.vec3.Vec3
-import glm_.vec4.Vec4
 import org.lwjgl.Version.getVersion
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.opengl.GL
-import org.lwjgl.opengl.GL20
 import org.lwjgl.opengl.GL33.*
-import org.lwjgl.stb.STBImage
-import org.lwjgl.system.MemoryStack
 import org.lwjgl.system.MemoryUtil.*
 import java.nio.FloatBuffer
+import java.nio.IntBuffer
 
 // https://github.com/Zi0P4tch0/LWJGL-Kotlin-Example/blob/master/src/main/kotlin/com/example/Engine.kt
 
@@ -40,7 +36,7 @@ fun init() {
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE)
 
     // Create the window
-    window = glfwCreateWindow(600, 600, "Hello World!", NULL, NULL)
+    window = glfwCreateWindow(800, 600, "Hello World!", NULL, NULL)
     if (window == NULL) {
         throw RuntimeException("Failed to create the GLFW window")
     }
@@ -50,7 +46,7 @@ fun init() {
         // Center our window
         glfwSetWindowPos(
             window!!,
-            (it.width() - 600) / 2,
+            (it.width() - 800) / 2,
             (it.height() - 600) / 2
         )
     }
@@ -94,14 +90,27 @@ fun loop() {
 
     // primitive type array
     val vertices = floatArrayOf(
-        // X    Y   Z   |   R   G   B   |   S   T
-        -0.5f, -0.5f, 0.0f, 0.9f, 0.0f, 0.0f, 0.0f, 0.0f,   // BL
-        -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.9f, 0.0f, 1.0f,    // TL
-        0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.9f, 1.0f, 1.0f,     // TR
+        // X    Y   Z   |   S   T
+        // front
+        -0.5f,  -0.5f,  0.0f,   0.0f,   0.0f,   // BL 0
+        0.5f,   -0.5f,  0.0f,   1.0f,   0.0f,   // BR 1
+        0.5f,   0.5f,   0.0f,   1.0f,   1.0f,   // TR 2
+        -0.5f,  0.5f,   0.0f,   0.0f,   1.0f,   // TL 3
 
-        0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 0.9f, 1.0f, 1.0f,     // TR
-        -0.5f, -0.5f, 0.0f, 0.9f, 0.0f, 0.0f, 0.0f, 0.0f,   // BL
-        0.5f, -0.5f, 0.0f, 0.0f, 0.9f, 0.0f, 1.0f, 0.0f,    // BR
+        // back
+        -0.5f,  -0.5f,  1.0f,   0.0f,   0.0f,   // BL 4
+        0.5f,   -0.5f,  1.0f,   1.0f,   0.0f,   // BR 5
+        0.5f,   0.5f,   1.0f,   1.0f,   1.0f,   // TR 5
+        -0.5f,  0.5f,   1.0f,   0.0f,   1.0f,   // TL 6
+    )
+
+    val indices = intArrayOf(
+        2,3,0,  0,1,2,
+        6,7,4,  4,5,6,
+        2,1,5,  2,5,6,
+        0,1,4,  4,1,5,
+        7,3,2,  7,2,6,
+        3,4,0,  7,4,3
     )
 
     // Create floats buffer and fill with vertices
@@ -110,19 +119,29 @@ fun loop() {
         .put(vertices)
         .flip() // flip resets position to 0
 
+    val indicesBuffer: IntBuffer = memAllocInt(indices.size)
+    indicesBuffer
+        .put(indices)
+        .flip()
+
     val vao = glGenVertexArrays()
     val vbo = glGenBuffers()
+    val ebo = glGenBuffers()
 
     glBindVertexArray(vao)
+
     glBindBuffer(GL_ARRAY_BUFFER, vbo)
     glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW)
     memFree(verticesBuffer)
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, 8 * 4, 0)
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo)
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW)
+    memFree(indicesBuffer)
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * 4, 0)
     glEnableVertexAttribArray(0)
-    glVertexAttribPointer(1, 3, GL_FLOAT, false, 8 * 4, 3 * 4)
+    glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * 4, 3 * 4)
     glEnableVertexAttribArray(1)
-    glVertexAttribPointer(2, 2, GL_FLOAT, false, 8 * 4, 6 * 4)
-    glEnableVertexAttribArray(2)
 
     val texture = Texture()
     texture.createTexture("src/main/resources/Textures/cat.png")
@@ -132,19 +151,29 @@ fun loop() {
 
     shaderProgram.use()
 
+    glEnable(GL_DEPTH_TEST)
+
     while (!glfwWindowShouldClose(window!!)) {
         glClearColor(.2f, .7f, .7f, 0.0f)
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
-        // Transform
-        val rot: Float = glfwGetTime().toFloat()
-        val transform = Mat4(1.0f).rotate_(rot, Vec3(0f, 0f, 1f) )
-        shaderProgram.setUniformMat4f("transform", transform)
+        // MVP
+        val proj = glm.perspective(glm.radians((60f)), 800f / 600f, 0.1f, 100.0f)
+
+        val model = Mat4(1.0f)
+            .rotate_(glm.radians(-40f), Vec3(1f, 0f, 0f))
+            .rotate_((glfwGetTime().toFloat()), Vec3(1f, 0f, 1f))
+
+        val view = Mat4(1.0f)
+            .translate_(Vec3(0f, 0f, -5f))
+
+        val mvp = proj.times_(view).times_(model)
+        shaderProgram.setUniformMat4f("mvp", mvp)
 
         // Render
         glBindVertexArray(vao)
         texture.bind()
-        glDrawArrays(GL_TRIANGLES, 0, 6)
+        glDrawElements(GL_TRIANGLES, indices.size, GL_UNSIGNED_INT, 0)
 
         glfwSwapBuffers(window!!)
         glfwPollEvents()
