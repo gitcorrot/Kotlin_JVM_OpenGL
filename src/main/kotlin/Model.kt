@@ -31,7 +31,7 @@ class Model {
         get() {
             return Mat4(1f)
                 .translate_(translation)
-                .rotate(glm.radians(45f), Vec3(1f, 0f, 1f))
+//                .rotate(glm.radians(45f), Vec3(1f, 0f, 1f))
                 .scale_(scale)
         }
 

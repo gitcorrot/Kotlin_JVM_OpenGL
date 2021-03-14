@@ -1,6 +1,6 @@
 object Debug {
 
-    public enum class DebugLevel() {
+    enum class DebugLevel() {
         ERROR, DEBUG, INFO, NONE
     }
 
@@ -14,8 +14,7 @@ object Debug {
            shown all logs, for ERROR only error messages etc.
      */
 
-
-    public var DEBUG_LEVEL = DebugLevel.DEBUG
+    var DEBUG_LEVEL = DebugLevel.DEBUG
 
     fun logd(tag: String, msg: String) {
         if (DEBUG_LEVEL == DebugLevel.DEBUG ||
@@ -36,9 +35,8 @@ object Debug {
 
     fun loge(tag: String, msg: String) {
         if (DEBUG_LEVEL == DebugLevel.ERROR)
-            printLog(tag, msg)
+            System.err.println("$tag: $msg")
     }
-
 
     private fun printLog(tag: String, msg: String) {
         println("$tag: $msg")

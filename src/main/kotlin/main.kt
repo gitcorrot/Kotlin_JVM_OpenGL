@@ -1,12 +1,11 @@
-import glm_.mat4x4.Mat4
 import glm_.vec3.Vec3
 import org.lwjgl.Version.getVersion
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
-import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryUtil.NULL
+import kotlin.random.Random
 
 const val TAG = "Main"
 
@@ -39,24 +38,7 @@ fun main() {
 
     val window = createWindow()
 
-    // Setup a key callback. It will be called every time a key is pressed, repeated or released.
-    val keyCallback = glfwSetKeyCallback(window, object : GLFWKeyCallback() {
-        override fun invoke(
-            window: Long,
-            key: Int,
-            scancode: Int,
-            action: Int,
-            mods: Int
-        ) {
-            if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
-                glfwSetWindowShouldClose(window, true)
-            }
-            if (key == GLFW_KEY_SPACE && action == GLFW_RELEASE) {
-                print('*')
-            }
-        }
-    })
-
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
     glfwMakeContextCurrent(window)
     glfwSwapInterval(1) // Enable v-sync
     GL.createCapabilities()
@@ -64,7 +46,8 @@ fun main() {
     Debug.logi(TAG, "JLWGL Version: ${getVersion()}")
     Debug.logi(TAG, "OpenGL Version: ${glGetString(GL_VERSION)}")
 
-    // primitive type array
+    // -------------------------------------------------------------------------------------------------------------- //
+
     val vertices = floatArrayOf(
         // X    Y   Z   |   S   T
         // front
@@ -89,47 +72,66 @@ fun main() {
         3, 4, 0, 7, 4, 3
     )
 
-    val shaderProgram = ShaderProgram()
-    val vertexShaderString = ResourcesUtils.loadStringFromFile("Shaders/vertex_shader.glsl")
-    val fragmentShaderString = ResourcesUtils.loadStringFromFile("Shaders/fragment_shader.glsl")
-    shaderProgram.createShader(vertexShaderString, GL_VERTEX_SHADER)
-    shaderProgram.createShader(fragmentShaderString, GL_FRAGMENT_SHADER)
-    shaderProgram.link()
-    shaderProgram.use()
+    val plainVertices = floatArrayOf(
+        // X    Y   Z   |   S   T
+        -25f, -0f, -25f, 0.0f, 0.0f,   // bl
+        25f, -0f, -25f, 1.0f, 0.0f,   // br
+        25f, -0f, 25f, 1.0f, 1.0f,   // tr
+        -25f, -0f, 25f, 0.0f, 1.0f,   // tl
+    )
 
-    val model = Model()
-    model.create(vertices, indices)
-    model.addTexture("src/main/resources/Textures/cat.png")
+    val plainIndices = intArrayOf(
+        0, 1, 3, 3, 1, 2
+    )
 
+
+    val camera = Camera()
+    val inputManager = InputManager(window, camera.iCameraInput)
     val renderer = Renderer(window, WINDOW_WIDTH, WINDOW_HEIGHT)
 
-    glEnable(GL_DEPTH_TEST)
+    val models = arrayListOf<Model>()
+
+    val plain = Model()
+    plain.create(plainVertices, plainIndices)
+    plain.addTexture("src/main/resources/Textures/grass.png")
+    models.add(plain)
+
+    val r = Random(1234)
+    for (x in 1..5) {
+        val m = Model()
+        m.apply {
+            create(vertices, indices)
+            addTexture("src/main/resources/Textures/cat.png")
+            translation = Vec3(r.nextFloat() * 5f - 2f, r.nextFloat() * 5f, r.nextFloat() * 5f - 2f)
+        }
+        models.add(m)
+    }
+
+    val mCenter = Model()
+    mCenter.apply {
+        create(vertices, indices)
+        addTexture("src/main/resources/Textures/cat.png")
+        scale = Vec3(0.2f, 20f, 0.2f)
+        translation = Vec3(0f, 10f, 0f)
+    }
+    models.add(mCenter)
 
     while (!glfwWindowShouldClose(window)) {
-
-        // TODO: Implement camera
-        val viewMat = Mat4(1.0f)
-            .translate_(Vec3(0f, 0f, -5f))
-
-        shaderProgram.setUniformMat4f(
-            "mvp",
-            Mat4(1f)
-                .times_(renderer.projectionMat)
-                .times_(viewMat)
-                .times_(model.transformation)
-        )
-
-        renderer.render(model)
+        inputManager.update()
+        renderer.render(models, camera)
     }
 
     // Cleanup
-    model.cleanup()
-    shaderProgram.cleanup()
+    for (m in models) {
+        m.cleanup()
+    }
+
+    renderer.cleanup()
 
     // Destroy window
     Debug.logi(TAG, "Destroying window...")
     glfwDestroyWindow(window)
-    keyCallback?.free()
+    inputManager.cleanup()
     errCallback?.free()
 
     // Terminate GLFW

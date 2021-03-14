@@ -1,5 +1,6 @@
 import org.lwjgl.stb.STBImage
 import org.lwjgl.system.MemoryStack
+import java.nio.ByteBuffer
 
 object ResourcesUtils {
     private val TAG: String = this::class.java.name
@@ -10,19 +11,24 @@ object ResourcesUtils {
 
     @Throws
     fun loadImage(path: String): Image {
-        val stack = MemoryStack.stackPush() // stack - we don't need to free it
-        val tmpChannels = stack.mallocInt(1)
-        val tmpWidth = stack.mallocInt(1)
-        val tmpHeight = stack.mallocInt(1)
+        val image: ByteBuffer
+        val imageWidth: Int
+        val imageHeight: Int
 
-        val image = STBImage.stbi_load(
-            path, tmpWidth, tmpHeight, tmpChannels, 0
-        ) ?: throw Exception("Can't load image! Ensure that image is in proper resources folder.")
+        MemoryStack.stackPush().use { stack ->
+            val tmpChannels = stack.mallocInt(1)
+            val tmpWidth = stack.mallocInt(1)
+            val tmpHeight = stack.mallocInt(1)
 
-        val imageWidth = tmpWidth.get()
-        val imageHeight = tmpHeight.get()
+            image = STBImage.stbi_load(
+                path, tmpWidth, tmpHeight, tmpChannels, 0
+            ) ?: throw Exception("Can't load image! Ensure that image is in proper resources folder.")
 
-        Debug.logi(TAG, "Successfully loaded ${imageWidth}x${imageHeight}px, ${tmpChannels.get()} channels image")
+            imageWidth = tmpWidth.get()
+            imageHeight = tmpHeight.get()
+
+            Debug.logi(TAG, "Successfully loaded ${imageWidth}x${imageHeight}px, ${tmpChannels.get()} channels image")
+        }
 
         return Image(image, imageWidth, imageHeight)
     }
