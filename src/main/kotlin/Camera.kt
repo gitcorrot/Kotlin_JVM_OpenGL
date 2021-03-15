@@ -10,17 +10,17 @@ interface ICameraInputCallback {
 }
 
 private const val CAMERA_SPEED = 20.0f
-private const val MOUSE_SENSITIVITY = 0.1f
+private const val MOUSE_SENSITIVITY = 0.15f
 
 class Camera {
     private val TAG: String = this::class.java.name
 
-    private var yaw = -90f
-    private var pitch = 0f
+    var yaw = -90f
+    var pitch = 0f
 
     private val globalUp = Vec3(0f, 1f, 0f)
 
-    private var position = Vec3(0f, 10f, 25f)
+    var position = Vec3(0f, 10f, 25f)
     private var front = Vec3(0f, 0f, -1f)
     private var right = glm.cross(front, globalUp)
     private var up = glm.cross(right, front)

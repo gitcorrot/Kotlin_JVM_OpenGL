@@ -19,22 +19,26 @@ class Model {
 
     val texture = Texture()
 
-    var indicesSize = -1
+    var indicesCount = -1
 
-    // TODO: implement rotation
     var translation: Vec3 = Vec3(0f, 0f, 0f)
-
-    // var rotation: Vec3 = Vec3(1f)
+    var rotation: Mat4 = Mat4(1f)
     var scale: Vec3 = Vec3(1f)
 
     val transformation: Mat4
         get() {
             return Mat4(1f)
-                .translate_(translation)
-//                .rotate(glm.radians(45f), Vec3(1f, 0f, 1f))
+                .translate(translation)
+                .times(rotation)
                 .scale_(scale)
         }
 
+    fun rotate(pitch: Float, yaw: Float, roll: Float) {
+        rotation = Mat4()
+            .rotate_(glm.radians(pitch), Vec3(1f, 0f, 0f))
+            .rotate_(glm.radians(yaw), Vec3(0f, 1f, 0f))
+            .rotate_(glm.radians(roll), Vec3(0f, 0f, 1f))
+    }
 
     fun create(vertices: FloatArray, indices: IntArray) {
 
@@ -49,7 +53,7 @@ class Model {
             .put(indices)
             .flip()
 
-        this.indicesSize = indices.size
+        this.indicesCount = indices.size
 
         this.vao = glGenVertexArrays()
         val vbo = glGenBuffers()
@@ -65,10 +69,11 @@ class Model {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW)
         MemoryUtil.memFree(indicesBuffer)
 
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * 4, 0)
+//        glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * 4, 0)
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * 4, 0)
         glEnableVertexAttribArray(0)
-        glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * 4, 3 * 4)
-        glEnableVertexAttribArray(1)
+//        glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * 4, 3 * 4)
+//        glEnableVertexAttribArray(1)
 
         // Unbind VBO and VAO
         glBindBuffer(GL_ARRAY_BUFFER, 0)

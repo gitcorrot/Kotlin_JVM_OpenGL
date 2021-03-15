@@ -2,9 +2,11 @@ import glm_.vec3.Vec3
 import org.lwjgl.Version.getVersion
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
+import org.lwjgl.assimp.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryUtil.NULL
+import org.lwjgl.system.macosx.ObjCRuntime
 import kotlin.random.Random
 
 const val TAG = "Main"
@@ -26,7 +28,7 @@ fun createWindow(): Long {
 }
 
 fun main() {
-    Debug.DEBUG_LEVEL = Debug.DebugLevel.DEBUG
+    Debug.DEBUG_LEVEL = Debug.DebugLevel.INFO
 
     val errCallback = glfwSetErrorCallback(GLFWErrorCallback.create { error, description ->
         Debug.loge(TAG, "Error $error: $description")
@@ -38,6 +40,7 @@ fun main() {
 
     val window = createWindow()
 
+    glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE)
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
     glfwMakeContextCurrent(window)
     glfwSwapInterval(1) // Enable v-sync
@@ -91,32 +94,49 @@ fun main() {
 
     val models = arrayListOf<Model>()
 
-    val plain = Model()
-    plain.create(plainVertices, plainIndices)
-    plain.addTexture("src/main/resources/Textures/grass.png")
-    models.add(plain)
+//    val plain = Model()
+//    plain.create(plainVertices, plainIndices)
+//    plain.addTexture("src/main/resources/Textures/grass.png")
+//    models.add(plain)
 
-    val r = Random(1234)
-    for (x in 1..5) {
-        val m = Model()
-        m.apply {
-            create(vertices, indices)
-            addTexture("src/main/resources/Textures/cat.png")
-            translation = Vec3(r.nextFloat() * 5f - 2f, r.nextFloat() * 5f, r.nextFloat() * 5f - 2f)
+//    val r = Random(1234)
+//    for (x in 1..10) {
+//        val m = Model()
+//        m.apply {
+//            create(vertices, indices)
+//            addTexture("src/main/resources/Textures/cat.png")
+//            translation = Vec3(r.nextFloat() * 50f - 25f, r.nextFloat() * 25f, r.nextFloat() * 50f - 25f)
+//        }
+//        models.add(m)
+//    }
+
+//    val mCenter = Model()
+//    mCenter.apply {
+//        create(vertices, indices)
+//        addTexture("src/main/resources/Textures/cat.png")
+//        scale = Vec3(0.2f, 20f, 0.2f)
+//        translation = Vec3(0f, 10f, 0f)
+//    }
+//    models.add(mCenter)
+
+    val ml = ModelLoader()
+    // Model from: http://quaternius.com/
+    val testModel = ml.loadStaticModel("src/main/resources/Models/Llama.obj")
+
+    testModel?.let {
+        for (m in it.meshes) {
+
+            val tm = Model()
+            tm.create(m.vertices, m.indices)
+            tm.scale = Vec3(5f, 5f, 5f)
+            models.add(tm)
         }
-        models.add(m)
     }
 
-    val mCenter = Model()
-    mCenter.apply {
-        create(vertices, indices)
-        addTexture("src/main/resources/Textures/cat.png")
-        scale = Vec3(0.2f, 20f, 0.2f)
-        translation = Vec3(0f, 10f, 0f)
-    }
-    models.add(mCenter)
 
     while (!glfwWindowShouldClose(window)) {
+//        models[2].rotate(camera.pitch, camera.yaw, 0f) // debugging
+
         inputManager.update()
         renderer.render(models, camera)
     }

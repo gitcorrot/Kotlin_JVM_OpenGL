@@ -45,7 +45,7 @@ class ShaderProgram {
 
         glAttachShader(programID, shaderID)
 
-        Debug.logi(TAG, "Shader (id=$shaderID) created successfully!")
+        Debug.logd(TAG, "Shader (id=$shaderID) created successfully!")
     }
 
     @Throws
@@ -55,7 +55,7 @@ class ShaderProgram {
             throw Exception("Program linking error: ${glGetProgramInfoLog(programID)}")
         }
 
-        Debug.logi(TAG, "Program (id=$programID) linked successfully!")
+        Debug.logd(TAG, "Program (id=$programID) linked successfully!")
     }
 
     fun setUniformMat4f(name: String, mat: Mat4) {
@@ -67,7 +67,7 @@ class ShaderProgram {
 
     fun use() {
         glUseProgram(programID)
-        Debug.logi(TAG, "Program (id=$programID) activated!")
+        Debug.logd(TAG, "Program (id=$programID) activated!")
     }
 
     fun cleanup() {

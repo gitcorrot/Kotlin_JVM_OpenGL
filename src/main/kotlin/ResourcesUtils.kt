@@ -27,7 +27,7 @@ object ResourcesUtils {
             imageWidth = tmpWidth.get()
             imageHeight = tmpHeight.get()
 
-            Debug.logi(TAG, "Successfully loaded ${imageWidth}x${imageHeight}px, ${tmpChannels.get()} channels image")
+            Debug.logd(TAG, "Successfully loaded ${imageWidth}x${imageHeight}px, ${tmpChannels.get()} channels image")
         }
 
         return Image(image, imageWidth, imageHeight)
