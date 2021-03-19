@@ -1,6 +1,7 @@
 import glm_.glm
 import glm_.mat4x4.Mat4
 import glm_.vec3.Vec3
+import model.Mesh
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryUtil
 import java.nio.FloatBuffer
@@ -17,9 +18,8 @@ class Model {
             return field
         }
 
-    val texture = Texture()
-
-    var indicesCount = -1
+    var mesh: Mesh? = null
+    var texture = Texture()
 
     var translation: Vec3 = Vec3(0f, 0f, 0f)
     var rotation: Mat4 = Mat4(1f)
@@ -40,25 +40,21 @@ class Model {
             .rotate_(glm.radians(roll), Vec3(0f, 0f, 1f))
     }
 
-    fun create(mesh: Mesh) {
+    fun getIndicesCount() = this.mesh?.indices?.size ?: 0
 
-        // Create floats buffer and fill with vertices
-        val verticesBuffer: FloatBuffer = MemoryUtil.memAllocFloat(mesh.vertices.size)
-        verticesBuffer
-            .put(mesh.vertices)
-            .flip() // flip resets position to 0
+    fun create(mesh: Mesh) {
+        this.mesh = mesh
+
+        val verticesBuffer: FloatBuffer = MemoryUtil.memAllocFloat(mesh.vertices.size * 8) // each vertex has 8 floats
+        for (v in mesh.vertices) {
+            verticesBuffer.put(v.convertToFloatArray())
+        }
+        verticesBuffer.flip() // flip resets position to 0
 
         val indicesBuffer: IntBuffer = MemoryUtil.memAllocInt(mesh.indices.size)
         indicesBuffer
             .put(mesh.indices)
             .flip()
-
-        val normalsBuffer: FloatBuffer = MemoryUtil.memAllocFloat(mesh.normals.size)
-        normalsBuffer
-            .put(mesh.normals)
-            .flip()
-
-        this.indicesCount = mesh.indices.size
 
         this.vao = glGenVertexArrays()
         val vbo = glGenBuffers()
@@ -66,6 +62,7 @@ class Model {
 
         glBindVertexArray(vao)
 
+        // for each vertex -> add vertex.getAsArray
         glBindBuffer(GL_ARRAY_BUFFER, vbo)
         glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW)
         MemoryUtil.memFree(verticesBuffer)
@@ -94,6 +91,11 @@ class Model {
     fun addTexture(path: String) {
         bind()
         texture.createTexture(path)
+        Debug.logd(TAG, "Texture added to model!")
+    }
+
+    fun addTexture(texture: Texture) {
+        this.texture = texture
         Debug.logd(TAG, "Texture added to model!")
     }
 

@@ -44,7 +44,7 @@ class Renderer(
 
             shaderProgram.setUniformMat4f("mvp", mvp)
 
-            glDrawElements(GL_TRIANGLES, model.indicesCount, GL_UNSIGNED_INT, 0)
+            glDrawElements(GL_TRIANGLES, model.getIndicesCount(), GL_UNSIGNED_INT, 0)
         }
 
         glfwSwapBuffers(window)

@@ -25,7 +25,7 @@ class ShaderProgram {
         glCompileShader(shaderID)
 
         if (glGetShaderi(shaderID, GL_COMPILE_STATUS) == 0) {
-            throw Exception("Vertex Shader Info Log: ${glGetShaderInfoLog(shaderID)}")
+            throw Exception("model.Vertex Shader Info Log: ${glGetShaderInfoLog(shaderID)}")
         }
 
         when (shaderType) {

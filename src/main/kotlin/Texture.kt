@@ -20,8 +20,7 @@ class Texture {
 
         val img = ResourcesUtils.loadImage(path)
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, img.width, img.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data)
-        glGenerateMipmap(textureID)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.width, img.height, 0, GL_RGB, GL_UNSIGNED_BYTE, img.data)
         STBImage.stbi_image_free(img.data)
     }
 
