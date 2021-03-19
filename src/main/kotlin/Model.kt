@@ -40,20 +40,25 @@ class Model {
             .rotate_(glm.radians(roll), Vec3(0f, 0f, 1f))
     }
 
-    fun create(vertices: FloatArray, indices: IntArray) {
+    fun create(mesh: Mesh) {
 
         // Create floats buffer and fill with vertices
-        val verticesBuffer: FloatBuffer = MemoryUtil.memAllocFloat(vertices.size)
+        val verticesBuffer: FloatBuffer = MemoryUtil.memAllocFloat(mesh.vertices.size)
         verticesBuffer
-            .put(vertices)
+            .put(mesh.vertices)
             .flip() // flip resets position to 0
 
-        val indicesBuffer: IntBuffer = MemoryUtil.memAllocInt(indices.size)
+        val indicesBuffer: IntBuffer = MemoryUtil.memAllocInt(mesh.indices.size)
         indicesBuffer
-            .put(indices)
+            .put(mesh.indices)
             .flip()
 
-        this.indicesCount = indices.size
+        val normalsBuffer: FloatBuffer = MemoryUtil.memAllocFloat(mesh.normals.size)
+        normalsBuffer
+            .put(mesh.normals)
+            .flip()
+
+        this.indicesCount = mesh.indices.size
 
         this.vao = glGenVertexArrays()
         val vbo = glGenBuffers()
@@ -69,11 +74,15 @@ class Model {
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW)
         MemoryUtil.memFree(indicesBuffer)
 
-//        glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * 4, 0)
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * 4, 0)
+        // 3 Float vertex coordinates
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 8 * 4, 0)
         glEnableVertexAttribArray(0)
-//        glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * 4, 3 * 4)
-//        glEnableVertexAttribArray(1)
+        // 3 Float vertex normals
+        glVertexAttribPointer(1, 3, GL_FLOAT, false, 8 * 4, 3 * 4)
+        glEnableVertexAttribArray(1)
+        // 2 Float vertex texture coordinates
+        glVertexAttribPointer(2, 2, GL_FLOAT, false, 8 * 4, 6 * 4)
+        glEnableVertexAttribArray(2)
 
         // Unbind VBO and VAO
         glBindBuffer(GL_ARRAY_BUFFER, 0)

@@ -2,12 +2,9 @@ import glm_.vec3.Vec3
 import org.lwjgl.Version.getVersion
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
-import org.lwjgl.assimp.*
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryUtil.NULL
-import org.lwjgl.system.macosx.ObjCRuntime
-import kotlin.random.Random
 
 const val TAG = "Main"
 
@@ -28,7 +25,7 @@ fun createWindow(): Long {
 }
 
 fun main() {
-    Debug.DEBUG_LEVEL = Debug.DebugLevel.INFO
+    Debug.DEBUG_LEVEL = Debug.DebugLevel.DEBUG
 
     val errCallback = glfwSetErrorCallback(GLFWErrorCallback.create { error, description ->
         Debug.loge(TAG, "Error $error: $description")
@@ -121,14 +118,15 @@ fun main() {
 
     val ml = ModelLoader()
     // Model from: http://quaternius.com/
-    val testModel = ml.loadStaticModel("src/main/resources/Models/Llama.obj")
+    val testModel = ml.loadStaticModel("src/main/resources/Models/PIG.obj")
 
     testModel?.let {
         for (m in it.meshes) {
 
             val tm = Model()
-            tm.create(m.vertices, m.indices)
+            tm.create(m)
             tm.scale = Vec3(5f, 5f, 5f)
+            tm.addTexture("src/main/resources/Textures/color_palette.png")
             models.add(tm)
         }
     }

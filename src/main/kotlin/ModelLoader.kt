@@ -2,12 +2,6 @@ import org.lwjgl.PointerBuffer
 import org.lwjgl.assimp.AIMesh
 import org.lwjgl.assimp.Assimp
 
-data class Mesh(
-    val vertices: FloatArray,
-    val indices: IntArray,
-    val normals: FloatArray
-)
-
 data class LoadedModel(
     val meshes: ArrayList<Mesh>
 )
@@ -62,7 +56,9 @@ class ModelLoader {
         val indices = getIndices(mesh)
 //        println("${indices.size} I: " + indices.joinToString())
 
-        return Mesh(vertices, indices, normals)
+        val textureCoords = getTextureCoords(mesh)
+
+        return Mesh(vertices, indices, normals, textureCoords)
     }
 
     private fun getVertices(mesh: AIMesh): FloatArray {
@@ -112,6 +108,26 @@ class ModelLoader {
         }
 
         return indices
+    }
+
+    private fun getTextureCoords(mesh: AIMesh): FloatArray {
+        val uvsCount = mesh.mTextureCoords(0)?.remaining() ?: 0
+        Debug.logi(TAG, "UVs count: $uvsCount")
+
+        val uvs = FloatArray(uvsCount * 2) // U and V for every vertex
+
+        if (uvsCount == mesh.mNumVertices()) {
+            val uvsBuffer = mesh.mTextureCoords(0)
+            for (i in 0 until uvsCount) {
+                val uv = uvsBuffer!!.get()
+                uvs[i] = uv.x()
+                uvs[i] = uv.x()
+            }
+        } else {
+            Debug.loge(TAG, "UVs count != Vertices count!")
+        }
+
+        return uvs
     }
 
     private fun processMaterials(materials: PointerBuffer) {
