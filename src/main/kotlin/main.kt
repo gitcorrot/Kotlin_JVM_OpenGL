@@ -40,6 +40,19 @@ fun main() {
 
     val window = createWindow()
 
+    // Get the resolution of the primary monitor
+    val vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor())
+
+    vidMode?.let {
+        // Center our window
+        glfwSetWindowPos(
+            window,
+            (it.width() - WINDOW_WIDTH) / 2,
+            (it.height() - WINDOW_HEIGHT) / 2
+        )
+        Debug.logd(TAG, "${it.width()}X${it.height()}")
+    }
+
     glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE)
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
     glfwMakeContextCurrent(window)
@@ -51,8 +64,9 @@ fun main() {
 
     // -------------------------------------------------------------------------------------------------------------- //
 
+    val inputManager = InputManager(window)
     val camera = Camera()
-    val inputManager = InputManager(window, camera.iCameraInput)
+    inputManager.addCamera(camera)
     val renderer = Renderer(window, WINDOW_WIDTH, WINDOW_HEIGHT)
 
     val colorPaletteTexture = Texture()
@@ -62,10 +76,10 @@ fun main() {
 
     val plain = Model()
     val plainVertices: ArrayList<Vertex> = arrayListOf(
-        Vertex(Vec3(-25f, -0f, -25f), Vec3(0f), Vec2(0.0f, 0.0f)),
-        Vertex(Vec3(25f, -0f, -25f), Vec3(0f), Vec2(1f, 0.0f)),
-        Vertex(Vec3(25f, -0f, 25f), Vec3(0f), Vec2(1f, 1f)),
-        Vertex(Vec3(-25f, -0f, 25f), Vec3(0f), Vec2(0.0f, 1f)),
+        Vertex(Vec3(-25f, -0f, -25f), Vec3(0f, 0f, 0.7f), Vec2(0.0f, 0.0f)),
+        Vertex(Vec3(25f, -0f, -25f), Vec3(0f, 0f, 0.7f), Vec2(1f, 0.0f)),
+        Vertex(Vec3(25f, -0f, 25f), Vec3(0f, 0f, 0.7f), Vec2(1f, 1f)),
+        Vertex(Vec3(-25f, -0f, 25f), Vec3(0f, 0f, 0.7f), Vec2(0.0f, 1f)),
     )
 
     val plainIndices = intArrayOf(0, 1, 3, 3, 1, 2)
@@ -75,7 +89,7 @@ fun main() {
 
     // Model from: http://quaternius.com/
     val testModel = ModelLoader.loadStaticModel("src/main/resources/Models/PIG.obj")
-    testModel.addTexture("src/main/resources/Textures/color_palette.png")
+    testModel.addTexture(colorPaletteTexture)
     models.add(testModel)
 
     while (!glfwWindowShouldClose(window)) {
@@ -84,7 +98,7 @@ fun main() {
     }
 
     readOpenGLError()
-        
+
     // Cleanup
     for (m in models) {
         m.cleanup()

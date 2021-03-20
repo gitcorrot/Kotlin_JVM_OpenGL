@@ -20,10 +20,24 @@ class Camera {
 
     private val globalUp = Vec3(0f, 1f, 0f)
 
-    var position = Vec3(0f, 10f, 25f)
-    private var front = Vec3(0f, 0f, -1f)
-    private var right = glm.cross(front, globalUp)
-    private var up = glm.cross(right, front)
+    private var position = Vec3(0f, 10f, 25f)
+    private var front = Vec3()
+    private var right = Vec3()
+    private var up = Vec3()
+
+    private fun updateVectors() {
+        front.x = glm.cos(glm.radians(yaw)) * glm.cos(glm.radians(pitch))
+        front.y = glm.sin(glm.radians(pitch))
+        front.z = glm.sin(glm.radians(yaw)) * glm.cos(glm.radians(pitch))
+        front.normalizeAssign()
+
+        right = glm.normalize(glm.cross(front, globalUp))
+        up = glm.normalize(glm.cross(right, front))
+    }
+
+    init {
+        updateVectors()
+    }
 
     val viewMat: Mat4
         get() {
@@ -66,15 +80,9 @@ class Camera {
             if (pitch > 89f) pitch = 89f
             if (pitch < -89f) pitch = -89f
 
-//            Debug.logd(TAG, "YAW: $yaw, PITCH: $pitch")
+//            Debug.logd(TAG, "Yaw: $yaw, Pitch: $pitch")
 
-            front.x = glm.cos(glm.radians(yaw)) * glm.cos(glm.radians(pitch))
-            front.y = glm.sin(glm.radians(pitch))
-            front.z = glm.sin(glm.radians(yaw)) * glm.cos(glm.radians(pitch))
-            front.normalizeAssign()
-
-            right = glm.normalize(glm.cross(front, globalUp))
-            up = glm.normalize(glm.cross(right, front))
+            updateVectors()
         }
     }
 }
