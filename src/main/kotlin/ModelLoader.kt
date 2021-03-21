@@ -9,17 +9,13 @@ object ModelLoader {
     private val TAG: String = this::class.java.name
 
     @Throws
-    fun loadStaticModel(path: String): Model {
-
+    fun loadStaticModel(path: String): Mesh {
         // For now it only handles single-mesh objects
         val scene = Assimp.aiImportFile(path, Assimp.aiProcess_JoinIdenticalVertices)
         scene ?: throw Exception("Scene loading failed! Check path: $path")
 
         if (scene.mNumMeshes() == 1) {
-            val mesh = processMesh(AIMesh.create(scene.mMeshes()!!.get()))
-            val model = Model()
-            model.create(mesh)
-            return model
+            return processMesh(AIMesh.create(scene.mMeshes()!!.get()))
         } else {
             throw Exception("Meshes size: ${scene.mNumMeshes()}, not 1!")
         }
@@ -40,21 +36,27 @@ object ModelLoader {
         val normalsBuffer = mesh.mNormals()
         val uvsBuffer = mesh.mTextureCoords(0)
 
-        normalsBuffer ?: throw Exception("Normals buffer is null!")
+        normalsBuffer ?: Debug.logd(TAG, "Normals buffer is null!")
         uvsBuffer ?: throw Exception("Texture coordinates buffer is null!")
 
         for (i in 0 until mesh.mNumVertices()) {
-            val vertex = Vertex(Vec3(), Vec3(), Vec2())
-            val position = positionsBuffer.get()
+            val vertex = if (normalsBuffer != null)
+                Vertex(Vec3(), Vec3(), Vec2())
+            else
+                Vertex(Vec3(), null, Vec2())
 
+            val position = positionsBuffer.get()
             vertex.position.x = position.x()
             vertex.position.y = position.y()
             vertex.position.z = position.z()
 
-            val normal = normalsBuffer.get()
-            vertex.normal.x = normal.x()
-            vertex.normal.y = normal.y()
-            vertex.normal.z = normal.z()
+            // Only when normals exists
+            vertex.normal?.let {
+                val normal = normalsBuffer!!.get()
+                it.x = normal.x()
+                it.y = normal.y()
+                it.z = normal.z()
+            }
 
             val uv = uvsBuffer.get()
             vertex.textureCoordinates.x = uv.x()

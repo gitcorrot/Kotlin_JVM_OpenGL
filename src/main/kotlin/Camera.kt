@@ -20,7 +20,7 @@ class Camera {
 
     private val globalUp = Vec3(0f, 1f, 0f)
 
-    private var position = Vec3(0f, 10f, 25f)
+    var position = Vec3(0f, 10f, 25f)
     private var front = Vec3()
     private var right = Vec3()
     private var up = Vec3()

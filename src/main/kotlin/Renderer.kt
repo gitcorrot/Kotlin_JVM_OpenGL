@@ -10,7 +10,6 @@ class Renderer(
 ) {
     private val TAG: String = this::class.java.name
 
-    private val shaderProgram = ShaderProgram()
 
     private val fov: Float = glm.radians(60f)
     private val aspectRatio: Float = width / height.toFloat()
@@ -20,37 +19,45 @@ class Renderer(
     private val projectionMat = glm.perspective(fov, aspectRatio, zNear, zFar)
 
     init {
-        val vertexShaderString = ResourcesUtils.loadStringFromFile("Shaders/vertex_shader.glsl")
-        val fragmentShaderString = ResourcesUtils.loadStringFromFile("Shaders/fragment_shader.glsl")
-        shaderProgram.createShader(vertexShaderString, GL_VERTEX_SHADER)
-        shaderProgram.createShader(fragmentShaderString, GL_FRAGMENT_SHADER)
-        shaderProgram.link()
-        shaderProgram.use()
-
         glEnable(GL_DEPTH_TEST)
     }
 
-    fun render(models: ArrayList<Model>, camera: Camera) {
+    fun render(world: World, camera: Camera) {
         glClearColor(.1f, .8f, .8f, 0.0f)
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
-        for (model in models) {
+        // 1. Draw all light sources
+        LightSource.shaderProgram.use()
+        LightSource.shaderProgram.setUniformMat4f("v", camera.viewMat)
+        LightSource.shaderProgram.setUniformMat4f("p", this.projectionMat)
+        for (lightSource in world.lightSources) {
+            lightSource.bind()
+            lightSource.texture.bind()
+
+            LightSource.shaderProgram.setUniformMat4f("m", lightSource.getTransformationMat())
+
+            glDrawElements(GL_TRIANGLES, lightSource.getIndicesCount(), GL_UNSIGNED_INT, 0)
+        }
+
+        // 2. Draw terrain
+        // TODO: Implement terrain
+
+        // 3. Draw all models
+        DefaultModel.shaderProgram.use()
+        DefaultModel.shaderProgram.setUniformMat4f("v", camera.viewMat)
+        DefaultModel.shaderProgram.setUniformMat4f("p", this.projectionMat)
+        for (model in world.defaultModels) {
             model.bind()
             model.texture.bind()
 
-            val mvp = this.projectionMat
-                .times(camera.viewMat)
-                .times(model.transformation)
-
-            shaderProgram.setUniformMat4f("mvp", mvp)
+            DefaultModel.shaderProgram.setUniformMat4f("m", model.getTransformationMat())
+            DefaultModel.shaderProgram.setUniformVec3f("cameraPosition", camera.position)
+            // TODO: implement multiple light sources
+            DefaultModel.shaderProgram.setUniformVec3f("lightPosition", world.lightSources[0].tranformation.translation)
 
             glDrawElements(GL_TRIANGLES, model.getIndicesCount(), GL_UNSIGNED_INT, 0)
         }
 
         glfwSwapBuffers(window)
-    }
-
-    fun cleanup() {
-        shaderProgram.cleanup()
     }
 }

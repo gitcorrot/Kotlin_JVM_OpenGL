@@ -1,10 +1,8 @@
 import glm_.mat4x4.Mat4
+import glm_.vec3.Vec3
 import org.lwjgl.opengl.GL33.*
-import org.lwjgl.system.MemoryStack
-import org.lwjgl.system.MemoryUtil
 import org.lwjgl.system.MemoryUtil.memAllocFloat
 import org.lwjgl.system.MemoryUtil.memFree
-import java.nio.FloatBuffer
 
 class ShaderProgram {
     private val TAG: String = this::class.java.name
@@ -61,8 +59,13 @@ class ShaderProgram {
     fun setUniformMat4f(name: String, mat: Mat4) {
         val loc = glGetUniformLocation(programID, name) // TODO: make uniforms map once and use it
         val arr = memAllocFloat(16)
-        glUniformMatrix4fv(loc, false,  mat to arr)
+        glUniformMatrix4fv(loc, false, mat to arr)
         memFree(arr)
+    }
+
+    fun setUniformVec3f(name: String, vec: Vec3) {
+        val loc = glGetUniformLocation(programID, name) // TODO: make uniforms map once and use it
+        glUniform3f(loc, vec.x, vec.y, vec.z)
     }
 
     fun use() {

@@ -1,3 +1,4 @@
+import glm_.Java.Companion.glm
 import glm_.vec2.Vec2
 import glm_.vec3.Vec3
 import model.Mesh
@@ -28,7 +29,7 @@ fun createWindow(): Long {
 }
 
 fun main() {
-    Debug.DEBUG_LEVEL = Debug.DebugLevel.DEBUG
+    Debug.DEBUG_LEVEL = Debug.DebugLevel.INFO
 
     val errCallback = glfwSetErrorCallback(GLFWErrorCallback.create { error, description ->
         Debug.loge(TAG, "Error $error: $description")
@@ -72,39 +73,48 @@ fun main() {
     val colorPaletteTexture = Texture()
     colorPaletteTexture.createTexture("src/main/resources/Textures/color_palette.png")
 
-    val models = arrayListOf<Model>()
+    val world = World()
 
-    val plain = Model()
+    // TODO: replace with terrain
     val plainVertices: ArrayList<Vertex> = arrayListOf(
         Vertex(Vec3(-25f, -0f, -25f), Vec3(0f, 0f, 0.7f), Vec2(0.0f, 0.0f)),
         Vertex(Vec3(25f, -0f, -25f), Vec3(0f, 0f, 0.7f), Vec2(1f, 0.0f)),
         Vertex(Vec3(25f, -0f, 25f), Vec3(0f, 0f, 0.7f), Vec2(1f, 1f)),
         Vertex(Vec3(-25f, -0f, 25f), Vec3(0f, 0f, 0.7f), Vec2(0.0f, 1f)),
     )
-
     val plainIndices = intArrayOf(0, 1, 3, 3, 1, 2)
-    plain.create(Mesh(plainVertices, plainIndices))
+    val plain = DefaultModel(Mesh(plainVertices, plainIndices))
+    plain.create()
     plain.addTexture(colorPaletteTexture)
-    models.add(plain)
+    world.addDefaultModel(plain)
 
     // Model from: http://quaternius.com/
-    val testModel = ModelLoader.loadStaticModel("src/main/resources/Models/PIG.obj")
-    testModel.addTexture(colorPaletteTexture)
-    models.add(testModel)
+    val pigMesh = ModelLoader.loadStaticModel("src/main/resources/Models/PIG.obj")
+    val pigModel = DefaultModel(pigMesh)
+    pigModel.create()
+    pigModel.addTexture(colorPaletteTexture)
+    world.addDefaultModel(pigModel)
+
+    // Light soruce
+    val sunMesh = ModelLoader.loadStaticModel("src/main/resources/Models/sun.obj")
+    val sunModel = LightSource(sunMesh)
+    sunModel.create()
+    sunModel.addTexture(colorPaletteTexture)
+    sunModel.scale(10.0f, 10f, 10.0f)
+    world.addLightSource(sunModel)
 
     while (!glfwWindowShouldClose(window)) {
+        val x = glm.sin(glfwGetTime() * 2.0f).toFloat()
+        val y = glm.cos(glfwGetTime() * 2.0f).toFloat()
+        sunModel.moveTo(x * 50.0f, y * 50.0f, 0f)
         inputManager.update()
-        renderer.render(models, camera)
+        renderer.render(world, camera)
     }
 
     readOpenGLError()
 
     // Cleanup
-    for (m in models) {
-        m.cleanup()
-    }
-
-    renderer.cleanup()
+    world.cleanup()
 
     // Destroy window
     Debug.logi(TAG, "Destroying window...")
