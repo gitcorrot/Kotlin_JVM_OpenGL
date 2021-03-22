@@ -20,10 +20,10 @@ class Renderer(
 
     init {
         glEnable(GL_DEPTH_TEST)
+        glClearColor(.1f, .8f, .8f, 0.0f)
     }
 
     fun render(world: World, camera: Camera) {
-        glClearColor(.1f, .8f, .8f, 0.0f)
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
         // 1. Draw all light sources

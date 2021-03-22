@@ -9,7 +9,7 @@ interface ICameraInputCallback {
     fun cursorMoved(deltaX: Int, deltaY: Int)
 }
 
-private const val CAMERA_SPEED = 20.0f
+private const val CAMERA_SPEED = 50.0f
 private const val MOUSE_SENSITIVITY = 0.15f
 
 class Camera {

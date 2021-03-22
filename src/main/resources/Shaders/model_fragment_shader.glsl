@@ -7,15 +7,15 @@ in vec2 texturePos;
 out vec4 fragmentCol;
 
 uniform sampler2D myTexture;
-uniform vec3 cameraPosition;
+uniform vec3 cameraPosition; // for specular
 uniform vec3 lightPosition;
 
 void main()
 {
-    vec3 lightDirection = normalize(lightPosition - cameraPosition);
+    vec3 lightDirection = normalize(lightPosition - fragmentPos);
 
-    vec3 ambient = vec3(0.5f, 0.5f, 0.5f);
-    vec3 diffuse = max((dot(modelNormal, lightDirection)), 0.0f) * vec3(0.8f,0.85f,0.85f);
+    vec3 ambient = vec3(0.3f, 0.3f, 0.3f);
+    vec3 diffuse = max((dot(modelNormal, lightDirection)), 0.0f) * vec3(0.9f,0.9f,0.9f);
 
     vec4 lighting = vec4(ambient + diffuse, 1.0f);
 

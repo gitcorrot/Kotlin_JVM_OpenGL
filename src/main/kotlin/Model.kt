@@ -51,6 +51,13 @@ open class Model(val mesh: Mesh) {
             .rotate_(glm.radians(roll), Vec3(0f, 0f, 1f))
     }
 
+    fun rotateBy(pitch: Float, yaw: Float, roll: Float) {
+        tranformation.rotation
+            .rotate_(glm.radians(pitch), Vec3(1f, 0f, 0f))
+            .rotate_(glm.radians(yaw), Vec3(0f, 1f, 0f))
+            .rotate_(glm.radians(roll), Vec3(0f, 0f, 1f))
+    }
+
     fun scale(x: Float, y: Float, z: Float) {
         tranformation.scale.x = x;
         tranformation.scale.y = y;
