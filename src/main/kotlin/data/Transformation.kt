@@ -1,4 +1,4 @@
-package model
+package data
 
 import glm_.mat4x4.Mat4
 import glm_.vec3.Vec3

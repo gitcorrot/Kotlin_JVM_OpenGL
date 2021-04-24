@@ -1,18 +1,21 @@
+import models.ModelDefault
+import models.ModelNoLight
+
 class World {
 
-    var defaultModels: ArrayList<DefaultModel> = ArrayList()
-    var lightSources: ArrayList<LightSource> = ArrayList()
+    var modelsDefault: ArrayList<ModelDefault> = ArrayList()
+    var modelsNoLight: ArrayList<ModelNoLight> = ArrayList()
 //    lateinit var terrain: Terrain
 
     var skybox: Skybox? = null
 
 
-    fun addDefaultModel(model: DefaultModel) {
-        defaultModels.add(model)
+    fun addDefaultModel(model: ModelDefault) {
+        modelsDefault.add(model)
     }
 
-    fun addLightSource(lightSource: LightSource) {
-        lightSources.add(lightSource)
+    fun addLightSource(modelNoLight: ModelNoLight) {
+        modelsNoLight.add(modelNoLight)
     }
 
 //    fun setTerrain(terrain: Terrain) {

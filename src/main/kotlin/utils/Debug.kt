@@ -1,3 +1,5 @@
+package utils
+
 object Debug {
 
     enum class DebugLevel {

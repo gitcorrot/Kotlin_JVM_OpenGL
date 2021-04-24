@@ -1,4 +1,6 @@
-import model.Image
+package utils
+
+import data.Image
 import org.lwjgl.stb.STBImage
 import org.lwjgl.system.MemoryStack
 import java.nio.ByteBuffer

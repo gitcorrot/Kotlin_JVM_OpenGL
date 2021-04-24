@@ -1,11 +1,15 @@
+package models
+
+import TAG
+import Texture
 import glm_.glm
 import glm_.mat4x4.Mat4
 import glm_.vec3.Vec3
-import model.Mesh
-import model.Transformation
-import org.lwjgl.opengl.GL33
+import data.Mesh
+import data.Transformation
 import org.lwjgl.opengl.GL33.glBindVertexArray
 import org.lwjgl.opengl.GL33.glDeleteVertexArrays
+import utils.Debug
 
 open class Model(val mesh: Mesh) {
 
@@ -13,7 +17,7 @@ open class Model(val mesh: Mesh) {
         @Throws
         get() {
             if (field == -1)
-                throw Exception("Model VAO id not assigned!")
+                throw Exception("models.Model VAO id not assigned!")
             return field
         }
 

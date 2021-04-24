@@ -1,14 +1,18 @@
+import data.Mesh
+import data.Vertex
 import glm_.Java.Companion.glm
 import glm_.vec2.Vec2
 import glm_.vec3.Vec3
-import model.Mesh
-import model.Vertex
+import models.ModelDefault
+import models.ModelNoLight
 import org.lwjgl.Version.getVersion
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
 import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryUtil.NULL
+import utils.Debug
+import utils.ModelLoader
 
 const val TAG = "Main"
 
@@ -83,21 +87,21 @@ fun main() {
         Vertex(Vec3(-1000, -0f, 1000), Vec3(0f, 1f, 0.0f), Vec2(0.5f, .51f)),
     )
     val plainIndices = intArrayOf(0, 1, 3, 3, 1, 2)
-    val plain = DefaultModel(Mesh(plainVertices, plainIndices))
+    val plain = ModelDefault(Mesh(plainVertices, plainIndices))
     plain.create()
     plain.addTexture(colorPaletteTexture)
     world.addDefaultModel(plain)
 
     // Model from: http://quaternius.com/
     val pigMesh = ModelLoader.loadStaticModel("src/main/resources/Models/PIG.obj")
-    val pigModel = DefaultModel(pigMesh)
+    val pigModel = ModelDefault(pigMesh)
     pigModel.create()
     pigModel.addTexture(colorPaletteTexture)
     world.addDefaultModel(pigModel)
 
-    // Light source
+    // Light source model
     val pointLightMesh = ModelLoader.loadStaticModel("src/main/resources/Models/sphere.obj")
-    val pointLight = LightSource(pointLightMesh)
+    val pointLight = ModelNoLight(pointLightMesh)
     pointLight.create()
     pointLight.addTexture(colorPaletteTexture)
     world.addLightSource(pointLight)
@@ -109,7 +113,7 @@ fun main() {
     while (!glfwWindowShouldClose(window)) {
         val x = glm.sin(glfwGetTime() * 2.0f).toFloat()
         pigModel.rotateBy(0f, 2f, 0f)
-        pointLight.moveTo( 20.0f,  10.0f, 0f)
+        pointLight.moveTo(20.0f, 10.0f, 0f)
         inputManager.update()
         renderer.render(world, camera)
     }

@@ -4,6 +4,7 @@ import glm_.vec3.Vec3
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryUtil.memAllocFloat
 import org.lwjgl.system.MemoryUtil.memFree
+import utils.Debug
 
 class ShaderProgram {
     private val TAG: String = this::class.java.name

@@ -1,5 +1,6 @@
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.stb.STBImage
+import utils.ResourcesUtils
 
 class Texture {
     private val TAG: String = this::class.java.name

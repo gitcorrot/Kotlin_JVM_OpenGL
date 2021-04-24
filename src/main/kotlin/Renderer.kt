@@ -1,4 +1,6 @@
 import glm_.glm
+import models.ModelDefault
+import models.ModelNoLight
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL33.*
 
@@ -26,40 +28,49 @@ class Renderer(
     fun render(world: World, camera: Camera) {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
-        // 1. Draw all light sources
-        LightSource.shaderProgram.use()
-        LightSource.shaderProgram.setUniformMat4f("v", camera.viewMat)
-        LightSource.shaderProgram.setUniformMat4f("p", this.projectionMat)
-        for (lightSource in world.lightSources) {
-            lightSource.bind()
-            lightSource.texture.bind()
+        // 1. Apply all light sources
+        // 1.1 Directional light (single)
+        // 1.2 Ambient light (single)
+        // 1.3 Spot lights (multiple)
+        // 1.4 Point lights (multiple)
+//        for (lightSource in world.modelsNoLight) {
+//
+//            // TODO: implement multiple light sources
+//            ModelDefault.shaderProgram.setUniformVec3f("lightPosition", world.modelsNoLight[0].tranformation.translation)
+//
+//        }
 
-            LightSource.shaderProgram.setUniformMat4f("m", lightSource.getTransformationMat())
 
-            glDrawElements(GL_TRIANGLES, lightSource.getIndicesCount(), GL_UNSIGNED_INT, 0)
-        }
+//        ModelNoLight.shaderProgram.use()
+//        ModelNoLight.shaderProgram.setUniformMat4f("v", camera.viewMat)
+//        ModelNoLight.shaderProgram.setUniformMat4f("p", this.projectionMat)
+//        for (lightSource in world.modelsNoLight) {
+//            lightSource.bind()
+//            lightSource.texture.bind()
+//
+//            ModelNoLight.shaderProgram.setUniformMat4f("m", lightSource.getTransformationMat())
+//
+//            glDrawElements(GL_TRIANGLES, lightSource.getIndicesCount(), GL_UNSIGNED_INT, 0)
+//        }
 
         // 2. Draw terrain
         // TODO: Implement terrain
 
         // 3. Draw all models
-        DefaultModel.shaderProgram.use()
-        DefaultModel.shaderProgram.setUniformMat4f("v", camera.viewMat)
-        DefaultModel.shaderProgram.setUniformMat4f("p", this.projectionMat)
-        for (model in world.defaultModels) {
+        ModelDefault.shaderProgram.use()
+        ModelDefault.shaderProgram.setUniformMat4f("v", camera.viewMat)
+        ModelDefault.shaderProgram.setUniformMat4f("p", this.projectionMat)
+        for (model in world.modelsDefault) {
             model.bind()
             model.texture.bind()
 
             val modelTransMat = model.getTransformationMat()
-            DefaultModel.shaderProgram.setUniformMat4f("m", modelTransMat)
+            ModelDefault.shaderProgram.setUniformMat4f("m", modelTransMat)
 
             val modelNormalMat = glm.transpose(glm.inverse(modelTransMat.toMat3()))
-            DefaultModel.shaderProgram.setUniformMat3f("normalMatrix", modelNormalMat)
+            ModelDefault.shaderProgram.setUniformMat3f("normalMatrix", modelNormalMat)
 
-            DefaultModel.shaderProgram.setUniformVec3f("cameraPosition", camera.position)
-
-            // TODO: implement multiple light sources
-            DefaultModel.shaderProgram.setUniformVec3f("lightPosition", world.lightSources[0].tranformation.translation)
+            ModelDefault.shaderProgram.setUniformVec3f("cameraPosition", camera.position)
 
             glDrawElements(GL_TRIANGLES, model.getIndicesCount(), GL_UNSIGNED_INT, 0)
         }

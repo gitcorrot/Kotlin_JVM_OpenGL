@@ -70,7 +70,7 @@ class Camera {
                     position.plusAssign(globalUp.times(CAMERA_SPEED * deltaTime))
                 }
             }
-//            Debug.logd(TAG, "CAMERA POSITION: \n$position")
+//            utils.Debug.logd(TAG, "CAMERA POSITION: \n$position")
         }
 
         override fun cursorMoved(deltaX: Int, deltaY: Int) {
@@ -80,7 +80,7 @@ class Camera {
             if (pitch > 89f) pitch = 89f
             if (pitch < -89f) pitch = -89f
 
-//            Debug.logd(TAG, "Yaw: $yaw, Pitch: $pitch")
+//            utils.Debug.logd(TAG, "Yaw: $yaw, Pitch: $pitch")
 
             updateVectors()
         }

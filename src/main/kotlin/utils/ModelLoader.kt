@@ -1,7 +1,9 @@
+package utils
+
 import glm_.vec2.Vec2
 import glm_.vec3.Vec3
-import model.Mesh
-import model.Vertex
+import data.Mesh
+import data.Vertex
 import org.lwjgl.assimp.AIMesh
 import org.lwjgl.assimp.Assimp
 

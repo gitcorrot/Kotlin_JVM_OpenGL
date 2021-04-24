@@ -1,6 +1,8 @@
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.stb.STBImage
 import org.lwjgl.system.MemoryUtil
+import utils.Debug
+import utils.ResourcesUtils
 import java.nio.FloatBuffer
 
 private val skyboxVertices = floatArrayOf(
@@ -63,8 +65,8 @@ class Skybox {
         val shaderProgram = ShaderProgram()
 
         init {
-            val vertexShaderString = ResourcesUtils.loadStringFromFile("Shaders/skybox_vertex_shader.glsl")
-            val fragmentShaderString = ResourcesUtils.loadStringFromFile("Shaders/skybox_fragment_shader.glsl")
+            val vertexShaderString = ResourcesUtils.loadStringFromFile("/Shaders/skybox_vertex_shader.glsl")
+            val fragmentShaderString = ResourcesUtils.loadStringFromFile("/Shaders/skybox_fragment_shader.glsl")
             shaderProgram.createShader(vertexShaderString, GL_VERTEX_SHADER)
             shaderProgram.createShader(fragmentShaderString, GL_FRAGMENT_SHADER)
             shaderProgram.link()
@@ -78,7 +80,7 @@ class Skybox {
         @Throws
         get() {
             if (field == -1)
-                throw Exception("Model VAO id not assigned!")
+                throw Exception("models.Model VAO id not assigned!")
             return field
         }
 

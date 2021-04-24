@@ -1,4 +1,4 @@
-package model
+package data
 
 data class Mesh(
     val vertices: ArrayList<Vertex>,

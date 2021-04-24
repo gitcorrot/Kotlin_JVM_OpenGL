@@ -1,17 +1,25 @@
-import model.Mesh
+package models
+
+import ShaderProgram
+import data.Mesh
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryUtil
+import utils.Debug
+import utils.ResourcesUtils
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
-class DefaultModel(mesh: Mesh) : Model(mesh) {
+class ModelNoLight(mesh: Mesh) : Model(mesh) {
     companion object {
         val TAG: String = this::class.java.name
         val shaderProgram = ShaderProgram()
 
+        private const val vertexShaderPath = "/Shaders/model_no_light_vertex_shader.glsl"
+        private const val fragmentShaderPath = "/Shaders/model_no_light_fragment_shader.glsl"
+
         init {
-            val vertexShaderString = ResourcesUtils.loadStringFromFile("Shaders/model_vertex_shader.glsl")
-            val fragmentShaderString = ResourcesUtils.loadStringFromFile("Shaders/model_fragment_shader.glsl")
+            val vertexShaderString = ResourcesUtils.loadStringFromFile(vertexShaderPath)
+            val fragmentShaderString = ResourcesUtils.loadStringFromFile(fragmentShaderPath)
             shaderProgram.createShader(vertexShaderString, GL_VERTEX_SHADER)
             shaderProgram.createShader(fragmentShaderString, GL_FRAGMENT_SHADER)
             shaderProgram.link()
@@ -19,11 +27,10 @@ class DefaultModel(mesh: Mesh) : Model(mesh) {
         }
     }
 
-
     override fun create() {
         super.create()
 
-        val verticesBuffer: FloatBuffer = MemoryUtil.memAllocFloat(mesh.vertices.size * 8) // each vertex has 8 floats
+        val verticesBuffer: FloatBuffer = MemoryUtil.memAllocFloat(mesh.vertices.size * 5) // each vertex has 5 floats
         for (v in mesh.vertices) {
             verticesBuffer.put(v.convertToFloatArray())
         }
@@ -39,7 +46,6 @@ class DefaultModel(mesh: Mesh) : Model(mesh) {
         val ebo = glGenBuffers()
 
         glBindVertexArray(vao)
-
         // for each vertex -> add vertex.getAsArray
         glBindBuffer(GL_ARRAY_BUFFER, vbo)
         glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW)
@@ -50,19 +56,16 @@ class DefaultModel(mesh: Mesh) : Model(mesh) {
         MemoryUtil.memFree(indicesBuffer)
 
         // 3 Float vertex coordinates
-        glVertexAttribPointer(0, 3, GL_FLOAT, false, 8 * 4, 0)
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * 4, 0)
         glEnableVertexAttribArray(0)
-        // 3 Float vertex normals
-        glVertexAttribPointer(1, 3, GL_FLOAT, false, 8 * 4, 3 * 4)
-        glEnableVertexAttribArray(1)
         // 2 Float vertex texture coordinates
-        glVertexAttribPointer(2, 2, GL_FLOAT, false, 8 * 4, 6 * 4)
-        glEnableVertexAttribArray(2)
+        glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * 4, 3 * 4)
+        glEnableVertexAttribArray(1)
 
         // Unbind VBO and VAO
         glBindBuffer(GL_ARRAY_BUFFER, 0)
         glBindVertexArray(0)
 
-        Debug.logd(TAG, "Model created!")
+        Debug.logd(TAG, "models.Model created!")
     }
 }
