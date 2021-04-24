@@ -12,6 +12,8 @@ uniform mat4 m;
 uniform mat4 v;
 uniform mat4 p;
 
+uniform mat3 normalMatrix;
+
 void main()
 {
     gl_Position = p * v * m * vec4(inPos.xyz, 1.0f);
@@ -19,6 +21,6 @@ void main()
     fragmentPos = vec3(m * vec4(inPos.xyz, 1.0f));
 
     // apply transformations to normal and eliminate scaling problem
-    modelNormal = normalize(mat3(transpose(inverse(m))) * inNorm);
+    modelNormal = normalize(normalMatrix * inNorm);
     texturePos = inTex;
 }

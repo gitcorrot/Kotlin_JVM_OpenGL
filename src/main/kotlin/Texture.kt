@@ -6,10 +6,6 @@ class Texture {
 
     private var textureID: Int = 0
 
-    init {
-        STBImage.stbi_set_flip_vertically_on_load(true)
-    }
-
     fun createTexture(path: String) {
         textureID = glGenTextures()
         glBindTexture(GL_TEXTURE_2D, textureID)
@@ -18,7 +14,7 @@ class Texture {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
-        val img = ResourcesUtils.loadImage(path)
+        val img = ResourcesUtils.loadImage(path, true)
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.width, img.height, 0, GL_RGB, GL_UNSIGNED_BYTE, img.data)
         STBImage.stbi_image_free(img.data)
@@ -31,5 +27,4 @@ class Texture {
     fun unbind() {
         glBindTexture(GL_TEXTURE_2D, 0)
     }
-
 }

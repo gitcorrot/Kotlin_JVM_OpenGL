@@ -50,12 +50,31 @@ class Renderer(
             model.bind()
             model.texture.bind()
 
-            DefaultModel.shaderProgram.setUniformMat4f("m", model.getTransformationMat())
+            val modelTransMat = model.getTransformationMat()
+            DefaultModel.shaderProgram.setUniformMat4f("m", modelTransMat)
+
+            val modelNormalMat = glm.transpose(glm.inverse(modelTransMat.toMat3()))
+            DefaultModel.shaderProgram.setUniformMat3f("normalMatrix", modelNormalMat)
+
             DefaultModel.shaderProgram.setUniformVec3f("cameraPosition", camera.position)
+
             // TODO: implement multiple light sources
             DefaultModel.shaderProgram.setUniformVec3f("lightPosition", world.lightSources[0].tranformation.translation)
 
             glDrawElements(GL_TRIANGLES, model.getIndicesCount(), GL_UNSIGNED_INT, 0)
+        }
+
+        // Draw skybox at the end
+        world.skybox?.let { skybox ->
+            Skybox.shaderProgram.use()
+            skybox.bind()
+            glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.textureID)
+            Skybox.shaderProgram.setUniformMat4f("v", camera.viewMat.toMat3().toMat4())
+            Skybox.shaderProgram.setUniformMat4f("p", this.projectionMat)
+            // TODO: Refactor skybox texture (Texture as open class and derive for multiple types of texture)
+            glDepthFunc(GL_LEQUAL)
+            glDrawArrays(GL_TRIANGLES, 0, 36)
+            glDepthFunc(GL_LESS);
         }
 
         glfwSwapBuffers(window)

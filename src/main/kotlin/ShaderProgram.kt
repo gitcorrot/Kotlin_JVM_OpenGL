@@ -1,3 +1,4 @@
+import glm_.mat3x3.Mat3
 import glm_.mat4x4.Mat4
 import glm_.vec3.Vec3
 import org.lwjgl.opengl.GL33.*
@@ -60,6 +61,13 @@ class ShaderProgram {
         val loc = glGetUniformLocation(programID, name) // TODO: make uniforms map once and use it
         val arr = memAllocFloat(16)
         glUniformMatrix4fv(loc, false, mat to arr)
+        memFree(arr)
+    }
+
+    fun setUniformMat3f(name: String, mat: Mat3) {
+        val loc = glGetUniformLocation(programID, name) // TODO: make uniforms map once and use it
+        val arr = memAllocFloat(9)
+        glUniformMatrix3fv(loc, false, mat to arr)
         memFree(arr)
     }
 

@@ -11,10 +11,12 @@ object ResourcesUtils {
     }
 
     @Throws
-    fun loadImage(path: String): Image {
+    fun loadImage(path: String, flip: Boolean): Image {
         val image: ByteBuffer
         val imageWidth: Int
         val imageHeight: Int
+
+        STBImage.stbi_set_flip_vertically_on_load(flip)
 
         MemoryStack.stackPush().use { stack ->
             val tmpChannels = stack.mallocInt(1)

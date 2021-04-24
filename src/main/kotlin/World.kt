@@ -4,6 +4,8 @@ class World {
     var lightSources: ArrayList<LightSource> = ArrayList()
 //    lateinit var terrain: Terrain
 
+    var skybox: Skybox? = null
+
 
     fun addDefaultModel(model: DefaultModel) {
         defaultModels.add(model)

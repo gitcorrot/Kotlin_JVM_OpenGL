@@ -64,7 +64,7 @@ open class Model(val mesh: Mesh) {
         tranformation.scale.z = z;
     }
 
-    fun getIndicesCount() = this.mesh?.indices?.size ?: 0
+    fun getIndicesCount() = this.mesh.indices.size ?: 0
 
     fun addTexture(path: String) {
         bind()

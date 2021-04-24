@@ -15,7 +15,7 @@ void main()
     vec3 lightDirection = normalize(lightPosition - fragmentPos);
 
     vec3 ambient = vec3(0.3f, 0.3f, 0.3f);
-    vec3 diffuse = max((dot(modelNormal, lightDirection)), 0.0f) * vec3(0.9f,0.9f,0.9f);
+    vec3 diffuse = max((dot(modelNormal, lightDirection)), 0.0f) * vec3(0.5f,0.5f,0.5f);
 
     vec4 lighting = vec4(ambient + diffuse, 1.0f);
 
