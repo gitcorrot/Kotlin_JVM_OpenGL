@@ -28,36 +28,18 @@ class Renderer(
     fun render(world: World, camera: Camera) {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
+
         // 1. Apply all light sources
-        // 1.1 Directional light (single)
-        // 1.2 Ambient light (single)
-        // 1.3 Spot lights (multiple)
-        // 1.4 Point lights (multiple)
-//        for (lightSource in world.modelsNoLight) {
-//
-//            // TODO: implement multiple light sources
-//            ModelDefault.shaderProgram.setUniformVec3f("lightPosition", world.modelsNoLight[0].tranformation.translation)
-//
-//        }
-
-
-//        ModelNoLight.shaderProgram.use()
-//        ModelNoLight.shaderProgram.setUniformMat4f("v", camera.viewMat)
-//        ModelNoLight.shaderProgram.setUniformMat4f("p", this.projectionMat)
-//        for (lightSource in world.modelsNoLight) {
-//            lightSource.bind()
-//            lightSource.texture.bind()
-//
-//            ModelNoLight.shaderProgram.setUniformMat4f("m", lightSource.getTransformationMat())
-//
-//            glDrawElements(GL_TRIANGLES, lightSource.getIndicesCount(), GL_UNSIGNED_INT, 0)
-//        }
+        ModelDefault.shaderProgram.use()
+        for (lightSource in world.lightSources) {
+            lightSource.apply(ModelDefault.shaderProgram)
+        }
 
         // 2. Draw terrain
         // TODO: Implement terrain
 
         // 3. Draw all models
-        ModelDefault.shaderProgram.use()
+        // 3.1 Default models
         ModelDefault.shaderProgram.setUniformMat4f("v", camera.viewMat)
         ModelDefault.shaderProgram.setUniformMat4f("p", this.projectionMat)
         for (model in world.modelsDefault) {
@@ -75,7 +57,20 @@ class Renderer(
             glDrawElements(GL_TRIANGLES, model.getIndicesCount(), GL_UNSIGNED_INT, 0)
         }
 
-        // Draw skybox at the end
+        // 3.2 No light models
+        ModelNoLight.shaderProgram.use()
+        ModelNoLight.shaderProgram.setUniformMat4f("v", camera.viewMat)
+        ModelNoLight.shaderProgram.setUniformMat4f("p", this.projectionMat)
+        for (modelNoLight in world.modelsNoLight) {
+            modelNoLight.bind()
+            modelNoLight.texture.bind()
+
+            ModelNoLight.shaderProgram.setUniformMat4f("m", modelNoLight.getTransformationMat())
+
+            glDrawElements(GL_TRIANGLES, modelNoLight.getIndicesCount(), GL_UNSIGNED_INT, 0)
+        }
+
+        // 4. Draw skybox
         world.skybox?.let { skybox ->
             Skybox.shaderProgram.use()
             skybox.bind()

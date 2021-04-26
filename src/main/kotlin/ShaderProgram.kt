@@ -25,7 +25,7 @@ class ShaderProgram {
         glCompileShader(shaderID)
 
         if (glGetShaderi(shaderID, GL_COMPILE_STATUS) == 0) {
-            throw Exception("model.Vertex Shader Info Log: ${glGetShaderInfoLog(shaderID)}")
+            throw Exception("Vertex Shader Info Log: ${glGetShaderInfoLog(shaderID)}")
         }
 
         when (shaderType) {
@@ -75,6 +75,11 @@ class ShaderProgram {
     fun setUniformVec3f(name: String, vec: Vec3) {
         val loc = glGetUniformLocation(programID, name) // TODO: make uniforms map once and use it
         glUniform3f(loc, vec.x, vec.y, vec.z)
+    }
+
+    fun setUniformFloat(name: String, value: Float) {
+        val loc = glGetUniformLocation(programID, name) // TODO: make uniforms map once and use it
+        glUniform1f(loc, value)
     }
 
     fun use() {
