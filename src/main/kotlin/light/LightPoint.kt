@@ -1,3 +1,6 @@
+package light
+
+import ShaderProgram
 import glm_.vec3.Vec3
 
 class LightPoint(val index: Int) : Light() {
@@ -10,8 +13,6 @@ class LightPoint(val index: Int) : Light() {
     var kq = 0f
 
     override fun apply(shaderProgram: ShaderProgram) {
-        super.apply(shaderProgram)
-
         shaderProgram.setUniformVec3f("pointLights[$index].color", color)
         shaderProgram.setUniformVec3f("pointLights[$index].position", position)
         shaderProgram.setUniformFloat("pointLights[$index].kc", kc)

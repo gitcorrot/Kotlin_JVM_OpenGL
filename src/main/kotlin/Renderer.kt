@@ -46,7 +46,7 @@ class Renderer(
             model.bind()
             model.texture.bind()
 
-            val modelTransMat = model.getTransformationMat()
+            val modelTransMat = model.transformationMat
             ModelDefault.shaderProgram.setUniformMat4f("m", modelTransMat)
 
             val modelNormalMat = glm.transpose(glm.inverse(modelTransMat.toMat3()))
@@ -65,7 +65,7 @@ class Renderer(
             modelNoLight.bind()
             modelNoLight.texture.bind()
 
-            ModelNoLight.shaderProgram.setUniformMat4f("m", modelNoLight.getTransformationMat())
+            ModelNoLight.shaderProgram.setUniformMat4f("m", modelNoLight.transformationMat)
 
             glDrawElements(GL_TRIANGLES, modelNoLight.getIndicesCount(), GL_UNSIGNED_INT, 0)
         }

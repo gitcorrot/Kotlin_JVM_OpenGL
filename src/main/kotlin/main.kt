@@ -3,6 +3,10 @@ import data.Vertex
 import glm_.glm
 import glm_.vec2.Vec2
 import glm_.vec3.Vec3
+import light.LightAmbient
+import light.LightDirectional
+import light.LightPoint
+import light.LightSpot
 import models.ModelDefault
 import models.ModelNoLight
 import org.lwjgl.Version.getVersion
@@ -101,11 +105,11 @@ fun main() {
         pigModel.create()
         pigModel.addTexture(colorPaletteTexture)
         world.addModelDefault(pigModel)
-        pigModel.rotateBy(0f, r.nextFloat() * 360f, 0f)
+        pigModel.rotateBy(r.nextFloat() * 360f, 0f, 0f)
         pigModel.moveTo(r.nextFloat() * 100f - 50f, 0f, r.nextFloat() * 100f - 50f)
     }
 
-    // Light source model
+    // light.Light source model
     val lampMesh = ModelLoader.loadStaticModel("src/main/resources/Models/sphere.obj")
     val lampModel1 = ModelNoLight(lampMesh)
     lampModel1.create()
@@ -122,7 +126,7 @@ fun main() {
     val streetLampModel = ModelDefault(streetLampMesh)
     streetLampModel.create()
     streetLampModel.addTexture(colorPaletteTexture)
-    streetLampModel.scale(4f, 4f, 4f)
+    streetLampModel.scaleTo(4f, 4f, 4f)
     streetLampModel.moveTo(-5f, 20f, -20f)
     world.addModelDefault(streetLampModel)
 
@@ -141,7 +145,7 @@ fun main() {
     val pointLight1 = LightPoint(0)
     pointLight1.color = Vec3(0.5f, 0.5f, 1f)
     pointLight1.intensity = 1f
-    pointLight1.position = lampModel1.tranformation.translation
+    pointLight1.position = lampModel1.transformation.translation
     pointLight1.kc = 1.0f
     pointLight1.kl = 0.05f
     pointLight1.kq = 0.05f
@@ -150,7 +154,7 @@ fun main() {
     val pointLight2 = LightPoint(1)
     pointLight2.color = Vec3(1f, 0.75f, 0f)
     pointLight2.intensity = 1f
-    pointLight2.position = lampModel2.tranformation.translation
+    pointLight2.position = lampModel2.transformation.translation
     pointLight2.kc = 1.0f
     pointLight2.kl = 0.05f
     pointLight2.kq = 0.05f
@@ -159,7 +163,7 @@ fun main() {
     val spotLight = LightSpot(0)
     spotLight.color = Vec3(1f, 1f, 1f)
     spotLight.intensity = 0.3f
-    spotLight.position  = streetLampModel.tranformation.translation
+    spotLight.position  = streetLampModel.transformation.translation
     spotLight.direction = Vec3(0f, -1f, 0f)
     spotLight.outerAngle = glm.cos(glm.radians(45f))
     spotLight.innerAngle = glm.cos(glm.radians(30f))

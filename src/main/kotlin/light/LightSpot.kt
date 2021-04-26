@@ -1,3 +1,6 @@
+package light
+
+import ShaderProgram
 import glm_.vec3.Vec3
 
 class LightSpot(val index: Int) : Light() {
@@ -9,8 +12,6 @@ class LightSpot(val index: Int) : Light() {
 
 
     override fun apply(shaderProgram: ShaderProgram) {
-        super.apply(shaderProgram)
-
         shaderProgram.setUniformVec3f("spotLights[$index].color", color)
         shaderProgram.setUniformVec3f("spotLights[$index].position", position)
         shaderProgram.setUniformVec3f("spotLights[$index].direction", direction)

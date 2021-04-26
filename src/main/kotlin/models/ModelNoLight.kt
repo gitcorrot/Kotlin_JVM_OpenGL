@@ -28,8 +28,6 @@ class ModelNoLight(mesh: Mesh) : Model(mesh) {
     }
 
     override fun create() {
-        super.create()
-
         val verticesBuffer: FloatBuffer = MemoryUtil.memAllocFloat(mesh.vertices.size * 5) // each vertex has 5 floats
         for (v in mesh.vertices) {
             verticesBuffer.put(v.convertToFloatArray())

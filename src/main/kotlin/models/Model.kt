@@ -2,16 +2,15 @@ package models
 
 import TAG
 import Texture
-import glm_.glm
-import glm_.mat4x4.Mat4
-import glm_.vec3.Vec3
 import data.Mesh
 import data.Transformation
+import interfaces.Movable
 import org.lwjgl.opengl.GL33.glBindVertexArray
 import org.lwjgl.opengl.GL33.glDeleteVertexArrays
 import utils.Debug
 
-open class Model(val mesh: Mesh) {
+
+abstract class Model(val mesh: Mesh) : Movable {
 
     var vao: Int = -1
         @Throws
@@ -22,51 +21,10 @@ open class Model(val mesh: Mesh) {
         }
 
     var texture = Texture()
-    val tranformation = Transformation()
-
-    // It has to be overridden!
-    // TODO: move to constructor and override?
-    open fun create() {
-
-    }
+    override val transformation = Transformation()
 
 
-    fun getTransformationMat(): Mat4 = Mat4(1f)
-        .translate(tranformation.translation)
-        .times(tranformation.rotation)
-        .scale_(tranformation.scale)
-
-    fun moveBy(x: Float, y: Float, z: Float) {
-        tranformation.translation.x += x;
-        tranformation.translation.y += y;
-        tranformation.translation.z += z;
-    }
-
-    fun moveTo(x: Float, y: Float, z: Float) {
-        tranformation.translation.x = x;
-        tranformation.translation.y = y;
-        tranformation.translation.z = z;
-    }
-
-    fun rotate(pitch: Float, yaw: Float, roll: Float) {
-        tranformation.rotation = Mat4()
-            .rotate_(glm.radians(pitch), Vec3(1f, 0f, 0f))
-            .rotate_(glm.radians(yaw), Vec3(0f, 1f, 0f))
-            .rotate_(glm.radians(roll), Vec3(0f, 0f, 1f))
-    }
-
-    fun rotateBy(pitch: Float, yaw: Float, roll: Float) {
-        tranformation.rotation
-            .rotate_(glm.radians(pitch), Vec3(1f, 0f, 0f))
-            .rotate_(glm.radians(yaw), Vec3(0f, 1f, 0f))
-            .rotate_(glm.radians(roll), Vec3(0f, 0f, 1f))
-    }
-
-    fun scale(x: Float, y: Float, z: Float) {
-        tranformation.scale.x = x;
-        tranformation.scale.y = y;
-        tranformation.scale.z = z;
-    }
+    abstract fun create()
 
     fun getIndicesCount() = this.mesh.indices.size ?: 0
 

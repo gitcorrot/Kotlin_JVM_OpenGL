@@ -1,3 +1,4 @@
+import light.Light
 import models.ModelDefault
 import models.ModelNoLight
 

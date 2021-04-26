@@ -29,8 +29,6 @@ class ModelDefault(mesh: Mesh) : Model(mesh) {
 
 
     override fun create() {
-        super.create()
-
         val verticesBuffer: FloatBuffer = MemoryUtil.memAllocFloat(mesh.vertices.size * 8) // each vertex has 8 floats
         for (v in mesh.vertices) {
             verticesBuffer.put(v.convertToFloatArray())
