@@ -9,7 +9,7 @@ import utils.ResourcesUtils
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
-class ModelDefault(mesh: Mesh) : Model(mesh) {
+class ModelDefault(override var mesh: Mesh) : Model() {
     companion object {
         val TAG: String = this::class.java.name
         val shaderProgram = ShaderProgram()
@@ -35,7 +35,7 @@ class ModelDefault(mesh: Mesh) : Model(mesh) {
         }
         verticesBuffer.flip() // flip resets position to 0
 
-        val indicesBuffer: IntBuffer = MemoryUtil.memAllocInt(mesh.indices.size)
+        val indicesBuffer: IntBuffer = MemoryUtil.memAllocInt(mesh.indices!!.size)
         indicesBuffer
             .put(mesh.indices)
             .flip()
@@ -69,6 +69,6 @@ class ModelDefault(mesh: Mesh) : Model(mesh) {
         glBindBuffer(GL_ARRAY_BUFFER, 0)
         glBindVertexArray(0)
 
-        Debug.logd(TAG, "models.Model created!")
+        Debug.logd(TAG, "models.ModelDefault created!")
     }
 }

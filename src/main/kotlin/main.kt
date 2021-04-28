@@ -38,7 +38,7 @@ fun createWindow(): Long {
 }
 
 fun main() {
-    Debug.DEBUG_LEVEL = Debug.DebugLevel.INFO
+    Debug.DEBUG_LEVEL = Debug.DebugLevel.DEBUG
 
     val errCallback = glfwSetErrorCallback(GLFWErrorCallback.create { error, description ->
         Debug.loge(TAG, "Error $error: $description")
@@ -84,18 +84,24 @@ fun main() {
 
     val world = World()
 
-    // TODO: replace with terrain
-    val plainVertices: ArrayList<Vertex> = arrayListOf(
-        Vertex(Vec3(-1000f, -0f, -1000), Vec3(0f, 1f, 0.0f), Vec2(0.5f, 0.5f)),
-        Vertex(Vec3(1000, -0f, -1000), Vec3(0f, 1f, 0.0f), Vec2(0.51f, 0.5f)),
-        Vertex(Vec3(1000, -0f, 1000), Vec3(0f, 1f, 0.0f), Vec2(.51f, .51f)),
-        Vertex(Vec3(-1000, -0f, 1000), Vec3(0f, 1f, 0.0f), Vec2(0.5f, .51f)),
-    )
-    val plainIndices = intArrayOf(0, 1, 3, 3, 1, 2)
-    val plain = ModelDefault(Mesh(plainVertices, plainIndices))
-    plain.create()
-    plain.addTexture(colorPaletteTexture)
-    world.addModelDefault(plain)
+    val terrain = Terrain()
+    terrain.generateMesh(10)
+    terrain.create()
+    Debug.logd(TAG, terrain.mesh.toString())
+    world.addTerrain(terrain)
+
+//    // TODO: replace with terrain
+//    val plainVertices: ArrayList<Vertex> = arrayListOf(
+//        Vertex(Vec3(-1000f, -0f, -1000), Vec3(0f, 1f, 0.0f), Vec2(0.5f, 0.5f)),
+//        Vertex(Vec3(1000, -0f, -1000), Vec3(0f, 1f, 0.0f), Vec2(0.51f, 0.5f)),
+//        Vertex(Vec3(1000, -0f, 1000), Vec3(0f, 1f, 0.0f), Vec2(.51f, .51f)),
+//        Vertex(Vec3(-1000, -0f, 1000), Vec3(0f, 1f, 0.0f), Vec2(0.5f, .51f)),
+//    )
+//    val plainIndices = intArrayOf(0, 1, 3, 3, 1, 2)
+//    val plain = ModelDefault(Mesh(plainVertices, plainIndices))
+//    plain.create()
+//    plain.addTexture(colorPaletteTexture)
+//    world.addModelDefault(plain)
 
     // Model from: http://quaternius.com/
     val pigMesh = ModelLoader.loadStaticModel("src/main/resources/Models/PIG.obj")

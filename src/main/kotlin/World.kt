@@ -7,7 +7,7 @@ class World {
     var modelsDefault: ArrayList<ModelDefault> = ArrayList()
     var modelsNoLight: ArrayList<ModelNoLight> = ArrayList()
     val lightSources: ArrayList<Light> = ArrayList()
-//    lateinit var terrain: Terrain
+    val terrains: ArrayList<Terrain> = ArrayList()
 
     var skybox: Skybox? = null
 
@@ -24,9 +24,9 @@ class World {
         lightSources.add(lightSource)
     }
 
-//    fun setTerrain(terrain: Terrain) {
-//        this.terrain = terrain
-//    }
+    fun addTerrain(terrain: Terrain) {
+        terrains.add(terrain)
+    }
 
     fun cleanup() {
         // TODO: implement

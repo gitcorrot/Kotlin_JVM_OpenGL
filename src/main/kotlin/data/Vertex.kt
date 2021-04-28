@@ -8,6 +8,15 @@ data class Vertex(
     val normal: Vec3?,
     val textureCoordinates: Vec2
 ) {
+
+    constructor() : this(Vec3(), Vec3(), Vec2())
+
+//    companion object {
+//        fun empty(): Vertex {
+//            return Vertex(Vec3(), Vec3(), Vec2())
+//        }
+//    }
+
     /**
      * @return if normal is not null returns 8 floats long array, otherwise 5 floats long array
      */

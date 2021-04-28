@@ -10,7 +10,12 @@ import org.lwjgl.opengl.GL33.glDeleteVertexArrays
 import utils.Debug
 
 
-abstract class Model(val mesh: Mesh) : Movable {
+abstract class Model: Movable {
+
+    override val transformation = Transformation()
+
+    abstract var mesh: Mesh
+    abstract fun create()
 
     var vao: Int = -1
         @Throws
@@ -21,12 +26,9 @@ abstract class Model(val mesh: Mesh) : Movable {
         }
 
     var texture = Texture()
-    override val transformation = Transformation()
 
 
-    abstract fun create()
-
-    fun getIndicesCount() = this.mesh.indices.size ?: 0
+    fun getIndicesCount() = this.mesh.indices?.size ?: 0
 
     fun addTexture(path: String) {
         bind()

@@ -3,6 +3,7 @@ import models.ModelDefault
 import models.ModelNoLight
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL33.*
+import utils.Debug
 
 
 class Renderer(
@@ -36,22 +37,30 @@ class Renderer(
         }
 
         // 2. Draw terrain
-        // TODO: Implement terrain
+        ModelDefault.shaderProgram.setUniformMat4f("v", camera.viewMat)
+        ModelDefault.shaderProgram.setUniformMat4f("p", this.projectionMat)
+        for (terrain in world.terrains) {
+            terrain.bind()
+
+            val terrainTransMat = terrain.transformationMat
+            val terrainNormalMat = glm.transpose(glm.inverse(terrainTransMat.toMat3()))
+            ModelDefault.shaderProgram.setUniformMat4f("m", terrainTransMat)
+            ModelDefault.shaderProgram.setUniformMat3f("normalMatrix", terrainNormalMat)
+            ModelDefault.shaderProgram.setUniformVec3f("cameraPosition", camera.position)
+
+            glDrawArrays(GL_TRIANGLES, 0, terrain.mesh.vertices.size)
+        }
 
         // 3. Draw all models
         // 3.1 Default models
-        ModelDefault.shaderProgram.setUniformMat4f("v", camera.viewMat)
-        ModelDefault.shaderProgram.setUniformMat4f("p", this.projectionMat)
         for (model in world.modelsDefault) {
             model.bind()
             model.texture.bind()
 
             val modelTransMat = model.transformationMat
-            ModelDefault.shaderProgram.setUniformMat4f("m", modelTransMat)
-
             val modelNormalMat = glm.transpose(glm.inverse(modelTransMat.toMat3()))
+            ModelDefault.shaderProgram.setUniformMat4f("m", modelTransMat)
             ModelDefault.shaderProgram.setUniformMat3f("normalMatrix", modelNormalMat)
-
             ModelDefault.shaderProgram.setUniformVec3f("cameraPosition", camera.position)
 
             glDrawElements(GL_TRIANGLES, model.getIndicesCount(), GL_UNSIGNED_INT, 0)

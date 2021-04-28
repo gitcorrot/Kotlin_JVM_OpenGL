@@ -2,8 +2,11 @@ package data
 
 data class Mesh(
     val vertices: ArrayList<Vertex>,
-    val indices: IntArray
+    val indices: IntArray?
 ) {
+
+    constructor(vertices: ArrayList<Vertex>) : this(vertices, null)
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -20,5 +23,21 @@ data class Mesh(
         var result = vertices.hashCode()
         result = 31 * result + indices.contentHashCode()
         return result
+    }
+
+    override fun toString(): String {
+        val sb = StringBuilder()
+
+        for (v in vertices) {
+            sb.append("${v.position} | ${v.normal} | ${v.textureCoordinates}\n")
+        }
+
+        indices?.let {
+            for (i in it) {
+                sb.append("$i\n")
+            }
+        }
+
+        return sb.toString()
     }
 }
