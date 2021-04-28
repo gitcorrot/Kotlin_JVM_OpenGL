@@ -143,7 +143,7 @@ fun main() {
     world.addLightSource(directionalLight)
 
     val pointLight1 = LightPoint(0)
-    pointLight1.color = Vec3(0.5f, 0.5f, 1f)
+    pointLight1.color = Vec3(.2f, .2f, 1f)
     pointLight1.intensity = 1f
     pointLight1.position = lampModel1.transformation.translation
     pointLight1.kc = 1.0f
@@ -152,7 +152,7 @@ fun main() {
     world.addLightSource(pointLight1)
 
     val pointLight2 = LightPoint(1)
-    pointLight2.color = Vec3(1f, 0.75f, 0f)
+    pointLight2.color = Vec3(1f, 0.5f, 0f)
     pointLight2.intensity = 1f
     pointLight2.position = lampModel2.transformation.translation
     pointLight2.kc = 1.0f

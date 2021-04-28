@@ -50,7 +50,7 @@ void main()
     float diffuse = max((dot(modelNormal, normalize(-directionalLight.direction))), 0.0f);
     outputColor += directionalLight.color * diffuse;
 
-    // Calculate spot lights
+    // Calculate point lights
     for (int i = 0; i < 2; i++) { // TODO: loop through all array elements
         float distance = length(pointLights[i].position - fragmentPos);
         float attenuation = 1.0f / (pointLights[i].kc +
@@ -65,7 +65,7 @@ void main()
         outputColor += pointLights[i].color * diffuse * attenuation;
     }
 
-    // Calculate point lights
+    // Calculate spot lights
     for (int i = 0; i < 1; i++) { // TODO: loop through all array elements
         vec3 lightDirection = normalize(spotLights[i].position - fragmentPos);
         float theta = dot(spotLights[i].direction, -lightDirection);

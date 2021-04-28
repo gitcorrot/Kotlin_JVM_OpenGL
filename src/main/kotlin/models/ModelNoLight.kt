@@ -14,12 +14,12 @@ class ModelNoLight(mesh: Mesh) : Model(mesh) {
         val TAG: String = this::class.java.name
         val shaderProgram = ShaderProgram()
 
-        private const val vertexShaderPath = "/Shaders/model_no_light_vertex_shader.glsl"
-        private const val fragmentShaderPath = "/Shaders/model_no_light_fragment_shader.glsl"
+        private const val vertexShaderPath = "model_no_light_vertex_shader.glsl"
+        private const val fragmentShaderPath = "model_no_light_fragment_shader.glsl"
 
         init {
-            val vertexShaderString = ResourcesUtils.loadStringFromFile(vertexShaderPath)
-            val fragmentShaderString = ResourcesUtils.loadStringFromFile(fragmentShaderPath)
+            val vertexShaderString = ResourcesUtils.readShader(vertexShaderPath)
+            val fragmentShaderString = ResourcesUtils.readShader(fragmentShaderPath)
             shaderProgram.createShader(vertexShaderString, GL_VERTEX_SHADER)
             shaderProgram.createShader(fragmentShaderString, GL_FRAGMENT_SHADER)
             shaderProgram.link()

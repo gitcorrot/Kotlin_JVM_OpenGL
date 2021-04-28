@@ -3,13 +3,20 @@ package utils
 import data.Image
 import org.lwjgl.stb.STBImage
 import org.lwjgl.system.MemoryStack
+import java.io.File
 import java.nio.ByteBuffer
 
 object ResourcesUtils {
     private val TAG: String = this::class.java.name
 
-    fun loadStringFromFile(path: String): String {
-        return this.javaClass.getResource(path).readText()
+    const val RESOURCES_PATH = "src/main/resources"
+    const val MODELS_PATH = "src/main/resources/Models"
+    const val TEXTURES_PATH = "src/main/resources/Textures"
+    const val SHADERS_PATH = "src/main/resources/Shaders"
+
+    fun readShader(name: String): String {
+        Debug.logd(TAG, "Reading $SHADERS_PATH/$name")
+        return File("$SHADERS_PATH/$name").readText()
     }
 
     @Throws

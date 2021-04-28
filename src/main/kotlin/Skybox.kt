@@ -3,6 +3,7 @@ import org.lwjgl.stb.STBImage
 import org.lwjgl.system.MemoryUtil
 import utils.Debug
 import utils.ResourcesUtils
+import utils.ResourcesUtils.TEXTURES_PATH
 import java.nio.FloatBuffer
 
 private val skyboxVertices = floatArrayOf(
@@ -51,12 +52,12 @@ private val skyboxVertices = floatArrayOf(
 
 // TODO: Implement system for attaching proper textures in constructor/function
 private val texturePaths = arrayOf(
-    "src/main/resources/Textures/right.png",
-    "src/main/resources/Textures/left.png",
-    "src/main/resources/Textures/top.png",
-    "src/main/resources/Textures/bottom.png",
-    "src/main/resources/Textures/front.png",
-    "src/main/resources/Textures/back.png"
+    "$TEXTURES_PATH/right.png",
+    "$TEXTURES_PATH/left.png",
+    "$TEXTURES_PATH/top.png",
+    "$TEXTURES_PATH/bottom.png",
+    "$TEXTURES_PATH/front.png",
+    "$TEXTURES_PATH/back.png"
 )
 
 class Skybox {
@@ -65,8 +66,8 @@ class Skybox {
         val shaderProgram = ShaderProgram()
 
         init {
-            val vertexShaderString = ResourcesUtils.loadStringFromFile("/Shaders/skybox_vertex_shader.glsl")
-            val fragmentShaderString = ResourcesUtils.loadStringFromFile("/Shaders/skybox_fragment_shader.glsl")
+            val vertexShaderString = ResourcesUtils.readShader("skybox_vertex_shader.glsl")
+            val fragmentShaderString = ResourcesUtils.readShader("skybox_fragment_shader.glsl")
             shaderProgram.createShader(vertexShaderString, GL_VERTEX_SHADER)
             shaderProgram.createShader(fragmentShaderString, GL_FRAGMENT_SHADER)
             shaderProgram.link()
