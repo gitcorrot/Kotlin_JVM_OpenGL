@@ -1,9 +1,9 @@
 package utils
 
-import glm_.vec2.Vec2
-import glm_.vec3.Vec3
 import data.Mesh
 import data.Vertex
+import glm_.vec2.Vec2
+import glm_.vec3.Vec3
 import org.lwjgl.assimp.AIMesh
 import org.lwjgl.assimp.Assimp
 
@@ -43,9 +43,9 @@ object ModelLoader {
 
         for (i in 0 until mesh.mNumVertices()) {
             val vertex = if (normalsBuffer != null)
-                Vertex(Vec3(), Vec3(), Vec2())
+                Vertex(Vec3(), Vec3(), null, Vec2())
             else
-                Vertex(Vec3(), null, Vec2())
+                Vertex(Vec3(), null, null, Vec2())
 
             val position = positionsBuffer.get()
             vertex.position.x = position.x()
@@ -61,8 +61,8 @@ object ModelLoader {
             }
 
             val uv = uvsBuffer.get()
-            vertex.textureCoordinates.x = uv.x()
-            vertex.textureCoordinates.y = uv.y()
+            vertex.textureCoordinates!!.x = uv.x()
+            vertex.textureCoordinates!!.y = uv.y()
 
             vertices.add(vertex)
         }

@@ -25,13 +25,12 @@ struct LightSpot {
     float innerAngle;
 };
 
-in vec3 fragmentPos;
-in vec3 modelNormal;
-in vec2 texturePos;
+in vec3 fragmentPos2;
+in vec3 modelNormal2;
+in vec3 color2;
 
 out vec4 fragmentCol;
 
-uniform sampler2D myTexture;
 uniform vec3 cameraPosition; // for specular
 uniform LightDirectional directionalLight;
 uniform LightAmbient ambientLight;
@@ -47,12 +46,12 @@ void main()
     outputColor += ambientLight.color;
 
     // Calculate directional
-    float diffuse = max((dot(modelNormal, normalize(-directionalLight.direction))), 0.0f);
+    float diffuse = max((dot(modelNormal2, normalize(directionalLight.direction))), 0.0f);
     outputColor += directionalLight.color * diffuse;
 
     // Calculate point lights
     for (int i = 0; i < 2; i++) { // TODO: loop through all array elements
-        float distance = length(pointLights[i].position - fragmentPos);
+        float distance = length(pointLights[i].position - fragmentPos2);
         float attenuation = 1.0f / (pointLights[i].kc +
                                    (pointLights[i].kl * distance) +
                                    (pointLights[i].kq * (distance * distance)));
@@ -60,17 +59,17 @@ void main()
         outputColor += pointLights[i].color * attenuation;
 
         // Diffuse
-        vec3 lightDirection = normalize(pointLights[i].position - fragmentPos);
-        diffuse = max((dot(modelNormal, lightDirection)), 0.0f);
+        vec3 lightDirection = normalize(pointLights[i].position - fragmentPos2);
+        diffuse = max((dot(modelNormal2, lightDirection)), 0.0f);
         outputColor += pointLights[i].color * diffuse * attenuation;
     }
 
     // Calculate spot lights
     for (int i = 0; i < 1; i++) { // TODO: loop through all array elements
-        vec3 lightDirection = normalize(spotLights[i].position - fragmentPos);
+        vec3 lightDirection = normalize(spotLights[i].position - fragmentPos2);
         float theta = dot(spotLights[i].direction, -lightDirection);
         if (theta > spotLights[i].outerAngle) {
-            diffuse = max((dot(modelNormal, lightDirection)), 0.0f);
+            diffuse = max((dot(modelNormal2, -lightDirection)), 0.0f);
 
             float gain = 1.0f;
             if (theta > spotLights[i].outerAngle && theta < spotLights[i].innerAngle) {
@@ -81,6 +80,7 @@ void main()
         }
     }
 
-    // fragmentCol = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    fragmentCol = texture(myTexture, texturePos) * vec4(outputColor, 0.0f);
+//     fragmentCol = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    fragmentCol = vec4(color2.xyz, 1.0f) * vec4(outputColor, 0.0f);
+//    fragmentCol = vec4(modelNormal2.xyz, 1.0f);
 }

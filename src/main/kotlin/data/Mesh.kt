@@ -2,7 +2,7 @@ package data
 
 data class Mesh(
     val vertices: ArrayList<Vertex>,
-    val indices: IntArray?
+    var indices: IntArray?
 ) {
 
     constructor(vertices: ArrayList<Vertex>) : this(vertices, null)
@@ -28,13 +28,15 @@ data class Mesh(
     override fun toString(): String {
         val sb = StringBuilder()
 
+        sb.append("Vertices size: ${vertices.size}\n")
         for (v in vertices) {
-            sb.append("${v.position} | ${v.normal} | ${v.textureCoordinates}\n")
+            sb.append("${v.position} | ${v.normal} | ${v.color} | ${v.textureCoordinates}\n")
         }
 
         indices?.let {
-            for (i in it) {
-                sb.append("$i\n")
+            sb.append("Indices size: ${it.size}\n")
+            for (x in it.indices step 3) {
+                sb.append("[${it[x]}, ${it[x+1]}, ${it[x+2]}]\n")
             }
         }
 

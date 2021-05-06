@@ -23,36 +23,40 @@ class Renderer(
 
     init {
         glEnable(GL_DEPTH_TEST)
-        glClearColor(.1f, .8f, .8f, 0.0f)
     }
 
     fun render(world: World, camera: Camera) {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
 
-
-        // 1. Apply all light sources
-        ModelDefault.shaderProgram.use()
+        // 1. Draw terrain
+        Terrain.shaderProgram.use()
+        // 1.1 Apply all light sources
         for (lightSource in world.lightSources) {
-            lightSource.apply(ModelDefault.shaderProgram)
+            lightSource.apply(Terrain.shaderProgram)
         }
-
-        // 2. Draw terrain
-        ModelDefault.shaderProgram.setUniformMat4f("v", camera.viewMat)
-        ModelDefault.shaderProgram.setUniformMat4f("p", this.projectionMat)
+        // 1.2. Draw terrain
+        Terrain.shaderProgram.setUniformMat4f("v", camera.viewMat)
+        Terrain.shaderProgram.setUniformMat4f("p", this.projectionMat)
+//        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         for (terrain in world.terrains) {
             terrain.bind()
 
             val terrainTransMat = terrain.transformationMat
-            val terrainNormalMat = glm.transpose(glm.inverse(terrainTransMat.toMat3()))
-            ModelDefault.shaderProgram.setUniformMat4f("m", terrainTransMat)
-            ModelDefault.shaderProgram.setUniformMat3f("normalMatrix", terrainNormalMat)
-            ModelDefault.shaderProgram.setUniformVec3f("cameraPosition", camera.position)
-
-            glDrawArrays(GL_TRIANGLES, 0, terrain.mesh.vertices.size)
+            Terrain.shaderProgram.setUniformMat4f("m", terrainTransMat)
+            Terrain.shaderProgram.setUniformVec3f("cameraPosition", camera.position)
+            glDrawElements(GL_TRIANGLES, terrain.getIndicesCount(), GL_UNSIGNED_INT, 0)
         }
+//        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 
-        // 3. Draw all models
-        // 3.1 Default models
+        // 2. Draw default models
+        ModelDefault.shaderProgram.use()
+        // 2.1 Apply all light sources
+        for (lightSource in world.lightSources) {
+            lightSource.apply(ModelDefault.shaderProgram)
+        }
+        // 2.2 Draw default models
+        ModelDefault.shaderProgram.setUniformMat4f("v", camera.viewMat)
+        ModelDefault.shaderProgram.setUniformMat4f("p", this.projectionMat)
         for (model in world.modelsDefault) {
             model.bind()
             model.texture.bind()
@@ -66,7 +70,7 @@ class Renderer(
             glDrawElements(GL_TRIANGLES, model.getIndicesCount(), GL_UNSIGNED_INT, 0)
         }
 
-        // 3.2 No light models
+        // 3. Draw no light models
         ModelNoLight.shaderProgram.use()
         ModelNoLight.shaderProgram.setUniformMat4f("v", camera.viewMat)
         ModelNoLight.shaderProgram.setUniformMat4f("p", this.projectionMat)

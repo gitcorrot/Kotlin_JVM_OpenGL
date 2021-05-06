@@ -11,8 +11,8 @@ class ShaderProgram {
 
     private var programID: Int = 0
     private var vertexShaderID: Int = 0
-    private var fragmentShaderID: Int = 0
     private var geometryShaderID: Int = 0
+    private var fragmentShaderID: Int = 0
 
     init {
         programID = glCreateProgram()
