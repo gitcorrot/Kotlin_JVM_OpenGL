@@ -3,7 +3,6 @@ import models.ModelDefault
 import models.ModelNoLight
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL33.*
-import utils.Debug
 
 
 class Renderer(

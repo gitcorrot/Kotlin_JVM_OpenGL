@@ -12,6 +12,7 @@ out vec3 fragmentPos2;
 out vec3 modelNormal2;
 out vec3 color2;
 
+// https://www.khronos.org/opengl/wiki/Calculating_a_Surface_Normal
 vec3 calculateNormal() {
     // U = p2 - p1
     // V = p3 - p1

@@ -46,7 +46,7 @@ void main()
     outputColor += ambientLight.color;
 
     // Calculate directional
-    float diffuse = max((dot(modelNormal2, normalize(directionalLight.direction))), 0.0f);
+    float diffuse = max((dot(modelNormal2, normalize(-directionalLight.direction))), 0.0f);
     outputColor += directionalLight.color * diffuse;
 
     // Calculate point lights
@@ -69,7 +69,7 @@ void main()
         vec3 lightDirection = normalize(spotLights[i].position - fragmentPos2);
         float theta = dot(spotLights[i].direction, -lightDirection);
         if (theta > spotLights[i].outerAngle) {
-            diffuse = max((dot(modelNormal2, -lightDirection)), 0.0f);
+            diffuse = max((dot(modelNormal2, lightDirection)), 0.0f);
 
             float gain = 1.0f;
             if (theta > spotLights[i].outerAngle && theta < spotLights[i].innerAngle) {

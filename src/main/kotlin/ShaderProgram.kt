@@ -84,7 +84,7 @@ class ShaderProgram {
 
     fun use() {
         glUseProgram(programID)
-        Debug.logd(TAG, "Program (id=$programID) activated!")
+//        Debug.logd(TAG, "Program (id=$programID) activated!")
     }
 
     fun cleanup() {

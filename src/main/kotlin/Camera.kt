@@ -9,18 +9,18 @@ interface ICameraInputCallback {
     fun cursorMoved(deltaX: Int, deltaY: Int)
 }
 
-private const val CAMERA_SPEED = 50.0f
+private const val CAMERA_SPEED = 100.0f
 private const val MOUSE_SENSITIVITY = 0.15f
 
 class Camera {
     private val TAG: String = this::class.java.name
 
-    var yaw = -90f
-    var pitch = 0f
+    var yaw = -45f
+    var pitch =-45f
 
     private val globalUp = Vec3(0f, 1f, 0f)
 
-    var position = Vec3(0f, 10f, 25f)
+    var position = Vec3(-25f, 50, 25f)
     private var front = Vec3()
     private var right = Vec3()
     private var up = Vec3()
@@ -70,7 +70,7 @@ class Camera {
                     position.plusAssign(globalUp.times(CAMERA_SPEED * deltaTime))
                 }
             }
-//            utils.Debug.logd(TAG, "CAMERA POSITION: \n$position")
+            utils.Debug.logd(TAG, "CAMERA POSITION: $position")
         }
 
         override fun cursorMoved(deltaX: Int, deltaY: Int) {

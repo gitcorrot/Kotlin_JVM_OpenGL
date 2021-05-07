@@ -88,32 +88,43 @@ fun main() {
     Debug.logd(TAG, terrain.mesh.toString())
     world.addTerrain(terrain)
 
+
+    val cs = ModelLoader.loadStaticModel("src/main/resources/Models/cs.obj")
+    val csModel1 = ModelNoLight(cs)
+    csModel1.create()
+    csModel1.addTexture(colorPaletteTexture)
+    csModel1.moveTo(0f, 0f, 0f)
+    world.addModelNoLight(csModel1)
+
     // Model from: http://quaternius.com/
     val pigMesh = ModelLoader.loadStaticModel("src/main/resources/Models/PIG.obj")
-    val r = Random(1234)
-    for (i in 1..10) {
+    val r = Random(12345)
+    for (i in 1..15) {
         val pigModel = ModelDefault(pigMesh)
         pigModel.create()
         pigModel.addTexture(colorPaletteTexture)
         world.addModelDefault(pigModel)
         pigModel.rotateBy(r.nextFloat() * 360f, 0f, 0f)
-        val randX = r.nextFloat() * 10f * 10f
-        val randZ = r.nextFloat() * 10f * 10f
-        val height = terrain.getHeightAt((randX / 10f).toInt(), (randZ / 10f).toInt())
+        val randX = r.nextFloat() * terrain.size * terrain.tileSize
+        val randZ = -r.nextFloat() * terrain.size * terrain.tileSize
+        val height = terrain.getHeightAt((randX / terrain.tileSize).toInt(), -(randZ / terrain.tileSize).toInt())
         pigModel.moveTo(randX, height, randZ)
     }
 
     // Light source model
     val lampMesh = ModelLoader.loadStaticModel("src/main/resources/Models/sphere.obj")
+
+    // Blue
     val lampModel1 = ModelNoLight(lampMesh)
     lampModel1.create()
     lampModel1.addTexture(colorPaletteTexture)
-    lampModel1.moveTo(90f, 3f, 90f)
+    lampModel1.moveTo(1f, 1f, -1f)
     world.addModelNoLight(lampModel1)
+    // Red
     val lampModel2 = ModelNoLight(lampMesh)
     lampModel2.create()
     lampModel2.addTexture(colorPaletteTexture)
-    lampModel2.moveTo(10f, 10f, 10f)
+    lampModel2.moveTo(99f, 0f, -99f)
     world.addModelNoLight(lampModel2)
 
     val streetLampMesh = ModelLoader.loadStaticModel("src/main/resources/Models/street_lamp.obj")
@@ -121,7 +132,7 @@ fun main() {
     streetLampModel.create()
     streetLampModel.addTexture(colorPaletteTexture)
     streetLampModel.scaleTo(4f, 4f, 4f)
-    streetLampModel.moveTo(50f, terrain.getHeightAt(4, 4) + 20f, 50f)
+    streetLampModel.moveTo(50f, terrain.getHeightAt(5, 5) + 15f, -50f)
     world.addModelDefault(streetLampModel)
 
     // Lighting
@@ -136,6 +147,7 @@ fun main() {
     directionalLight.direction = Vec3(-1.0f, -0.5f, -0.5f)
     world.addLightSource(directionalLight)
 
+    // Blue
     val pointLight1 = LightPoint(0)
     pointLight1.color = Vec3(0f, 0f, 1f)
     pointLight1.intensity = 1.0f
@@ -145,6 +157,7 @@ fun main() {
     pointLight1.kq = 0.0075f
     world.addLightSource(pointLight1)
 
+    // Red
     val pointLight2 = LightPoint(1)
     pointLight2.color = Vec3(1f, 0.0f, 0.0f)
     pointLight2.intensity = 1f
@@ -155,8 +168,9 @@ fun main() {
     world.addLightSource(pointLight2)
 
     val spotLight = LightSpot(0)
-    spotLight.color = Vec3(1f, 1f, 1f)
-    spotLight.intensity = 0.3f
+    spotLight.color = Vec3(0.8f, 0.65f, 1f)
+//    spotLight.color = Vec3(0f, 0f, 1f)
+    spotLight.intensity = 0.75f
     spotLight.position = streetLampModel.transformation.translation
     spotLight.direction = Vec3(0f, -1f, 0f)
     spotLight.outerAngle = glm.cos(glm.radians(45f))

@@ -14,7 +14,7 @@ import java.nio.IntBuffer
 
 class Terrain(
     private val a: Float,
-    private val tileSize: Float
+    val tileSize: Float
 ) : Model() {
     companion object {
         val TAG: String = this::class.java.name
@@ -81,24 +81,25 @@ class Terrain(
         Debug.logd(TAG, "models.Terrain created!")
     }
 
-    fun getHeightAt(x: Int, y: Int): Float {
-        return mesh.vertices[x * size + y].position.y
+    fun getHeightAt(x: Int, z: Int): Float {
+        return this.mesh.vertices[(z * (size + 1)) + x].position.y
     }
 
     fun generateMesh(size: Int) {
         this.size = size
 
-        // Generate heightmap vertices
-        for (i in size downTo 0) {
-            for (j in size downTo 0) {
-                val position = Vec3()
-                position.x = i * tileSize
-                position.y = glm.simplex(Vec2(i * a, j * a)) * tileSize
-                position.z = j * tileSize
+//        // Generate heightmap vertices
+//        for (x in size downTo 0) {
+//            for (z in size downTo 0) {
 
-                val color = Vec3(0.4f, 1.0f, 0.5f)
-                // val color = Vec3(j / size.toFloat(), 0f,  0f)
-                // val color = Vec3(i / size.toFloat(), 0f,  j / size.toFloat())
+        for (z in 0..size) {
+            for (x in 0..size) {
+                val position = Vec3()
+                position.x = x * tileSize
+                position.y = glm.simplex(Vec2(z * a, x * a)) * tileSize
+                position.z = -z * tileSize
+
+                val color = Vec3(0.4f, 0.6f, 0.3f)
 
                 this.mesh.vertices.add(
                     Vertex(
@@ -114,32 +115,41 @@ class Terrain(
         // Calculate indices
         val indices = arrayListOf<Int>()
 
-        //    (i,j)      (i,j+1)
+        //   (z+1,x)     (z+1,x+1)
         //      |------- -|
         //      |      -  |
         //      |    -    |
         //      |  -      |
         //      |- ------ |
-        //   (i+1,j)    (i+1,j+1)
-        for (i in 0..size - 1) {
-            for (j in 0..size - 1) {
-                val lt = i * (size + 1) + j
-                val rt = i * (size + 1) + j + 1
-                val lb = (i + 1) * (size + 1) + j
-                val rb = (i + 1) * (size + 1) + j + 1
+        //   (z,x)      (z,x+1)
+        for (z in 0 until size) {
+            for (x in 0 until size) {
+                val lb = z * (size + 1) + x
+                val rb = z * (size + 1) + x + 1
+                val lt = (z + 1) * (size + 1) + x
+                val rt = (z + 1) * (size + 1) + x + 1
 
                 // triangle 1 -> lb, rt, lt
+                indices.add(lt)
                 indices.add(lb)
                 indices.add(rt)
-                indices.add(lt)
 
                 // triangle 2 -> lb, rb, rt
+                indices.add(rb)
                 indices.add(rt)
                 indices.add(lb)
-                indices.add(rb)
+//                indices.add(rt)
+//                indices.add(lb)
+//                indices.add(rb)
             }
         }
         this.mesh.indices = indices.toIntArray()
+
+
+//        val x = 0
+//        val z = 10
+//        Debug.logd(TAG, this.mesh.vertices[(z * (size + 1)) + x].toString())
+//        this.mesh.vertices[(z * (size + 1)) + x].color!!.plusAssign(0f, 1f, 0f)
     }
 
 //    fun generateMesh(size: Int) {
