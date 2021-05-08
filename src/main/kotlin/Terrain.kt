@@ -88,10 +88,6 @@ class Terrain(
     fun generateMesh(size: Int) {
         this.size = size
 
-//        // Generate heightmap vertices
-//        for (x in size downTo 0) {
-//            for (z in size downTo 0) {
-
         for (z in 0..size) {
             for (x in 0..size) {
                 val position = Vec3()
@@ -138,92 +134,8 @@ class Terrain(
                 indices.add(rb)
                 indices.add(rt)
                 indices.add(lb)
-//                indices.add(rt)
-//                indices.add(lb)
-//                indices.add(rb)
             }
         }
         this.mesh.indices = indices.toIntArray()
-
-
-//        val x = 0
-//        val z = 10
-//        Debug.logd(TAG, this.mesh.vertices[(z * (size + 1)) + x].toString())
-//        this.mesh.vertices[(z * (size + 1)) + x].color!!.plusAssign(0f, 1f, 0f)
-    }
-
-//    fun generateMesh(size: Int) {
-//        this.size = size
-//
-//        //    (i,j)      (i,j+1)
-//        //     lt         rt
-//        //      |------- -|
-//        //      |      -  |
-//        //      |    -    |
-//        //      |  -      |
-//        //      |- ------ |
-//        //     lb        rb
-//        //   (i+1,j)    (i+1,j+1)
-//
-//        for (i in 0 until size) {
-//            for (j in 0 until size) {
-//
-//                val lt = Vertex(position = Vec3(), normal = Vec3(), color = Vec3(), null)
-//                val rt = Vertex(position = Vec3(), normal = Vec3(), color = Vec3(), null)
-//                val lb = Vertex(position = Vec3(), normal = Vec3(), color = Vec3(), null)
-//                val rb = Vertex(position = Vec3(), normal = Vec3(), color = Vec3(), null)
-//
-//                lt.position.x = j * tileSize
-//                rt.position.x = (j + 1) * tileSize
-//                lb.position.x = j * tileSize
-//                rb.position.x = (j + 1) * tileSize
-//
-//                lt.position.y = glm.simplex(Vec2(i * a, j * a)) * tileSize
-//                rt.position.y = glm.simplex(Vec2(i * a, (j + 1) * a)) * tileSize
-//                lb.position.y = glm.simplex(Vec2((i + 1) * a, j * a)) * tileSize
-//                rb.position.y = glm.simplex(Vec2((i + 1) * a, (j + 1) * a)) * tileSize
-//
-//                lt.position.z = i * tileSize
-//                rt.position.z = i * tileSize
-//                lb.position.z = (i + 1) * tileSize
-//                rb.position.z = (i + 1) * tileSize
-//
-//                lt.color = Vec3(0f, 0f, i / size.toFloat())
-//                rt.color = Vec3(0f, 0f, i / size.toFloat())
-//                lb.color = Vec3(0f, 0f, i / size.toFloat())
-//                rb.color = Vec3(0f, 0f, i / size.toFloat())
-//
-////                lt.textureCoordinates.x = j.toFloat()
-////                rt.textureCoordinates.x = (j + 1).toFloat()
-////                lb.textureCoordinates.x = j.toFloat()
-////                rb.textureCoordinates.x = (j + 1).toFloat()
-////
-////                lt.textureCoordinates.y = i.toFloat()
-////                rt.textureCoordinates.y = i.toFloat()
-////                lb.textureCoordinates.y = (i + 1).toFloat()
-////                rb.textureCoordinates.y = (i + 1).toFloat()
-//
-//                // Normal 1 -> lb, rt, lt
-//                val n1 = calculateNormal(lb.position, rt.position, lt.position)
-//                // Normal 2 -> lb, rb, rt
-//                val n2 = calculateNormal(lb.position, rb.position, rt.position)
-//
-//                // Triangle 1
-//                this.mesh.vertices.add(Vertex(lb.position, n1, lb.color, null))
-//                this.mesh.vertices.add(Vertex(rt.position, n1, rt.color, null))
-//                this.mesh.vertices.add(Vertex(lt.position, n1, lt.color, null))
-//                // Triangle 2, null
-//                this.mesh.vertices.add(Vertex(lb.position, n2, lb.color, null))
-//                this.mesh.vertices.add(Vertex(rb.position, n2, rb.color, null))
-//                this.mesh.vertices.add(Vertex(rt.position, n2, rt.color, null))
-//            }
-//        }
-//    }
-
-    private fun calculateNormal(v1: Vec3, v2: Vec3, v3: Vec3): Vec3 {
-        val nv1 = v2.minus(v1)
-        val nv2 = v3.minus(v1)
-
-        return glm.normalize(nv1.cross(nv2))
     }
 }

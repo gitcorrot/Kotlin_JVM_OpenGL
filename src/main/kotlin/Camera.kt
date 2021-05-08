@@ -9,7 +9,7 @@ interface ICameraInputCallback {
     fun cursorMoved(deltaX: Int, deltaY: Int)
 }
 
-private const val CAMERA_SPEED = 100.0f
+private const val CAMERA_SPEED = 20.0f
 private const val MOUSE_SENSITIVITY = 0.15f
 
 class Camera {
@@ -70,7 +70,7 @@ class Camera {
                     position.plusAssign(globalUp.times(CAMERA_SPEED * deltaTime))
                 }
             }
-            utils.Debug.logd(TAG, "CAMERA POSITION: $position")
+//            utils.Debug.logd(TAG, "CAMERA POSITION: $position")
         }
 
         override fun cursorMoved(deltaX: Int, deltaY: Int) {
@@ -80,7 +80,7 @@ class Camera {
             if (pitch > 89f) pitch = 89f
             if (pitch < -89f) pitch = -89f
 
-//            utils.Debug.logd(TAG, "Yaw: $yaw, Pitch: $pitch")
+            utils.Debug.logd(TAG, "Yaw: $yaw, Pitch: $pitch")
 
             updateVectors()
         }

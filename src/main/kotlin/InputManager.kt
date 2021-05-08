@@ -7,7 +7,10 @@ class InputManager(
 ) {
     private val TAG: String = this::class.java.name
     private val cameraKeys =
-        arrayOf(GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_KEY_LEFT_SHIFT, GLFW_KEY_SPACE)
+        arrayOf(
+            GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D,
+            GLFW_KEY_LEFT_SHIFT, GLFW_KEY_SPACE
+        )
 
     private var cameraCallback: ICameraInputCallback? = null
     private var keyCb: GLFWKeyCallback? = null

@@ -45,14 +45,20 @@ interface Movable {
     }
 
     fun scaleBy(x: Float, y: Float, z: Float) {
-        transformation.scale.x += x;
-        transformation.scale.y += y;
-        transformation.scale.z += z;
+        transformation.scale.x += x
+        transformation.scale.y += y
+        transformation.scale.z += z
     }
 
     fun scaleTo(x: Float, y: Float, z: Float) {
-        transformation.scale.x = x;
-        transformation.scale.y = y;
-        transformation.scale.z = z;
+        transformation.scale.x = x
+        transformation.scale.y = y
+        transformation.scale.z = z
+    }
+
+    fun scaleTo(scale: Float) {
+        transformation.scale.x = scale
+        transformation.scale.y = scale
+        transformation.scale.z = scale
     }
 }

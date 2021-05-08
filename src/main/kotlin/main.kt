@@ -82,13 +82,15 @@ fun main() {
     val world = World()
 
     Debug.logd(TAG, "TERRAIN")
-    val terrain = Terrain(0.15f, 10f)
+    val terrain = Terrain(0.05f, 2.0f)
     terrain.generateMesh(10) // 3x3=9 squares -> 3x3x2=18 triangles -> 4x4=16 vertices -> 3x3x3x2=54 indices
     terrain.create()
-    Debug.logd(TAG, terrain.mesh.toString())
+//    Debug.logd(TAG, terrain.mesh.toString())
     world.addTerrain(terrain)
 
 
+    // Coordinate system origin helpfull model
+    Debug.logd(TAG, "CS")
     val cs = ModelLoader.loadStaticModel("src/main/resources/Models/cs.obj")
     val csModel1 = ModelNoLight(cs)
     csModel1.create()
@@ -96,15 +98,26 @@ fun main() {
     csModel1.moveTo(0f, 0f, 0f)
     world.addModelNoLight(csModel1)
 
+    // Tree
+    Debug.logd(TAG, "TREE")
+    val treeMesh = ModelLoader.loadStaticModel("src/main/resources/Models/tree1.obj")
+    val treeModel = ModelDefault(treeMesh)
+    treeModel.create()
+    treeModel.addTexture(colorPaletteTexture)
+    treeModel.moveTo(4f, terrain.getHeightAt(2, 2), -4f)
+    world.addModelDefault(treeModel)
+
     // Model from: http://quaternius.com/
     val pigMesh = ModelLoader.loadStaticModel("src/main/resources/Models/PIG.obj")
     val r = Random(12345)
-    for (i in 1..15) {
+    for (i in 1..5) {
         val pigModel = ModelDefault(pigMesh)
         pigModel.create()
         pigModel.addTexture(colorPaletteTexture)
         world.addModelDefault(pigModel)
         pigModel.rotateBy(r.nextFloat() * 360f, 0f, 0f)
+        val scale = r.nextInt(5, 10) / 10f
+        pigModel.scaleTo(scale)
         val randX = r.nextFloat() * terrain.size * terrain.tileSize
         val randZ = -r.nextFloat() * terrain.size * terrain.tileSize
         val height = terrain.getHeightAt((randX / terrain.tileSize).toInt(), -(randZ / terrain.tileSize).toInt())
@@ -114,25 +127,24 @@ fun main() {
     // Light source model
     val lampMesh = ModelLoader.loadStaticModel("src/main/resources/Models/sphere.obj")
 
-    // Blue
+    // Yellow
     val lampModel1 = ModelNoLight(lampMesh)
     lampModel1.create()
     lampModel1.addTexture(colorPaletteTexture)
-    lampModel1.moveTo(1f, 1f, -1f)
+    lampModel1.moveTo(1f, 3f, -1f)
     world.addModelNoLight(lampModel1)
     // Red
     val lampModel2 = ModelNoLight(lampMesh)
     lampModel2.create()
     lampModel2.addTexture(colorPaletteTexture)
-    lampModel2.moveTo(99f, 0f, -99f)
+    lampModel2.moveTo(19f, 3f, -19f)
     world.addModelNoLight(lampModel2)
 
     val streetLampMesh = ModelLoader.loadStaticModel("src/main/resources/Models/street_lamp.obj")
     val streetLampModel = ModelDefault(streetLampMesh)
     streetLampModel.create()
     streetLampModel.addTexture(colorPaletteTexture)
-    streetLampModel.scaleTo(4f, 4f, 4f)
-    streetLampModel.moveTo(50f, terrain.getHeightAt(5, 5) + 15f, -50f)
+    streetLampModel.moveTo(10f, terrain.getHeightAt(5, 5), -10f)
     world.addModelDefault(streetLampModel)
 
     // Lighting
@@ -147,14 +159,14 @@ fun main() {
     directionalLight.direction = Vec3(-1.0f, -0.5f, -0.5f)
     world.addLightSource(directionalLight)
 
-    // Blue
+    // Yellow
     val pointLight1 = LightPoint(0)
-    pointLight1.color = Vec3(0f, 0f, 1f)
+    pointLight1.color = Vec3(1f, 1f, 0f)
     pointLight1.intensity = 1.0f
     pointLight1.position = lampModel1.transformation.translation
     pointLight1.kc = 1.0f
-    pointLight1.kl = 0.015f
-    pointLight1.kq = 0.0075f
+    pointLight1.kl = 0.22f
+    pointLight1.kq = 0.20f
     world.addLightSource(pointLight1)
 
     // Red
@@ -163,18 +175,21 @@ fun main() {
     pointLight2.intensity = 1f
     pointLight2.position = lampModel2.transformation.translation
     pointLight2.kc = 1.0f
-    pointLight2.kl = 0.015f
-    pointLight2.kq = 0.0075f
+    pointLight2.kl = 0.22f
+    pointLight2.kq = 0.20f
     world.addLightSource(pointLight2)
 
     val spotLight = LightSpot(0)
     spotLight.color = Vec3(0.8f, 0.65f, 1f)
-//    spotLight.color = Vec3(0f, 0f, 1f)
-    spotLight.intensity = 0.75f
-    spotLight.position = streetLampModel.transformation.translation
+    spotLight.intensity = 0.5f
+    spotLight.position = Vec3(
+        streetLampModel.transformation.translation.x,
+        streetLampModel.transformation.translation.y + 2.75f,
+        streetLampModel.transformation.translation.z + 1.4f
+    )
     spotLight.direction = Vec3(0f, -1f, 0f)
-    spotLight.outerAngle = glm.cos(glm.radians(45f))
-    spotLight.innerAngle = glm.cos(glm.radians(30f))
+    spotLight.outerAngle = glm.cos(glm.radians(50f))
+    spotLight.innerAngle = glm.cos(glm.radians(20f))
     world.addLightSource(spotLight)
 
 
