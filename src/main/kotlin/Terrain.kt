@@ -1,5 +1,4 @@
 import data.Mesh
-import data.Transformation
 import data.Vertex
 import glm_.glm
 import glm_.vec2.Vec2
@@ -39,7 +38,6 @@ class Terrain(
     var size: Int = 0
 
     override var mesh: Mesh = Mesh(ArrayList())
-    override val transformation = Transformation()
 
     override fun create() {
         val verticesBuffer: FloatBuffer = MemoryUtil.memAllocFloat(mesh.vertices.size * 9) // each vertex has 9 floats

@@ -160,33 +160,33 @@ fun main() {
     world.addLightSource(directionalLight)
 
     // Yellow
-    val pointLight1 = LightPoint(0)
+    val pointLight1 = LightPoint(0, lampModel1.translation)
     pointLight1.color = Vec3(1f, 1f, 0f)
     pointLight1.intensity = 1.0f
-    pointLight1.position = lampModel1.transformation.translation
     pointLight1.kc = 1.0f
     pointLight1.kl = 0.22f
     pointLight1.kq = 0.20f
     world.addLightSource(pointLight1)
 
     // Red
-    val pointLight2 = LightPoint(1)
+    val pointLight2 = LightPoint(1, lampModel2.translation)
     pointLight2.color = Vec3(1f, 0.0f, 0.0f)
     pointLight2.intensity = 1f
-    pointLight2.position = lampModel2.transformation.translation
     pointLight2.kc = 1.0f
     pointLight2.kl = 0.22f
     pointLight2.kq = 0.20f
     world.addLightSource(pointLight2)
 
-    val spotLight = LightSpot(0)
+    val spotLight = LightSpot(
+        index = 0,
+        translation = Vec3(
+            streetLampModel.translation.x,
+            streetLampModel.translation.y + 2.75f,
+            streetLampModel.translation.z + 1.4f
+        )
+    )
     spotLight.color = Vec3(0.8f, 0.65f, 1f)
     spotLight.intensity = 0.5f
-    spotLight.position = Vec3(
-        streetLampModel.transformation.translation.x,
-        streetLampModel.transformation.translation.y + 2.75f,
-        streetLampModel.transformation.translation.z + 1.4f
-    )
     spotLight.direction = Vec3(0f, -1f, 0f)
     spotLight.outerAngle = glm.cos(glm.radians(50f))
     spotLight.innerAngle = glm.cos(glm.radians(20f))

@@ -3,16 +3,29 @@ package models
 import TAG
 import Texture
 import data.Mesh
-import data.Transformation
+import glm_.mat4x4.Mat4
+import glm_.vec3.Vec3
 import interfaces.Movable
+import interfaces.Rotatable
+import interfaces.Scalable
 import org.lwjgl.opengl.GL33.glBindVertexArray
 import org.lwjgl.opengl.GL33.glDeleteVertexArrays
 import utils.Debug
 
 
-abstract class Model: Movable {
+abstract class Model() : Movable, Rotatable, Scalable {
 
-    override val transformation = Transformation()
+    override val scale: Vec3 = Vec3(1f)
+    override val translation: Vec3 = Vec3(0f)
+    override var rotation: Mat4 = Mat4(1f)
+
+    val transformationMat: Mat4
+        get() {
+            return Mat4(1f)
+                .translate(translation)
+                .times(rotation)
+                .scale_(scale)
+        }
 
     abstract var mesh: Mesh
     abstract fun create()
