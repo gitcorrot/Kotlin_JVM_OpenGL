@@ -9,14 +9,18 @@ interface ICameraInputCallback {
     fun cursorMoved(deltaX: Int, deltaY: Int)
 }
 
-private const val CAMERA_SPEED = 20.0f
 private const val MOUSE_SENSITIVITY = 0.15f
+private const val CAMERA_SPEED_CHANGE_STEP = 0.25f
+private const val CAMERA_SPEED_MAX = 50f
+private const val CAMERA_SPEED_MIN = 1f
 
 class Camera {
     private val TAG: String = this::class.java.name
 
     var yaw = -45f
-    var pitch =-45f
+    var pitch = -45f
+
+    private var cameraSpeed = 20.0f
 
     private val globalUp = Vec3(0f, 1f, 0f)
 
@@ -51,23 +55,39 @@ class Camera {
     val iCameraInput = object : ICameraInputCallback {
         override fun keyPressed(key: Int, deltaTime: Double) {
             when (key) {
+
+                // W, S, A, D - moving in x and z axis
                 GLFW_KEY_W -> {
-                    position.plusAssign(front.times(CAMERA_SPEED * deltaTime))
+                    position.plusAssign(front.times(cameraSpeed * deltaTime))
                 }
                 GLFW_KEY_S -> {
-                    position.minusAssign(front.times(CAMERA_SPEED * deltaTime))
+                    position.minusAssign(front.times(cameraSpeed * deltaTime))
                 }
                 GLFW_KEY_A -> {
-                    position.minusAssign(right.times(CAMERA_SPEED * deltaTime))
+                    position.minusAssign(right.times(cameraSpeed * deltaTime))
                 }
                 GLFW_KEY_D -> {
-                    position.plusAssign(right.times(CAMERA_SPEED * deltaTime))
+                    position.plusAssign(right.times(cameraSpeed * deltaTime))
                 }
+
+                // Shift, Space - moving in y axis
                 GLFW_KEY_LEFT_SHIFT -> {
-                    position.minusAssign(globalUp.times(CAMERA_SPEED * deltaTime))
+                    position.minusAssign(globalUp.times(cameraSpeed * deltaTime))
                 }
                 GLFW_KEY_SPACE -> {
-                    position.plusAssign(globalUp.times(CAMERA_SPEED * deltaTime))
+                    position.plusAssign(globalUp.times(cameraSpeed * deltaTime))
+                }
+
+                // Q, E - decreasing/increasing camera speed
+                GLFW_KEY_Q -> {
+                    if (cameraSpeed > CAMERA_SPEED_MIN) {
+                        cameraSpeed -= CAMERA_SPEED_CHANGE_STEP
+                    }
+                }
+                GLFW_KEY_E -> {
+                    if (cameraSpeed < CAMERA_SPEED_MAX) {
+                        cameraSpeed += CAMERA_SPEED_CHANGE_STEP
+                    }
                 }
             }
 //            utils.Debug.logd(TAG, "CAMERA POSITION: $position")

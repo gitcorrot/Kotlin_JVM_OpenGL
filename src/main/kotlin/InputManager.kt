@@ -9,7 +9,8 @@ class InputManager(
     private val cameraKeys =
         arrayOf(
             GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D,
-            GLFW_KEY_LEFT_SHIFT, GLFW_KEY_SPACE
+            GLFW_KEY_LEFT_SHIFT, GLFW_KEY_SPACE,
+            GLFW_KEY_Q, GLFW_KEY_E
         )
 
     private var cameraCallback: ICameraInputCallback? = null
@@ -33,7 +34,7 @@ class InputManager(
     }
 
     private fun keyCallback(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
-        if (key == GLFW_KEY_Q && action == GLFW_PRESS) {
+        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
             glfwSetWindowShouldClose(window, true)
         }
     }
