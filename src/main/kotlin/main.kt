@@ -57,7 +57,7 @@ fun main() {
             (it.width() - WINDOW_WIDTH) / 2,
             (it.height() - WINDOW_HEIGHT) / 2
         )
-        Debug.logd(TAG, "${it.width()}X${it.height()}")
+        Debug.logd(TAG, "Detected display resolution ${it.width()}x${it.height()}")
     }
 
     glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE)
@@ -88,9 +88,8 @@ fun main() {
 //    Debug.logd(TAG, terrain.mesh.toString())
     world.addTerrain(terrain)
 
-
-    // Coordinate system origin helpfull model
-    Debug.logd(TAG, "CS")
+    // Coordinate system origin helpful model
+    Debug.logd(TAG, "COORDINATE SYSTEM")
     val cs = ModelLoader.loadStaticModel("src/main/resources/Models/cs.obj")
     val csModel1 = ModelNoLight(cs)
     csModel1.create()
@@ -104,11 +103,11 @@ fun main() {
     val treeModel = ModelDefault(treeMesh)
     treeModel.create()
     treeModel.addTexture(colorPaletteTexture)
-    treeModel.moveTo(4f, terrain.getHeightAt(2, 2), -4f)
+    treeModel.moveTo(10f, terrain.getHeightAt(10, -6), -6f)
     world.addModelDefault(treeModel)
 
     // Model from: http://quaternius.com/
-    val pigMesh = ModelLoader.loadStaticModel("src/main/resources/Models/Pig.obj")
+    val pigMesh = ModelLoader.loadStaticModel("src/main/resources/Models/pig.obj")
     val r = Random(12345)
     for (i in 1..5) {
         val pigModel = ModelDefault(pigMesh)
@@ -120,7 +119,7 @@ fun main() {
         pigModel.scaleTo(scale)
         val randX = r.nextFloat() * terrain.size * terrain.tileSize
         val randZ = -r.nextFloat() * terrain.size * terrain.tileSize
-        val height = terrain.getHeightAt((randX / terrain.tileSize).toInt(), -(randZ / terrain.tileSize).toInt())
+        val height = terrain.getHeightAt(randX.toInt(), randZ.toInt())
         pigModel.moveTo(randX, height, randZ)
     }
 
@@ -131,20 +130,20 @@ fun main() {
     val lampModel1 = ModelNoLight(lampMesh)
     lampModel1.create()
     lampModel1.addTexture(colorPaletteTexture)
-    lampModel1.moveTo(1f, 3f, -1f)
+    lampModel1.moveTo(1f, 5f, -1f)
     world.addModelNoLight(lampModel1)
     // Red
     val lampModel2 = ModelNoLight(lampMesh)
     lampModel2.create()
     lampModel2.addTexture(colorPaletteTexture)
-    lampModel2.moveTo(19f, 3f, -19f)
+    lampModel2.moveTo(19f, 2f, -19f)
     world.addModelNoLight(lampModel2)
 
     val streetLampMesh = ModelLoader.loadStaticModel("src/main/resources/Models/street_lamp.obj")
     val streetLampModel = ModelDefault(streetLampMesh)
     streetLampModel.create()
     streetLampModel.addTexture(colorPaletteTexture)
-    streetLampModel.moveTo(10f, terrain.getHeightAt(5, 5), -10f)
+    streetLampModel.moveTo(10f, terrain.getHeightAt(10, -10), -10f)
     world.addModelDefault(streetLampModel)
 
     // Lighting

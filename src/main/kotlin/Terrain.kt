@@ -79,8 +79,12 @@ class Terrain(
         Debug.logd(TAG, "models.Terrain created!")
     }
 
+    /**
+     * Returns terrain height at given world coordinates (X, Z)
+     */
     fun getHeightAt(x: Int, z: Int): Float {
-        return this.mesh.vertices[(z * (size + 1)) + x].position.y
+        return this.mesh.vertices[((-z / tileSize.toInt()) * (size + 1)) + (x / tileSize.toInt())].position.y
+//        return this.mesh.vertices[(z * (size + 1)) + x].position.y
     }
 
     fun generateMesh(size: Int) {
