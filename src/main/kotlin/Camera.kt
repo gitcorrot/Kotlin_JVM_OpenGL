@@ -80,7 +80,7 @@ class Camera {
             if (pitch > 89f) pitch = 89f
             if (pitch < -89f) pitch = -89f
 
-            utils.Debug.logd(TAG, "Yaw: $yaw, Pitch: $pitch")
+//            utils.Debug.logd(TAG, "Yaw: $yaw, Pitch: $pitch")
 
             updateVectors()
         }
