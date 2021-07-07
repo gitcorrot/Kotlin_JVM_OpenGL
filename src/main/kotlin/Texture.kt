@@ -17,7 +17,7 @@ class Texture {
 
         val img = ResourcesUtils.loadImage(path, true)
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.width, img.height, 0, GL_RGB, GL_UNSIGNED_BYTE, img.data)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, img.width, img.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data)
         STBImage.stbi_image_free(img.data)
     }
 

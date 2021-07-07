@@ -93,7 +93,7 @@ class Terrain(
                 position.y = glm.simplex(Vec2(z * a, x * a)) * tileSize
                 position.z = -z * tileSize
 
-                val color = Vec3(0.4f, 0.6f, 0.3f)
+                val color = Vec3(0.4f, 0.6f, 0.3f) // TODO
 
                 this.mesh.vertices.add(
                     Vertex(

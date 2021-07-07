@@ -108,7 +108,7 @@ fun main() {
     world.addModelDefault(treeModel)
 
     // Model from: http://quaternius.com/
-    val pigMesh = ModelLoader.loadStaticModel("src/main/resources/Models/PIG.obj")
+    val pigMesh = ModelLoader.loadStaticModel("src/main/resources/Models/Pig.obj")
     val r = Random(12345)
     for (i in 1..5) {
         val pigModel = ModelDefault(pigMesh)

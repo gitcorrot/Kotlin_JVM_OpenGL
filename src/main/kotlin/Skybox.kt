@@ -52,12 +52,12 @@ private val skyboxVertices = floatArrayOf(
 
 // TODO: Implement system for attaching proper textures in constructor/function
 private val texturePaths = arrayOf(
-    "$TEXTURES_PATH/right.png",
-    "$TEXTURES_PATH/left.png",
-    "$TEXTURES_PATH/top.png",
-    "$TEXTURES_PATH/bottom.png",
-    "$TEXTURES_PATH/front.png",
-    "$TEXTURES_PATH/back.png"
+    "$TEXTURES_PATH/skybox/right.png",
+    "$TEXTURES_PATH/skybox/left.png",
+    "$TEXTURES_PATH/skybox/top.png",
+    "$TEXTURES_PATH/skybox/bottom.png",
+    "$TEXTURES_PATH/skybox/front.png",
+    "$TEXTURES_PATH/skybox/back.png"
 )
 
 class Skybox {
