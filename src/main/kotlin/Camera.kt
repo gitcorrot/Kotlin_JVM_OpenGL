@@ -1,5 +1,6 @@
 import glm_.glm
 import glm_.mat4x4.Mat4
+import glm_.quat.Quat
 import glm_.vec3.Vec3
 import org.lwjgl.glfw.GLFW.*
 
@@ -10,46 +11,24 @@ interface ICameraInputCallback {
 }
 
 private const val MOUSE_SENSITIVITY = 0.15f
-private const val CAMERA_SPEED_CHANGE_STEP = 0.25f
+private const val CAMERA_SPEED_CHANGE_STEP = 25f
 private const val CAMERA_SPEED_MAX = 50f
 private const val CAMERA_SPEED_MIN = 1f
 
 class Camera {
     private val TAG: String = this::class.java.name
 
-    var yaw = -45f
-    var pitch = -45f
+    val position = Vec3(-25f, 50, 25f)
+    var yaw = 45f
+    var pitch = 45f
+    var orientation = Quat(Vec3(glm.radians(yaw), glm.radians(pitch), 0f)).normalize()
 
     private var cameraSpeed = 20.0f
 
-    private val globalUp = Vec3(0f, 1f, 0f)
-
-    var position = Vec3(-25f, 50, 25f)
-    private var front = Vec3()
-    private var right = Vec3()
-    private var up = Vec3()
-
-    private fun updateVectors() {
-        front.x = glm.cos(glm.radians(yaw)) * glm.cos(glm.radians(pitch))
-        front.y = glm.sin(glm.radians(pitch))
-        front.z = glm.sin(glm.radians(yaw)) * glm.cos(glm.radians(pitch))
-        front.normalizeAssign()
-
-        right = glm.normalize(glm.cross(front, globalUp))
-        up = glm.normalize(glm.cross(right, front))
-    }
-
-    init {
-        updateVectors()
-    }
-
     val viewMat: Mat4
         get() {
-            return glm.lookAt(
-                position,               // eye -> camera position,
-                position.plus(front),   // center -> position we are looking at -> front view of camera
-                globalUp                // up -> (0, 1, 0) -> world upright
-            )
+            val translation = Mat4(1f).translate_(-position)
+            return orientation.toMat4().times(translation)
         }
 
     val iCameraInput = object : ICameraInputCallback {
@@ -58,51 +37,61 @@ class Camera {
 
                 // W, S, A, D - moving in x and z axis
                 GLFW_KEY_W -> {
-                    position.plusAssign(front.times(cameraSpeed * deltaTime))
+                    val dPos = orientation.conjugate().times(Vec3(0f, 0f, -1f)) * cameraSpeed * deltaTime
+                    position.plusAssign(dPos)
                 }
                 GLFW_KEY_S -> {
-                    position.minusAssign(front.times(cameraSpeed * deltaTime))
+                    val dPos = orientation.conjugate().times(Vec3(0f, 0f, 1f)) * cameraSpeed * deltaTime
+                    position.plusAssign(dPos)
                 }
                 GLFW_KEY_A -> {
-                    position.minusAssign(right.times(cameraSpeed * deltaTime))
+                    val dPos = orientation.conjugate().times(Vec3(-1f, 0f, 0)) * cameraSpeed * deltaTime
+                    position.plusAssign(dPos)
                 }
                 GLFW_KEY_D -> {
-                    position.plusAssign(right.times(cameraSpeed * deltaTime))
+                    val dPos = orientation.conjugate().times(Vec3(1f, 0f, 0)) * cameraSpeed * deltaTime
+                    position.plusAssign(dPos)
                 }
 
                 // Shift, Space - moving in y axis
                 GLFW_KEY_LEFT_SHIFT -> {
-                    position.minusAssign(globalUp.times(cameraSpeed * deltaTime))
+                    val dPos = orientation.conjugate().times(Vec3(0f, -1f, 0)) * cameraSpeed * deltaTime
+                    position.plusAssign(dPos)
                 }
                 GLFW_KEY_SPACE -> {
-                    position.plusAssign(globalUp.times(cameraSpeed * deltaTime))
+                    val dPos = orientation.conjugate().times(Vec3(0f, 1f, 0)) * cameraSpeed * deltaTime
+                    position.plusAssign(dPos)
                 }
 
                 // Q, E - decreasing/increasing camera speed
                 GLFW_KEY_Q -> {
                     if (cameraSpeed > CAMERA_SPEED_MIN) {
-                        cameraSpeed -= CAMERA_SPEED_CHANGE_STEP
+                        utils.Debug.logd(TAG, (CAMERA_SPEED_CHANGE_STEP * deltaTime.toFloat()).toString())
+                        cameraSpeed -= CAMERA_SPEED_CHANGE_STEP * deltaTime.toFloat()
                     }
                 }
                 GLFW_KEY_E -> {
                     if (cameraSpeed < CAMERA_SPEED_MAX) {
-                        cameraSpeed += CAMERA_SPEED_CHANGE_STEP
+                        cameraSpeed += CAMERA_SPEED_CHANGE_STEP * deltaTime.toFloat()
                     }
                 }
             }
-//            utils.Debug.logd(TAG, "CAMERA POSITION: $position")
+//            Debug.logd(TAG, "CAMERA POSITION: $position")
         }
 
         override fun cursorMoved(deltaX: Int, deltaY: Int) {
             yaw += deltaX * MOUSE_SENSITIVITY
-            pitch += deltaY * MOUSE_SENSITIVITY
+            pitch -= deltaY * MOUSE_SENSITIVITY
 
-            if (pitch > 89f) pitch = 89f
-            if (pitch < -89f) pitch = -89f
+            if (pitch > 90f) pitch = 90f
+            if (pitch < -90f) pitch = -90f
 
-//            utils.Debug.logd(TAG, "Yaw: $yaw, Pitch: $pitch")
+            // Convert Euler angles to quaternion
+            val _pitch = Quat.angleAxis(glm.radians(pitch), Vec3(1, 0, 0))
+            val _yaw = Quat.angleAxis(glm.radians(yaw), Vec3(0, 1, 0))
+            orientation = _pitch.times(_yaw).normalize()
 
-            updateVectors()
+//            Debug.logd(TAG, "Yaw: $yaw, Pitch: $pitch, Quat: $orientation")
         }
     }
 }
