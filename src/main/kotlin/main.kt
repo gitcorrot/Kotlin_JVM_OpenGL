@@ -104,6 +104,7 @@ fun main() {
     treeModel.create()
     treeModel.addTexture(colorPaletteTexture)
     treeModel.moveTo(10f, terrain.getHeightAt(10, -6), -6f)
+    treeModel.rotateTo(0f, 0f, 0f)
     world.addModelDefault(treeModel)
 
     // Model from: http://quaternius.com/
@@ -114,7 +115,7 @@ fun main() {
         pigModel.create()
         pigModel.addTexture(colorPaletteTexture)
         world.addModelDefault(pigModel)
-        pigModel.rotateBy(r.nextFloat() * 360f, 0f, 0f)
+        pigModel.rotateTo(r.nextFloat() * 360f, 0f, 0f)
         val scale = r.nextInt(5, 10) / 10f
         pigModel.scaleTo(scale)
         val randX = r.nextFloat() * terrain.size * terrain.tileSize
@@ -159,7 +160,7 @@ fun main() {
     world.addLightSource(directionalLight)
 
     // Yellow
-    val pointLight1 = LightPoint(0, lampModel1.translation)
+    val pointLight1 = LightPoint(0, lampModel1.position)
     pointLight1.color = Vec3(1f, 1f, 0f)
     pointLight1.intensity = 1.0f
     pointLight1.kc = 1.0f
@@ -168,7 +169,7 @@ fun main() {
     world.addLightSource(pointLight1)
 
     // Red
-    val pointLight2 = LightPoint(1, lampModel2.translation)
+    val pointLight2 = LightPoint(1, lampModel2.position)
     pointLight2.color = Vec3(1f, 0.0f, 0.0f)
     pointLight2.intensity = 1f
     pointLight2.kc = 1.0f
@@ -178,10 +179,10 @@ fun main() {
 
     val spotLight = LightSpot(
         index = 0,
-        translation = Vec3(
-            streetLampModel.translation.x,
-            streetLampModel.translation.y + 2.75f,
-            streetLampModel.translation.z + 1.4f
+        position = Vec3(
+            streetLampModel.position.x,
+            streetLampModel.position.y + 2.75f,
+            streetLampModel.position.z + 1.4f
         )
     )
     spotLight.color = Vec3(0.8f, 0.65f, 1f)
@@ -199,6 +200,13 @@ fun main() {
     while (!glfwWindowShouldClose(window)) {
         inputManager.update()
         renderer.render(world, camera)
+
+        // Simulate tree wind
+        treeModel.rotateTo(
+            0f,
+            glm.sin(glfwGetTime().toFloat() * 1f) / 50f,
+            glm.sin(glfwGetTime().toFloat() * 2f) / 25f
+        )
     }
 
     readOpenGLError()

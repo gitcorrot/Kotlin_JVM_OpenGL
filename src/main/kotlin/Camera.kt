@@ -2,6 +2,7 @@ import glm_.glm
 import glm_.mat4x4.Mat4
 import glm_.quat.Quat
 import glm_.vec3.Vec3
+import interfaces.Movable
 import org.lwjgl.glfw.GLFW.*
 
 
@@ -15,20 +16,31 @@ private const val CAMERA_SPEED_CHANGE_STEP = 25f
 private const val CAMERA_SPEED_MAX = 50f
 private const val CAMERA_SPEED_MIN = 1f
 
-class Camera {
+class Camera : Movable {
     private val TAG: String = this::class.java.name
 
-    val position = Vec3(-25f, 50, 25f)
+    override val position = Vec3(-25f, 50, 25f)
     var yaw = 45f
     var pitch = 45f
     var orientation = Quat(Vec3(glm.radians(yaw), glm.radians(pitch), 0f)).normalize()
 
     private var cameraSpeed = 20.0f
 
+    private fun updateOrientation() {
+        // Convert Euler angles to quaternion
+        val pitchQuat = Quat.angleAxis(glm.radians(pitch), Vec3(1, 0, 0))
+        val yawQuat = Quat.angleAxis(glm.radians(yaw), Vec3(0, 1, 0))
+        orientation = pitchQuat.times(yawQuat).normalize()
+    }
+
+    init {
+        updateOrientation()
+    }
+
     val viewMat: Mat4
         get() {
-            val translation = Mat4(1f).translate_(-position)
-            return orientation.toMat4().times(translation)
+            val positionMat = Mat4(1f).translate_(-position)
+            return orientation.toMat4().times(positionMat)
         }
 
     val iCameraInput = object : ICameraInputCallback {
@@ -38,29 +50,29 @@ class Camera {
                 // W, S, A, D - moving in x and z axis
                 GLFW_KEY_W -> {
                     val dPos = orientation.conjugate().times(Vec3(0f, 0f, -1f)) * cameraSpeed * deltaTime
-                    position.plusAssign(dPos)
+                    moveBy(dPos)
                 }
                 GLFW_KEY_S -> {
                     val dPos = orientation.conjugate().times(Vec3(0f, 0f, 1f)) * cameraSpeed * deltaTime
-                    position.plusAssign(dPos)
+                    moveBy(dPos)
                 }
                 GLFW_KEY_A -> {
                     val dPos = orientation.conjugate().times(Vec3(-1f, 0f, 0)) * cameraSpeed * deltaTime
-                    position.plusAssign(dPos)
+                    moveBy(dPos)
                 }
                 GLFW_KEY_D -> {
                     val dPos = orientation.conjugate().times(Vec3(1f, 0f, 0)) * cameraSpeed * deltaTime
-                    position.plusAssign(dPos)
+                    moveBy(dPos)
                 }
 
                 // Shift, Space - moving in y axis
                 GLFW_KEY_LEFT_SHIFT -> {
                     val dPos = orientation.conjugate().times(Vec3(0f, -1f, 0)) * cameraSpeed * deltaTime
-                    position.plusAssign(dPos)
+                    moveBy(dPos)
                 }
                 GLFW_KEY_SPACE -> {
                     val dPos = orientation.conjugate().times(Vec3(0f, 1f, 0)) * cameraSpeed * deltaTime
-                    position.plusAssign(dPos)
+                    moveBy(dPos)
                 }
 
                 // Q, E - decreasing/increasing camera speed
@@ -86,10 +98,7 @@ class Camera {
             if (pitch > 90f) pitch = 90f
             if (pitch < -90f) pitch = -90f
 
-            // Convert Euler angles to quaternion
-            val _pitch = Quat.angleAxis(glm.radians(pitch), Vec3(1, 0, 0))
-            val _yaw = Quat.angleAxis(glm.radians(yaw), Vec3(0, 1, 0))
-            orientation = _pitch.times(_yaw).normalize()
+            updateOrientation()
 
 //            Debug.logd(TAG, "Yaw: $yaw, Pitch: $pitch, Quat: $orientation")
         }

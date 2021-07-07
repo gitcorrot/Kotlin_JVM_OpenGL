@@ -92,18 +92,18 @@ class Terrain(
 
         for (z in 0..size) {
             for (x in 0..size) {
-                val position = Vec3()
-                position.x = x * tileSize
-                position.y = glm.simplex(Vec2(z * a, x * a)) * tileSize
-                position.z = -z * tileSize
+                val tilePosition = Vec3()
+                tilePosition.x = x * tileSize
+                tilePosition.y = glm.simplex(Vec2(z * a, x * a)) * tileSize
+                tilePosition.z = -z * tileSize
 
-                val color = Vec3(0.4f, 0.6f, 0.3f) // TODO
+                val tileColor = Vec3(0.4f, 0.6f, 0.3f) // TODO
 
                 this.mesh.vertices.add(
                     Vertex(
-                        position = position,
-                        normal = null,
-                        color = color,
+                        position = tilePosition,
+                        normal = null, // calculated in geometry shader
+                        color = tileColor,
                         textureCoordinates = null
                     )
                 )

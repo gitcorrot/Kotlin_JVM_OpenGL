@@ -4,23 +4,27 @@ import glm_.vec3.Vec3
 
 interface Movable {
 
-    val translation: Vec3
+    val position: Vec3
 
     fun moveBy(x: Float, y: Float, z: Float) {
-        translation.x += x
-        translation.y += y
-        translation.z += z
+        position.x += x
+        position.y += y
+        position.z += z
+    }
+
+    fun moveBy(v: Vec3) {
+        position.plusAssign(v)
     }
 
     fun moveTo(x: Float, y: Float, z: Float) {
-        translation.x = x
-        translation.y = y
-        translation.z = z
+        position.x = x
+        position.y = y
+        position.z = z
     }
 
     fun moveTo(v: Vec3) {
-        translation.x = v.x
-        translation.y = v.y
-        translation.z = v.z
+        position.x = v.x
+        position.y = v.y
+        position.z = v.z
     }
 }

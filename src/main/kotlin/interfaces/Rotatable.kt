@@ -1,25 +1,30 @@
 package interfaces
 
-import glm_.glm
-import glm_.mat4x4.Mat4
+import glm_.quat.Quat
 import glm_.vec3.Vec3
 
 interface Rotatable {
 
-    var rotation: Mat4
+    var rotation: Quat
 
-    // TODO: Implement quaternions
+    fun rotateYawBy(angle: Float) {
+        rotation.angleAxis_(angle, Vec3(0, 1, 0))
+    }
+
+    fun rotatePitchBy(angle: Float) {
+        rotation.angleAxis_(angle, Vec3(1, 0, 0))
+    }
+
+    fun rotateRollBy(angle: Float) {
+        rotation.angleAxis_(angle, Vec3(0, 0, 1))
+    }
+
     fun rotateBy(yaw: Float, pitch: Float, roll: Float) {
-        rotation
-            .rotate_(glm.radians(yaw), Vec3(0f, 1f, 0f))
-            .rotate_(glm.radians(pitch), Vec3(1f, 0f, 0f))
-            .rotate_(glm.radians(roll), Vec3(0f, 0f, 1f))
+        rotation.times_(Quat(Vec3(pitch, yaw, roll))).normalize_()
     }
 
     fun rotateTo(yaw: Float, pitch: Float, roll: Float) {
-        rotation = Mat4()
-            .rotate_(glm.radians(yaw), Vec3(0f, 1f, 0f))
-            .rotate_(glm.radians(pitch), Vec3(1f, 0f, 0f))
-            .rotate_(glm.radians(roll), Vec3(0f, 0f, 1f))
+        rotation = Quat(Vec3(pitch, yaw, roll)).normalize()
     }
 }
+
