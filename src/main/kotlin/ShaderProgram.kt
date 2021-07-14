@@ -9,7 +9,7 @@ import utils.Debug
 class ShaderProgram {
     private val TAG: String = this::class.java.name
 
-    private var programID: Int = 0
+    public var programID: Int = 0
     private var vertexShaderID: Int = 0
     private var geometryShaderID: Int = 0
     private var fragmentShaderID: Int = 0
@@ -80,6 +80,11 @@ class ShaderProgram {
     fun setUniformFloat(name: String, value: Float) {
         val loc = glGetUniformLocation(programID, name) // TODO: make uniforms map once and use it
         glUniform1f(loc, value)
+    }
+
+    fun setUniformInt(name: String, value: Int) {
+        val loc = glGetUniformLocation(programID, name) // TODO: make uniforms map once and use it
+        glUniform1i(loc, value)
     }
 
     fun use() {
