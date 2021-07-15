@@ -1,7 +1,8 @@
 import glm_.glm
-import models.ModelDefault
-import models.ModelNoLight
-import models.Quad
+import models.base.ModelDefault
+import models.base.ModelNoLight
+import models.base.Terrain
+import models.base.Quad
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryUtil

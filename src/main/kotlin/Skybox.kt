@@ -81,7 +81,7 @@ class Skybox {
         @Throws
         get() {
             if (field == -1)
-                throw Exception("models.Model VAO id not assigned!")
+                throw Exception("models.Base.Model VAO id not assigned!")
             return field
         }
 

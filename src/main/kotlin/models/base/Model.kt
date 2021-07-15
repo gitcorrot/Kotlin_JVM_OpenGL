@@ -1,4 +1,4 @@
-package models
+package models.base
 
 import TAG
 import Texture
@@ -28,25 +28,26 @@ abstract class Model() : Movable, Rotatable, Scalable {
                 .scale_(scale)
         }
 
-    abstract var mesh: Mesh
-    abstract fun create()
+    protected abstract var mesh: Mesh?
+    protected abstract fun addMesh(mesh: Mesh)
+    protected abstract fun create()
 
     var vao: Int = -1
         @Throws
         get() {
             if (field == -1)
-                throw Exception("models.Model VAO id not assigned!")
+                throw Exception("models.Base.Model VAO id not assigned!")
             return field
         }
 
     var texture = Texture()
 
 
-    fun getIndicesCount() = this.mesh.indices?.size ?: 0
+    fun getIndicesCount() = this.mesh?.indices?.size ?: 0
 
     fun addTexture(path: String) {
-        bind()
-        texture.createTexture(path)
+        this.bind()
+        this.texture.createTexture(path)
         Debug.logd(TAG, "Texture added to model!")
     }
 

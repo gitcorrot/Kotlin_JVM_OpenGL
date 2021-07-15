@@ -5,6 +5,16 @@ import utils.ResourcesUtils
 class Texture {
     private val TAG: String = this::class.java.name
 
+    companion object Utils {
+        private val defaultColorPaletteTexture = Texture()
+
+        init {
+            defaultColorPaletteTexture.createTexture("src/main/resources/Textures/color_palette.png")
+        }
+
+        fun getDefaultColorPalette(): Texture = defaultColorPaletteTexture
+    }
+
     private var textureID: Int = 0
 
     fun createTexture(path: String) {

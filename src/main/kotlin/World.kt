@@ -1,6 +1,7 @@
 import light.Light
-import models.ModelDefault
-import models.ModelNoLight
+import models.base.ModelDefault
+import models.base.ModelNoLight
+import models.base.Terrain
 
 class World {
 

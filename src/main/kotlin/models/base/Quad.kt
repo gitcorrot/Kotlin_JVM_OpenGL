@@ -1,4 +1,4 @@
-package models
+package models.base
 
 import org.lwjgl.system.MemoryUtil
 import java.nio.FloatBuffer
