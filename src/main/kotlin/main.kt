@@ -128,6 +128,15 @@ private fun initWorld(world: World) {
     treeModel.moveTo(10f, terrain.getHeightAt(10, -6), -6f)
     world.addModelDefault(treeModel)
 
+    // Rock
+    Debug.logd(TAG, "ROCK")
+    val rockMesh = ModelLoader.loadStaticModel("src/main/resources/Models/rock1.obj")
+    val rockModel = ModelDefault(rockMesh)
+    rockModel.create()
+    rockModel.addTexture(colorPaletteTexture)
+    rockModel.moveTo(5f, terrain.getHeightAt(5, -12), -12f)
+    world.addModelDefault(rockModel)
+
     // Pig model from: http://quaternius.com/
     val pigMesh = ModelLoader.loadStaticModel("src/main/resources/Models/pig.obj")
     val r = Random(1234567)

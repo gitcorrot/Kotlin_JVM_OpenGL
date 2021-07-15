@@ -42,8 +42,8 @@ class Renderer(
     }
 
     private fun initLightingPassShader() {
-        val lightingVertexShaderPath = "deferred_shading_vertex_shader.glsl"
-        val lightingFragmentShaderPath = "deferred_shading_fragment_shader.glsl"
+        val lightingVertexShaderPath = "lighting_pass_vertex_shader.glsl"
+        val lightingFragmentShaderPath = "lighting_pass_fragment_shader.glsl"
         val lightingVertexShaderString = ResourcesUtils.readShader(lightingVertexShaderPath)
         val lightingFragmentShaderString = ResourcesUtils.readShader(lightingFragmentShaderPath)
         lightingPassShader.createShader(lightingVertexShaderString, GL_VERTEX_SHADER)
@@ -92,7 +92,7 @@ class Renderer(
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, WINDOW_WIDTH, WINDOW_HEIGHT)
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth)
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            Debug.loge(TAG, "Framebuffer not complete!")
+            throw RuntimeException("Framebuffer not complete!")
         } else {
             Debug.logi(TAG, "Framebuffer complete")
         }
