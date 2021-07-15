@@ -4,9 +4,9 @@ in vec2 texturePos;
 
 out vec4 fragmentCol;
 
-uniform sampler2D myTexture;
+uniform sampler2D colorPaletteTexture;
 
 void main()
 {
-    fragmentCol = texture(myTexture, texturePos);
+    fragmentCol = texture(colorPaletteTexture, texturePos);
 }

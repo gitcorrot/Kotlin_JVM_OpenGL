@@ -14,8 +14,8 @@ class ModelDefault(override var mesh: Mesh) : Model() {
         val TAG: String = this::class.java.name
         val shaderProgram = ShaderProgram()
 
-        private const val vertexShaderPath = "model_default_vertex_shader.glsl"
-        private const val fragmentShaderPath = "model_default_fragment_shader.glsl"
+        private const val vertexShaderPath = "g_buffer_vertex_shader.glsl"
+        private const val fragmentShaderPath = "g_buffer_fragment_shader.glsl"
 
         init {
             val vertexShaderString = ResourcesUtils.readShader(vertexShaderPath)
@@ -24,6 +24,9 @@ class ModelDefault(override var mesh: Mesh) : Model() {
             shaderProgram.createShader(fragmentShaderString, GL_FRAGMENT_SHADER)
             shaderProgram.link()
             shaderProgram.use()
+
+            // Shader's sampler2d belong to texture unit 2
+            shaderProgram.setUniformInt("colorPaletteTexture", 2)
         }
     }
 

@@ -24,6 +24,9 @@ class ModelNoLight(override var mesh: Mesh) : Model() {
             shaderProgram.createShader(fragmentShaderString, GL_FRAGMENT_SHADER)
             shaderProgram.link()
             shaderProgram.use()
+
+            // Shader's sampler2d belong to texture unit 2
+            shaderProgram.setUniformInt("colorPaletteTexture", 2)
         }
     }
 

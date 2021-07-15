@@ -4,20 +4,20 @@ layout (triangles) in;
 layout (triangle_strip, max_vertices=3) out;
 
 in VS_OUT {
-    vec3 fragmentPos;
-    vec3 color;
+    vec3 _fragmentPos;
+    vec3 _color;
 } gs_in[];
 
-out vec3 fragmentPos2;
-out vec3 modelNormal2;
-out vec3 color2;
+out vec3 fragmentPos;
+out vec3 modelNormal;
+out vec3 color;
 
 // https://www.khronos.org/opengl/wiki/Calculating_a_Surface_Normal
 vec3 calculateNormal() {
     // U = p2 - p1
     // V = p3 - p1
-    vec3 u = gs_in[1].fragmentPos.xyz - gs_in[0].fragmentPos.xyz;
-    vec3 v = gs_in[2].fragmentPos.xyz - gs_in[0].fragmentPos.xyz;
+    vec3 u = gs_in[1]._fragmentPos.xyz - gs_in[0]._fragmentPos.xyz;
+    vec3 v = gs_in[2]._fragmentPos.xyz - gs_in[0]._fragmentPos.xyz;
 
     // Nx = UyVz - UzVy
     // Ny = UzVx - UxVz
@@ -31,9 +31,10 @@ void main()
     for (int i = 0; i < gl_in.length(); i++)
     {
         gl_Position = gl_in[i].gl_Position;
-        fragmentPos2 = gs_in[i].fragmentPos;
-        modelNormal2 = calculateNormal();
-        color2 = gs_in[i].color;
+
+        fragmentPos = gs_in[i]._fragmentPos;
+        modelNormal = calculateNormal();
+        color = gs_in[i]._color;
 
         EmitVertex();
     }

@@ -1,8 +1,8 @@
 #version 330 core
 
-in vec3 fragmentPos2;
-in vec3 modelNormal2;
-in vec3 color2;
+in vec3 fragmentPos;
+in vec3 modelNormal;
+in vec3 color;
 
 // MRT - Multiple Render Targets
 layout (location = 0) out vec3 gPos;
@@ -11,7 +11,7 @@ layout (location = 2) out vec3 gCol;
 
 void main()
 {
-    gPos = fragmentPos2;
-    gNor = modelNormal2;
-    gCol = color2;
+    gPos = fragmentPos;
+    gNor = modelNormal;
+    gCol = color;
 }
