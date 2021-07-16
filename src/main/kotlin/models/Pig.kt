@@ -4,14 +4,14 @@ import Texture
 import models.base.ModelDefault
 import utils.ModelLoader
 
-class Pig : ModelDefault() {
+enum class PigType(val path: String) {
+    TYPE_1("src/main/resources/Models/pig.obj")
+}
 
-    companion object {
-        // TODO: Enum with meshes
-        val pigMesh = ModelLoader.loadStaticModel("src/main/resources/Models/pig.obj")
-    }
+class Pig(pigType: PigType) : ModelDefault() {
 
     init {
+        val pigMesh = ModelLoader.loadStaticModel(pigType.path)
         super.addMesh(pigMesh)
         addTexture(Texture.getDefaultColorPalette())
         super.create()

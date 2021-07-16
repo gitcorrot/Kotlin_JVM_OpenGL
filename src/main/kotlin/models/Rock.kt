@@ -4,15 +4,17 @@ import Texture
 import models.base.ModelDefault
 import utils.ModelLoader
 
-class Rock() : ModelDefault() {
+enum class RockType(val path: String) {
+    TYPE_1("src/main/resources/Models/rock1.obj"),
+    TYPE_2("src/main/resources/Models/rock2.obj"),
+    TYPE_3("src/main/resources/Models/rock3.obj")
+}
 
-    companion object {
-        // TODO: Enum with meshes
-        val rock1Mesh = ModelLoader.loadStaticModel("src/main/resources/Models/rock1.obj")
-    }
+class Rock(rockType: RockType) : ModelDefault() {
 
     init {
-        super.addMesh(rock1Mesh)
+        val rockMesh = ModelLoader.loadStaticModel(rockType.path)
+        super.addMesh(rockMesh)
         addTexture(Texture.getDefaultColorPalette())
         super.create()
     }

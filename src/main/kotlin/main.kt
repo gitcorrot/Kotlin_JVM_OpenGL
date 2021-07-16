@@ -108,28 +108,35 @@ private fun initWorld(world: World) {
     world.addTerrain(terrain)
 
     // Coordinate system origin helpful model
-//    Debug.logd(TAG, "COORDINATE SYSTEM")
-//    val csMesh = ModelLoader.loadStaticModel("src/main/resources/Models/cs.obj")
-//    val csModel = ModelNoLight()
-//    csModel.addMesh(csMesh)
-//    csModel.create()
-//    csModel.addTexture(colorPaletteTexture)
-//    world.addModelNoLight(csModel)
+    val coordinateSystem = CoordinateSystem()
+    world.addModelNoLight(coordinateSystem)
 
     // Tree
-    val tree = Tree()
-    tree.moveTo(10f, terrain.getHeightAt(10, -6), -6f)
-    world.addModelDefault(tree)
+    val tree1 = Tree(TreeType.TYPE_1)
+    tree1.moveTo(10f, terrain.getHeightAt(10, -6), -6f)
+    world.addModelDefault(tree1)
+    val tree2 = Tree(TreeType.TYPE_2)
+    tree2.moveTo(13f, terrain.getHeightAt(13, -6), -6f)
+    world.addModelDefault(tree2)
+    val tree3 = Tree(TreeType.TYPE_3)
+    tree3.moveTo(7f, terrain.getHeightAt(7, -6), -6f)
+    world.addModelDefault(tree3)
 
     // Rock
-    val rock = Rock()
-    rock.moveTo(5f, terrain.getHeightAt(5, -12), -12f)
-    world.addModelDefault(rock)
+    val rock1 = Rock(RockType.TYPE_1)
+    rock1.moveTo(5f, terrain.getHeightAt(5, -12), -12f)
+    world.addModelDefault(rock1)
+    val rock2 = Rock(RockType.TYPE_2)
+    rock2.moveTo(15f, terrain.getHeightAt(15, -12), -12f)
+    world.addModelDefault(rock2)
+    val rock3 = Rock(RockType.TYPE_3)
+    rock3.moveTo(15f, terrain.getHeightAt(15, -4), -4f)
+    world.addModelDefault(rock3)
 
     // Pig model from: http://quaternius.com/
     val r = Random(1234567)
     for (i in 1..5) {
-        val pig = Pig()
+        val pig = Pig(PigType.TYPE_1)
         val scale = r.nextInt(8, 10) / 10f
         val randX = r.nextFloat() * terrain.size * terrain.tileSize
         val randZ = -r.nextFloat() * terrain.size * terrain.tileSize
@@ -160,7 +167,7 @@ private fun initWorld(world: World) {
     // Lighting
     val ambientLight = LightAmbient()
     ambientLight.color = Vec3(1f, 1f, 1f)
-    ambientLight.intensity = 0.5f
+    ambientLight.intensity = 0.7f
     world.addLightSource(ambientLight)
 
     val directionalLight = LightDirectional()
