@@ -2,11 +2,11 @@ package models.base
 
 import ShaderProgram
 import data.Mesh
-import utils.TerrainUtils
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryUtil
 import utils.Debug
 import utils.ResourcesUtils
+import utils.TerrainUtils
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
@@ -48,6 +48,10 @@ class Terrain(
 
     override fun create() {
         mesh?.let { mesh ->
+            this.vao = glGenVertexArrays()
+            this.vbo = glGenBuffers()
+            this.ebo = glGenBuffers()
+
             val verticesBuffer: FloatBuffer =
                 MemoryUtil.memAllocFloat(mesh.vertices.size * 9) // each vertex has 9 floats
             for (v in mesh.vertices) {
@@ -59,10 +63,6 @@ class Terrain(
             indicesBuffer
                 .put(mesh.indices)
                 .flip()
-
-            this.vao = glGenVertexArrays()
-            val vbo = glGenBuffers()
-            val ebo = glGenBuffers()
 
             glBindVertexArray(vao)
 

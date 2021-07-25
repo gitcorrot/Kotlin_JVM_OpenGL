@@ -1,8 +1,8 @@
 import glm_.glm
 import models.base.ModelDefault
 import models.base.ModelNoLight
-import models.base.Terrain
 import models.base.Quad
+import models.base.Terrain
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryUtil
@@ -181,6 +181,31 @@ class Renderer(
             ModelNoLight.shaderProgram.setUniformMat4f("m", modelNoLight.transformationMat)
 
             glDrawElements(GL_TRIANGLES, modelNoLight.getIndicesCount(), GL_UNSIGNED_INT, 0)
+        }
+        // Draw bounding boxes
+        for (model in world.modelsNoLight) {
+            model.axisAlignedBoundingBox.bind()
+            model.axisAlignedBoundingBox.texture.bind()
+            ModelNoLight.shaderProgram.setUniformMat4f("m", model.axisAlignedBoundingBox.transformationMat)
+            glDrawElements(GL_LINES, model.axisAlignedBoundingBox.getIndicesCount(), GL_UNSIGNED_INT, 0)
+        }
+        for (model in world.modelsNoLight) {
+            model.orientedBoundingBox.bind()
+            model.orientedBoundingBox.texture.bind()
+            ModelNoLight.shaderProgram.setUniformMat4f("m", model.transformationMat)
+            glDrawElements(GL_LINES, model.orientedBoundingBox.getIndicesCount(), GL_UNSIGNED_INT, 0)
+        }
+        for (model in world.modelsDefault) {
+            model.axisAlignedBoundingBox.bind()
+            model.axisAlignedBoundingBox.texture.bind()
+            ModelNoLight.shaderProgram.setUniformMat4f("m", model.axisAlignedBoundingBox.transformationMat)
+            glDrawElements(GL_LINES, model.axisAlignedBoundingBox.getIndicesCount(), GL_UNSIGNED_INT, 0)
+        }
+        for (model in world.modelsDefault) {
+            model.orientedBoundingBox.bind()
+            model.orientedBoundingBox.texture.bind()
+            ModelNoLight.shaderProgram.setUniformMat4f("m", model.transformationMat)
+            glDrawElements(GL_LINES, model.orientedBoundingBox.getIndicesCount(), GL_UNSIGNED_INT, 0)
         }
 
         // Draw skybox

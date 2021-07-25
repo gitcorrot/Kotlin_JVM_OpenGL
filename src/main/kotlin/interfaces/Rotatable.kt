@@ -8,18 +8,18 @@ interface Rotatable {
     var rotation: Quat
 
     fun rotateYawBy(angle: Float) {
-        rotation.angleAxis_(angle, Vec3(0, 1, 0))
+        rotateBy(yaw = angle)
     }
 
     fun rotatePitchBy(angle: Float) {
-        rotation.angleAxis_(angle, Vec3(1, 0, 0))
+        rotateBy(pitch = angle)
     }
 
     fun rotateRollBy(angle: Float) {
-        rotation.angleAxis_(angle, Vec3(0, 0, 1))
+        rotateBy(roll = angle)
     }
 
-    fun rotateBy(yaw: Float, pitch: Float, roll: Float) {
+    fun rotateBy(yaw: Float = 0f, pitch: Float = 0f, roll: Float = 0f) {
         rotation.times_(Quat(Vec3(pitch, yaw, roll))).normalize_()
     }
 
