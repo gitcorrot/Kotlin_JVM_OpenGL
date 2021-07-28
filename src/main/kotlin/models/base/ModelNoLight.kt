@@ -50,6 +50,7 @@ abstract class ModelNoLight : Model() {
             this.vbo = glGenBuffers()
             this.ebo = glGenBuffers()
 
+            // TODO: replace with uploadVertices(mesh!!) and uploadIndices(mesh!!)
             val verticesBuffer: FloatBuffer =
                 MemoryUtil.memAllocFloat(mesh!!.vertices.size * 5) // each vertex has 5 floats
             for (v in mesh!!.vertices) {

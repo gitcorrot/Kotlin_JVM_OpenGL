@@ -1,4 +1,5 @@
 import glm_.glm
+import glm_.mat4x4.Mat4
 import models.base.ModelDefault
 import models.base.ModelNoLight
 import models.base.Quad
@@ -6,17 +7,22 @@ import models.base.Terrain
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryUtil
+import ui.LoadingView
 import utils.Debug
+import utils.OpenGLUtils.getWindowSize
 import utils.ResourcesUtils
 
 
 class Renderer(
-    private val window: Long,
-    private val width: Int,
-    private val height: Int
+    private val window: Long
 ) {
-    private val TAG: String = this::class.java.name
+    companion object {
+        private val TAG: String = this::class.java.name
 
+        const val FOV_DEG = 60f
+        const val Z_NEAR = 0.1f
+        const val Z_FAR = 1000.0f
+    }
 
     private val lightingPassShader = ShaderProgram()
 
@@ -25,15 +31,26 @@ class Renderer(
     private val gNormal = glGenTextures()
     private val gColor = glGenTextures()
 
-    private val fov: Float = glm.radians(60f)
-    private val aspectRatio: Float = width / height.toFloat()
-    private val zNear: Float = 0.1f
-    private val zFar: Float = 1000.0f
-    private val projectionMat = glm.perspective(fov, aspectRatio, zNear, zFar)
+    private val projectionMat: Mat4
+    private val windowWidth: Int
+    private val windowHeight: Int
+    private val aspectRatio: Float
 
-    private val quad = Quad()
+    private val loadingView: LoadingView
+    private val quad: Quad
 
     init {
+        with (getWindowSize(window)) {
+            windowWidth = x.toInt()
+            windowHeight = y.toInt()
+            aspectRatio = x / y
+        }
+
+        projectionMat = glm.perspective(glm.radians(FOV_DEG), aspectRatio, Z_NEAR, Z_FAR)
+
+        loadingView = LoadingView(aspectRatio)
+        quad = Quad()
+
         initLightingPassShader()
         initGBuffer()
         initDepthBuffer()
@@ -62,21 +79,21 @@ class Renderer(
 
         // Position
         glBindTexture(GL_TEXTURE_2D, gPosition)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGB, GL_FLOAT, MemoryUtil.NULL)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, MemoryUtil.NULL)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0)
 
         // Normal
         glBindTexture(GL_TEXTURE_2D, gNormal)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGB, GL_FLOAT, MemoryUtil.NULL)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, MemoryUtil.NULL)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, gNormal, 0)
 
         // Color
         glBindTexture(GL_TEXTURE_2D, gColor)
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WINDOW_WIDTH, WINDOW_HEIGHT, 0, GL_RGB, GL_FLOAT, MemoryUtil.NULL)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, MemoryUtil.NULL)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gColor, 0)
@@ -90,7 +107,7 @@ class Renderer(
         glBindFramebuffer(GL_FRAMEBUFFER, gBuffer)
         val rboDepth = glGenRenderbuffers()
         glBindRenderbuffer(GL_RENDERBUFFER, rboDepth)
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, WINDOW_WIDTH, WINDOW_HEIGHT)
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, windowWidth, windowHeight)
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth)
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             throw RuntimeException("Framebuffer not complete!")
@@ -102,7 +119,6 @@ class Renderer(
 
     fun render(world: World, camera: Camera) {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
-
         glEnable(GL_DEPTH_TEST)
 
         glBindFramebuffer(GL_FRAMEBUFFER, gBuffer)
@@ -164,8 +180,8 @@ class Renderer(
         glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer) // from
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0) // to
         glBlitFramebuffer(
-            0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
-            0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+            0, 0, windowWidth, windowHeight,
+            0, 0, windowWidth, windowHeight,
             GL_DEPTH_BUFFER_BIT, GL_NEAREST
         )
         glBindFramebuffer(GL_FRAMEBUFFER, 0)

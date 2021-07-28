@@ -1,6 +1,9 @@
 package utils
 
+import glm_.vec2.Vec2
+import org.lwjgl.glfw.GLFW
 import org.lwjgl.opengl.GL33.*
+import org.lwjgl.system.MemoryStack
 
 object OpenGLUtils {
     private val TAG: String = this::class.java.name
@@ -20,6 +23,17 @@ object OpenGLUtils {
             null
         } else {
             sb.toString()
+        }
+    }
+
+    fun getWindowSize(window: Long): Vec2 {
+        MemoryStack.stackPush().use { stack ->
+            val tmpWidth = stack.mallocInt(1)
+            val tmpHeight = stack.mallocInt(1)
+
+            GLFW.glfwGetWindowSize(window, tmpWidth, tmpHeight)
+
+            return Vec2(tmpWidth.get(), tmpHeight.get())
         }
     }
 }

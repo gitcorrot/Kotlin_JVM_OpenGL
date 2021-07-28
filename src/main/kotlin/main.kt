@@ -19,15 +19,13 @@ import kotlin.random.Random
 
 const val TAG = "Main"
 
-const val WINDOW_WIDTH = 1000
-const val WINDOW_HEIGHT = 800
 
-fun createWindow(): Long {
+fun createWindow(width: Int, height: Int): Long {
     glfwDefaultWindowHints()
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE)
 
     // Create the window
-    val window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Kotlin OpenGL", NULL, NULL)
+    val window = glfwCreateWindow(width, height, "Kotlin OpenGL", NULL, NULL)
     if (window == NULL) {
         throw RuntimeException("Failed to create the GLFW window")
     }
@@ -35,7 +33,6 @@ fun createWindow(): Long {
     return window
 }
 
-lateinit var tree1: Tree
 fun main() {
     Debug.DEBUG_LEVEL = Debug.DebugLevel.DEBUG
 
@@ -47,7 +44,9 @@ fun main() {
         throw IllegalStateException("Unable to initialize GLFW")
     }
 
-    val window = createWindow()
+    val defaultWindowWidth = 1000
+    val defaultWindowHeight = 800
+    val window = createWindow(defaultWindowWidth, defaultWindowHeight)
 
     // Get the resolution of the primary monitor
     val vidMode = glfwGetVideoMode(glfwGetPrimaryMonitor())
@@ -56,8 +55,8 @@ fun main() {
         // Center our window
         glfwSetWindowPos(
             window,
-            (it.width() - WINDOW_WIDTH) / 2,
-            (it.height() - WINDOW_HEIGHT) / 2
+            (it.width() - defaultWindowWidth) / 2,
+            (it.height() - defaultWindowHeight) / 2
         )
         Debug.logd(TAG, "Detected display resolution ${it.width()}x${it.height()}")
     }
@@ -76,18 +75,12 @@ fun main() {
     val camera = Camera()
     val inputManager = InputManager(window)
     inputManager.addCamera(camera)
-    val renderer = Renderer(window, WINDOW_WIDTH, WINDOW_HEIGHT)
+    val renderer = Renderer(window)
     val world = World()
     initWorld(world)
 
-//    tree1.rotatePitchBy(glm.radians(45f))
     while (!glfwWindowShouldClose(window)) {
         inputManager.update()
-
-        tree1.rotateYawBy(0.01f)
-//        tree1.scaleTo((glm.sin(glfwGetTime())).toFloat() + 1.5f)
-        tree1.moveBy(((glm.sin(glfwGetTime())).toFloat()) / 17f, 0f, 0f)
-
         renderer.render(world, camera)
     }
 
@@ -119,7 +112,7 @@ private fun initWorld(world: World) {
     world.addModelNoLight(coordinateSystem)
 
     // Tree
-    tree1 = Tree(TreeType.TYPE_1)
+    val tree1 = Tree(TreeType.TYPE_1)
     tree1.moveTo(10f, terrain.getHeightAt(10, -6), -6f)
     world.addModelDefault(tree1)
     val tree2 = Tree(TreeType.TYPE_2)
