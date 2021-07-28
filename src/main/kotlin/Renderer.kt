@@ -8,7 +8,6 @@ import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryUtil
 import ui.LoadingView
-import utils.Debug
 import utils.OpenGLUtils.getWindowSize
 import utils.ResourcesUtils
 
@@ -40,7 +39,7 @@ class Renderer(
     private val quad: Quad
 
     init {
-        with (getWindowSize(window)) {
+        with(getWindowSize(window)) {
             windowWidth = x.toInt()
             windowHeight = y.toInt()
             aspectRatio = x / y
@@ -100,7 +99,6 @@ class Renderer(
 
         val buffers = intArrayOf(GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2)
         glDrawBuffers(buffers)
-
     }
 
     private fun initDepthBuffer() {
@@ -111,15 +109,19 @@ class Renderer(
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth)
         if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             throw RuntimeException("Framebuffer not complete!")
-        } else {
-            Debug.logi(TAG, "Framebuffer complete")
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0)
     }
 
-    fun render(world: World, camera: Camera) {
+    fun render(world: World?, camera: Camera) {
         glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT)
         glEnable(GL_DEPTH_TEST)
+
+        if (world == null) {
+            loadingView.render()
+            glfwSwapBuffers(window)
+            return
+        }
 
         glBindFramebuffer(GL_FRAMEBUFFER, gBuffer)
         glClearColor(0f, 0f, 0f, 1f)
