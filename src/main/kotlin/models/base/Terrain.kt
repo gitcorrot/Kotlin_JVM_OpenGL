@@ -20,6 +20,8 @@ class Terrain(
         val TAG: String = this::class.java.name
         val shaderProgram = ShaderProgram()
 
+        const val VERTEX_SIZE = 6
+
         private const val vertexShaderPath = "terrain_vertex_shader.glsl"
         private const val geometryShaderPath = "terrain_geometry_shader.glsl"
         private const val fragmentShaderPath = "terrain_fragment_shader.glsl"
@@ -76,10 +78,10 @@ class Terrain(
             MemoryUtil.memFree(indicesBuffer)
 
             // 3 Float vertex coordinates
-            glVertexAttribPointer(0, 3, GL_FLOAT, false, 6 * 4, 0)
+            glVertexAttribPointer(0, 3, GL_FLOAT, false, VERTEX_SIZE * Float.SIZE_BYTES, 0)
             glEnableVertexAttribArray(0)
             // 3 Float vertex colors
-            glVertexAttribPointer(1, 3, GL_FLOAT, false, 6 * 4, 3 * 4)
+            glVertexAttribPointer(1, 3, GL_FLOAT, false, VERTEX_SIZE * Float.SIZE_BYTES, 3L * Float.SIZE_BYTES)
             glEnableVertexAttribArray(1)
 
             // Unbind VBO and VAO

@@ -8,16 +8,15 @@ import glm_.glm
 import glm_.mat4x4.Mat4
 import glm_.vec3.Vec3
 import org.lwjgl.opengl.GL33.*
-import org.lwjgl.system.MemoryUtil
 import utils.Debug
 import utils.ResourcesUtils
-import java.nio.FloatBuffer
-import java.nio.IntBuffer
 
 abstract class ModelDefault : Model() {
     companion object {
         val TAG: String = this::class.java.name
         val shaderProgram = ShaderProgram()
+
+        const val VERTEX_SIZE = 8
 
         private const val vertexShaderPath = "model_default_vertex_shader.glsl"
         private const val fragmentShaderPath = "model_default_fragment_shader.glsl"
@@ -41,7 +40,7 @@ abstract class ModelDefault : Model() {
 
     override fun addMesh(mesh: Mesh) {
         this.mesh = mesh
-        // Create bounding boxes
+
         axisAlignedBoundingBox = AxisAlignedBoundingBox(mesh)
         orientedBoundingBox = OrientedBoundingBox(mesh)
     }
@@ -52,39 +51,17 @@ abstract class ModelDefault : Model() {
             this.vbo = glGenBuffers()
             this.ebo = glGenBuffers()
 
-            // TODO: replace with uploadVertices(mesh!!) and uploadIndices(mesh!!)
-            val verticesBuffer: FloatBuffer =
-                MemoryUtil.memAllocFloat(mesh!!.vertices.size * 8) // each vertex has 8 floats
-            for (v in mesh!!.vertices) {
-                verticesBuffer.put(v.convertToFloatArray())
-            }
-
-            verticesBuffer.flip() // flip resets position to 0
-
-            val indicesBuffer: IntBuffer = MemoryUtil.memAllocInt(mesh!!.indices!!.size)
-            indicesBuffer
-                .put(mesh!!.indices)
-                .flip()
-
-            glBindVertexArray(vao)
-
-            // for each vertex -> add vertex.getAsArray
-            glBindBuffer(GL_ARRAY_BUFFER, vbo)
-            glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW)
-            MemoryUtil.memFree(verticesBuffer)
-
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo)
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW)
-            MemoryUtil.memFree(indicesBuffer)
+            uploadVertices(mesh!!, VERTEX_SIZE)
+            uploadIndices(mesh!!)
 
             // 3 Float vertex coordinates
-            glVertexAttribPointer(0, 3, GL_FLOAT, false, 8 * 4, 0)
+            glVertexAttribPointer(0, 3, GL_FLOAT, false, VERTEX_SIZE * Float.SIZE_BYTES, 0)
             glEnableVertexAttribArray(0)
             // 3 Float vertex normals
-            glVertexAttribPointer(1, 3, GL_FLOAT, false, 8 * 4, 3 * 4)
+            glVertexAttribPointer(1, 3, GL_FLOAT, false, VERTEX_SIZE * Float.SIZE_BYTES, 3L * Float.SIZE_BYTES)
             glEnableVertexAttribArray(1)
             // 2 Float vertex texture coordinates
-            glVertexAttribPointer(2, 2, GL_FLOAT, false, 8 * 4, 6 * 4)
+            glVertexAttribPointer(2, 2, GL_FLOAT, false, VERTEX_SIZE * Float.SIZE_BYTES, 6L * Float.SIZE_BYTES)
             glEnableVertexAttribArray(2)
 
             // Unbind VBO and VAO
@@ -113,78 +90,81 @@ abstract class ModelDefault : Model() {
     }
 
     fun drawBoundingBoxes() {
-        val boundingBoxesShader = ModelNoLight.shaderProgram
-        boundingBoxesShader.use()
-
-        boundingBoxesShader.setUniformMat4f("m", axisAlignedBoundingBox.transformationMat)
-        axisAlignedBoundingBox.bind()
-        axisAlignedBoundingBox.texture.bind()
-        glDrawElements(GL_LINES, axisAlignedBoundingBox.getIndicesCount(), GL_UNSIGNED_INT, 0)
-
-        boundingBoxesShader.setUniformMat4f("m", transformationMat)
-        orientedBoundingBox.bind()
-        orientedBoundingBox.texture.bind()
-        glDrawElements(GL_LINES, orientedBoundingBox.getIndicesCount(), GL_UNSIGNED_INT, 0)
+        ModelNoLight.shaderProgram.use()
+        axisAlignedBoundingBox.draw()
+        orientedBoundingBox.draw()
     }
 
     // Apply transformations to bounding box
     override fun scaleBy(x: Float, y: Float, z: Float) {
         super.scaleBy(x, y, z)
         axisAlignedBoundingBox.update(transformationMat)
+        orientedBoundingBox.update(transformationMat)
     }
 
     override fun scaleTo(scale: Float) {
         super.scaleTo(scale)
         axisAlignedBoundingBox.update(transformationMat)
+        orientedBoundingBox.update(transformationMat)
     }
 
     override fun scaleTo(x: Float, y: Float, z: Float) {
         super.scaleTo(x, y, z)
         axisAlignedBoundingBox.update(transformationMat)
+        orientedBoundingBox.update(transformationMat)
     }
 
     override fun moveBy(v: Vec3) {
         super.moveBy(v)
         axisAlignedBoundingBox.update(transformationMat)
+        orientedBoundingBox.update(transformationMat)
     }
 
     override fun moveBy(x: Float, y: Float, z: Float) {
         super.moveBy(x, y, z)
         axisAlignedBoundingBox.update(transformationMat)
+        orientedBoundingBox.update(transformationMat)
     }
 
     override fun moveTo(v: Vec3) {
         super.moveTo(v)
         axisAlignedBoundingBox.update(transformationMat)
+        orientedBoundingBox.update(transformationMat)
     }
 
     override fun moveTo(x: Float, y: Float, z: Float) {
         super.moveTo(x, y, z)
         axisAlignedBoundingBox.update(transformationMat)
+        orientedBoundingBox.update(transformationMat)
     }
 
     override fun rotateBy(yaw: Float, pitch: Float, roll: Float) {
         super.rotateBy(yaw, pitch, roll)
         axisAlignedBoundingBox.update(transformationMat)
+        orientedBoundingBox.update(transformationMat)
     }
 
     override fun rotatePitchBy(angle: Float) {
         super.rotatePitchBy(angle)
         axisAlignedBoundingBox.update(transformationMat)
+        orientedBoundingBox.update(transformationMat)
     }
 
     override fun rotateRollBy(angle: Float) {
         super.rotateRollBy(angle)
         axisAlignedBoundingBox.update(transformationMat)
+        orientedBoundingBox.update(transformationMat)
     }
 
     override fun rotateTo(yaw: Float, pitch: Float, roll: Float) {
         super.rotateTo(yaw, pitch, roll)
         axisAlignedBoundingBox.update(transformationMat)
+        orientedBoundingBox.update(transformationMat)
     }
 
     override fun rotateYawBy(angle: Float) {
         super.rotateYawBy(angle)
         axisAlignedBoundingBox.update(transformationMat)
+        orientedBoundingBox.update(transformationMat)
     }
 }

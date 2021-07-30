@@ -132,10 +132,10 @@ class Renderer(
         // Draw skybox
         world.skybox?.let { skybox ->
             Skybox.shaderProgram.use()
-            skybox.bind()
-            glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.textureID)
             Skybox.shaderProgram.setUniformMat4f("v", camera.viewMat.toMat3().toMat4())
             Skybox.shaderProgram.setUniformMat4f("p", this.projectionMat)
+            skybox.bind()
+            glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.textureID)
             glDepthFunc(GL_LEQUAL)
             glDrawArrays(GL_TRIANGLES, 0, 36)
             glDepthFunc(GL_LESS)

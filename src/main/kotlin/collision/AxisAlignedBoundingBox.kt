@@ -7,6 +7,7 @@ import glm_.mat4x4.Mat4
 import glm_.vec2.Vec2
 import glm_.vec4.Vec4
 import models.base.Model
+import models.base.ModelNoLight
 import org.lwjgl.opengl.GL33.*
 import utils.Debug
 
@@ -14,6 +15,8 @@ class AxisAlignedBoundingBox(modelMesh: Mesh) : Model() {
     companion object {
         val TAG: String = this::class.java.name
         val uvs = Vec2(0f, 0f) // Yellow
+
+        const val VERTEX_SIZE = 5
     }
 
     var boundingPoints = BoundingPoints()
@@ -39,7 +42,14 @@ class AxisAlignedBoundingBox(modelMesh: Mesh) : Model() {
         // Calculate axis aligned bounding box over oriented one
         boundingPoints = BoundingBoxUtils.calculateBoundingPoints(transformedVertices)
         mesh = BoundingBoxUtils.createMesh(boundingPoints, uvs)
-        uploadVertices(mesh!!)
+        uploadVertices(mesh!!, vertexSize = 5)
+    }
+
+    fun draw() {
+        ModelNoLight.shaderProgram.setUniformMat4f("m", transformationMat)
+        bind()
+        texture.bind()
+        glDrawElements(GL_LINES, getIndicesCount(), GL_UNSIGNED_INT, 0)
     }
 
     override fun addMesh(mesh: Mesh) {
@@ -52,14 +62,14 @@ class AxisAlignedBoundingBox(modelMesh: Mesh) : Model() {
             this.vbo = glGenBuffers()
             this.ebo = glGenBuffers()
 
-            uploadVertices(mesh!!)
+            uploadVertices(mesh!!, vertexSize = 5)
             uploadIndices(mesh!!)
 
             // 3 Float vertex coordinates
-            glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * 4, 0)
+            glVertexAttribPointer(0, 3, GL_FLOAT, false, VERTEX_SIZE * Float.SIZE_BYTES, 0)
             glEnableVertexAttribArray(0)
             // 2 Float vertex texture coordinates
-            glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * 4, 3 * 4)
+            glVertexAttribPointer(1, 2, GL_FLOAT, false, VERTEX_SIZE * Float.SIZE_BYTES, 3L * Float.SIZE_BYTES)
             glEnableVertexAttribArray(1)
 
             // Unbind VBO and VAO

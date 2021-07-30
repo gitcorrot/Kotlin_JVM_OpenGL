@@ -2,8 +2,10 @@ package collision
 
 import Texture
 import data.Mesh
+import glm_.mat4x4.Mat4
 import glm_.vec2.Vec2
 import models.base.Model
+import models.base.ModelNoLight
 import org.lwjgl.opengl.GL33.*
 import utils.Debug
 
@@ -11,6 +13,8 @@ class OrientedBoundingBox(modelMesh: Mesh) : Model() {
     companion object {
         val TAG: String = this::class.java.name
         val uvs = Vec2(0.125f, 0.0f) // Orange
+
+        const val VERTEX_SIZE = 5
     }
 
     private var boundingPoints = BoundingPoints()
@@ -33,14 +37,14 @@ class OrientedBoundingBox(modelMesh: Mesh) : Model() {
             this.vbo = glGenBuffers()
             this.ebo = glGenBuffers()
 
-            uploadVertices(mesh!!)
+            uploadVertices(mesh!!, VERTEX_SIZE)
             uploadIndices(mesh!!)
 
             // 3 Float vertex coordinates
-            glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * 4, 0)
+            glVertexAttribPointer(0, 3, GL_FLOAT, false, VERTEX_SIZE * Float.SIZE_BYTES, 0)
             glEnableVertexAttribArray(0)
             // 2 Float vertex texture coordinates
-            glVertexAttribPointer(1, 2, GL_FLOAT, false, 5 * 4, 3 * 4)
+            glVertexAttribPointer(1, 2, GL_FLOAT, false, VERTEX_SIZE * Float.SIZE_BYTES, 3L * Float.SIZE_BYTES)
             glEnableVertexAttribArray(1)
 
             // Unbind VBO and VAO
@@ -51,5 +55,16 @@ class OrientedBoundingBox(modelMesh: Mesh) : Model() {
         } else {
             throw RuntimeException("Can't create Model without added Mesh!")
         }
+    }
+
+    fun update(transformationMat: Mat4) {
+        this.transformationMat = transformationMat
+    }
+
+    fun draw() {
+        ModelNoLight.shaderProgram.setUniformMat4f("m", transformationMat)
+        bind()
+        texture.bind()
+        glDrawElements(GL_LINES, getIndicesCount(), GL_UNSIGNED_INT, 0)
     }
 }

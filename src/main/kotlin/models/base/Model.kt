@@ -70,9 +70,9 @@ abstract class Model : Movable, Rotatable, Scalable {
         Debug.logd(TAG, "Texture added to model!")
     }
 
-    fun uploadVertices(mesh: Mesh) {
+    fun uploadVertices(mesh: Mesh, vertexSize: Int) {
         val verticesBuffer: FloatBuffer =
-            MemoryUtil.memAllocFloat(mesh.vertices.size * 5) // each vertex has 5 floats
+            MemoryUtil.memAllocFloat(mesh.vertices.size * vertexSize)
         for (v in mesh.vertices) {
             verticesBuffer.put(v.convertToFloatArray())
         }
