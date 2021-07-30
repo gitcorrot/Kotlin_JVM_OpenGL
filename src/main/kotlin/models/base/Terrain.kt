@@ -2,6 +2,7 @@ package models.base
 
 import ShaderProgram
 import data.Mesh
+import glm_.mat4x4.Mat4
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryUtil
 import utils.Debug
@@ -89,6 +90,16 @@ class Terrain(
         } ?: run {
             throw RuntimeException("Can't create Model without added Mesh!")
         }
+    }
+
+    fun draw(viewMat: Mat4, projectionMat: Mat4) {
+        shaderProgram.use()
+        shaderProgram.setUniformMat4f("m", transformationMat)
+        shaderProgram.setUniformMat4f("v", viewMat)
+        shaderProgram.setUniformMat4f("p", projectionMat)
+
+        bind()
+        glDrawElements(GL_TRIANGLES, getIndicesCount(), GL_UNSIGNED_INT, 0)
     }
 
     /**

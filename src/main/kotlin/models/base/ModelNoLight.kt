@@ -4,6 +4,7 @@ import ShaderProgram
 import collision.AxisAlignedBoundingBox
 import collision.OrientedBoundingBox
 import data.Mesh
+import glm_.mat4x4.Mat4
 import glm_.vec3.Vec3
 import org.lwjgl.opengl.GL33.*
 import org.lwjgl.system.MemoryUtil
@@ -88,6 +89,30 @@ abstract class ModelNoLight : Model() {
         } else {
             throw RuntimeException("Can't create Model without added Mesh!")
         }
+    }
+
+    fun draw(viewMat: Mat4, projectionMat: Mat4) {
+        shaderProgram.use()
+        shaderProgram.setUniformMat4f("m", transformationMat)
+        shaderProgram.setUniformMat4f("v", viewMat)
+        shaderProgram.setUniformMat4f("p", projectionMat)
+        bind()
+        texture.bind()
+        glDrawElements(GL_TRIANGLES, getIndicesCount(), GL_UNSIGNED_INT, 0)
+    }
+
+    fun drawBoundingBoxes() {
+        shaderProgram.use()
+
+        shaderProgram.setUniformMat4f("m", axisAlignedBoundingBox.transformationMat)
+        axisAlignedBoundingBox.bind()
+        axisAlignedBoundingBox.texture.bind()
+        glDrawElements(GL_LINES, axisAlignedBoundingBox.getIndicesCount(), GL_UNSIGNED_INT, 0)
+
+        shaderProgram.setUniformMat4f("m", transformationMat)
+        orientedBoundingBox.bind()
+        orientedBoundingBox.texture.bind()
+        glDrawElements(GL_LINES, orientedBoundingBox.getIndicesCount(), GL_UNSIGNED_INT, 0)
     }
 
     // Apply transformations to bounding box

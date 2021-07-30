@@ -1,4 +1,6 @@
 import light.Light
+import light.LightPoint
+import light.LightSpot
 import models.base.ModelDefault
 import models.base.ModelNoLight
 import models.base.Terrain
@@ -12,6 +14,8 @@ class World {
 
     var skybox: Skybox? = null
 
+    var noPointLights: Int = 0
+    var noSpotLights: Int = 0
 
     fun addModelDefault(model: ModelDefault) {
         modelsDefault.add(model)
@@ -22,6 +26,10 @@ class World {
     }
 
     fun addLightSource(lightSource: Light) {
+        when(lightSource) {
+            is LightSpot -> noSpotLights++
+            is LightPoint -> noPointLights++
+        }
         lightSources.add(lightSource)
     }
 

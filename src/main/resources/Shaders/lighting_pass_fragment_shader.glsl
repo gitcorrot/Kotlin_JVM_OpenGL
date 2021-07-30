@@ -48,6 +48,9 @@ void main()
     vec3 normal = texture(gNor, texturePos).rgb;
     vec3 outputColor = texture(gCol, texturePos).rgb;
 
+//    fragmentCol = vec4(outputColor, 1.0f);
+//    return;
+
     // Calculate ambient light
     outputColor = outputColor * ambientLight.color;
 

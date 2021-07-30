@@ -67,6 +67,7 @@ class Engine {
 
         // Main engine loop
         while (!glfwWindowShouldClose(window)) {
+            world.modelsNoLight.first().rotateBy(0f, 0f, 0.01f)
             inputManager.update()
             renderer.render(world, camera)
 
