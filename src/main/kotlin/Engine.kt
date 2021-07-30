@@ -56,7 +56,7 @@ class Engine {
 
         camera = Camera()
         inputManager = InputManager(window)
-        inputManager.addCamera(camera)
+        inputManager.setCamera(camera)
         renderer = Renderer(window)
         world = World()
 
@@ -67,8 +67,10 @@ class Engine {
 
         // Main engine loop
         while (!glfwWindowShouldClose(window)) {
-            world.modelsNoLight.first().rotateBy(0.01f, 0f, 0f)
-            world.modelsDefault.first().rotateBy(0.01f, 0f, 0f)
+
+            world.modelsNoLight.first().rotatePitchBy(0.01f)
+            world.modelsNoLight.first().rotateRollBy(0.01f)
+            world.modelsDefault.first().rotateYawBy(0.1f)
             inputManager.update()
             renderer.render(world, camera)
 

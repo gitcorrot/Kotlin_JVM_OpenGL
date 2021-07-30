@@ -7,12 +7,16 @@ import org.lwjgl.system.MemoryUtil.memFree
 import utils.Debug
 
 class ShaderProgram {
-    private val TAG: String = this::class.java.name
+    companion object {
+        private val TAG: String = this::class.java.name
+    }
 
     public var programID: Int = 0
     private var vertexShaderID: Int = 0
     private var geometryShaderID: Int = 0
     private var fragmentShaderID: Int = 0
+
+    private val uniformsMap = mutableMapOf<String, Int>()
 
     init {
         programID = glCreateProgram()
@@ -58,33 +62,40 @@ class ShaderProgram {
         Debug.logd(TAG, "Program (id=$programID) linked successfully!")
     }
 
+    private fun getUniformLocation(name: String): Int {
+        if (uniformsMap[name] == null) {
+            uniformsMap[name] = glGetUniformLocation(programID, name)
+        }
+        return uniformsMap[name]!!
+    }
+
     fun setUniformMat4f(name: String, mat: Mat4) {
-        val loc = glGetUniformLocation(programID, name) // TODO: make uniforms map once and use it
+        val uniformLocation = getUniformLocation(name)
         val arr = memAllocFloat(16)
-        glUniformMatrix4fv(loc, false, mat to arr)
+        glUniformMatrix4fv(uniformLocation, false, mat to arr)
         memFree(arr)
     }
 
     fun setUniformMat3f(name: String, mat: Mat3) {
-        val loc = glGetUniformLocation(programID, name) // TODO: make uniforms map once and use it
+        val uniformLocation = getUniformLocation(name)
         val arr = memAllocFloat(9)
-        glUniformMatrix3fv(loc, false, mat to arr)
+        glUniformMatrix3fv(uniformLocation, false, mat to arr)
         memFree(arr)
     }
 
     fun setUniformVec3f(name: String, vec: Vec3) {
-        val loc = glGetUniformLocation(programID, name) // TODO: make uniforms map once and use it
-        glUniform3f(loc, vec.x, vec.y, vec.z)
+        val uniformLocation = getUniformLocation(name)
+        glUniform3f(uniformLocation, vec.x, vec.y, vec.z)
     }
 
     fun setUniformFloat(name: String, value: Float) {
-        val loc = glGetUniformLocation(programID, name) // TODO: make uniforms map once and use it
-        glUniform1f(loc, value)
+        val uniformLocation = getUniformLocation(name)
+        glUniform1f(uniformLocation, value)
     }
 
     fun setUniformInt(name: String, value: Int) {
-        val loc = glGetUniformLocation(programID, name) // TODO: make uniforms map once and use it
-        glUniform1i(loc, value)
+        val uniformLocation = getUniformLocation(name)
+        glUniform1i(uniformLocation, value)
     }
 
     fun use() {

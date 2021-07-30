@@ -6,6 +6,7 @@ import collision.OrientedBoundingBox
 import data.Mesh
 import glm_.glm
 import glm_.mat4x4.Mat4
+import glm_.quat.Quat
 import glm_.vec3.Vec3
 import org.lwjgl.opengl.GL33.*
 import utils.Debug
@@ -138,14 +139,14 @@ abstract class ModelDefault : Model() {
         orientedBoundingBox.update(transformationMat)
     }
 
-    override fun rotateBy(yaw: Float, pitch: Float, roll: Float) {
-        super.rotateBy(yaw, pitch, roll)
+    override fun rotatePitchBy(angle: Float) {
+        super.rotatePitchBy(angle)
         axisAlignedBoundingBox.update(transformationMat)
         orientedBoundingBox.update(transformationMat)
     }
 
-    override fun rotatePitchBy(angle: Float) {
-        super.rotatePitchBy(angle)
+    override fun rotateYawBy(angle: Float) {
+        super.rotateYawBy(angle)
         axisAlignedBoundingBox.update(transformationMat)
         orientedBoundingBox.update(transformationMat)
     }
@@ -156,14 +157,20 @@ abstract class ModelDefault : Model() {
         orientedBoundingBox.update(transformationMat)
     }
 
-    override fun rotateTo(yaw: Float, pitch: Float, roll: Float) {
-        super.rotateTo(yaw, pitch, roll)
+    override fun rotateBy(angle: Float, axis: Vec3) {
+        super.rotateBy(angle, axis)
         axisAlignedBoundingBox.update(transformationMat)
         orientedBoundingBox.update(transformationMat)
     }
 
-    override fun rotateYawBy(angle: Float) {
-        super.rotateYawBy(angle)
+    override fun rotateBy(quat: Quat) {
+        super.rotateBy(quat)
+        axisAlignedBoundingBox.update(transformationMat)
+        orientedBoundingBox.update(transformationMat)
+    }
+
+    override fun rotateTo(yaw: Float, pitch: Float, roll: Float) {
+        super.rotateTo(yaw, pitch, roll)
         axisAlignedBoundingBox.update(transformationMat)
         orientedBoundingBox.update(transformationMat)
     }

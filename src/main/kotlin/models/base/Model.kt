@@ -132,13 +132,13 @@ abstract class Model : Movable, Rotatable, Scalable {
         updateTransformationMat()
     }
 
-    override fun rotateBy(yaw: Float, pitch: Float, roll: Float) {
-        super.rotateBy(yaw, pitch, roll)
+    override fun rotatePitchBy(angle: Float) {
+        super.rotatePitchBy(angle)
         updateTransformationMat()
     }
 
-    override fun rotatePitchBy(angle: Float) {
-        super.rotatePitchBy(angle)
+    override fun rotateYawBy(angle: Float) {
+        super.rotateYawBy(angle)
         updateTransformationMat()
     }
 
@@ -147,13 +147,17 @@ abstract class Model : Movable, Rotatable, Scalable {
         updateTransformationMat()
     }
 
-    override fun rotateTo(yaw: Float, pitch: Float, roll: Float) {
-        super.rotateTo(yaw, pitch, roll)
+    override fun rotateBy(angle: Float, axis: Vec3) {
+        super.rotateBy(angle, axis)
+        updateTransformationMat()
+    }
+    override fun rotateBy(quat: Quat) {
+        super.rotateBy(quat)
         updateTransformationMat()
     }
 
-    override fun rotateYawBy(angle: Float) {
-        super.rotateYawBy(angle)
+    override fun rotateTo(yaw: Float, pitch: Float, roll: Float) {
+        super.rotateTo(yaw, pitch, roll)
         updateTransformationMat()
     }
 
