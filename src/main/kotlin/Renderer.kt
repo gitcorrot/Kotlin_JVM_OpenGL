@@ -91,6 +91,7 @@ class Renderer(
 
         // Draw default models
         for (model in world.modelsDefault) {
+//            println(model.javaClass)
             model.draw(camera.viewMat, projectionMat)
         }
 

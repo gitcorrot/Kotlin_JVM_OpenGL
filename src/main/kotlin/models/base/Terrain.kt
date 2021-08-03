@@ -2,14 +2,14 @@ package models.base
 
 import ShaderProgram
 import data.Mesh
+import data.Triangle
+import data.Vertex
 import glm_.mat4x4.Mat4
 import org.lwjgl.opengl.GL33.*
-import org.lwjgl.system.MemoryUtil
 import utils.Debug
 import utils.ResourcesUtils
 import utils.TerrainUtils
-import java.nio.FloatBuffer
-import java.nio.IntBuffer
+import kotlin.math.floor
 
 class Terrain(
     val size: Int,
@@ -50,32 +50,13 @@ class Terrain(
     }
 
     override fun create() {
-        mesh?.let { mesh ->
+        if (mesh != null) {
             this.vao = glGenVertexArrays()
             this.vbo = glGenBuffers()
             this.ebo = glGenBuffers()
 
-            val verticesBuffer: FloatBuffer =
-                MemoryUtil.memAllocFloat(mesh.vertices.size * 9) // each vertex has 9 floats
-            for (v in mesh.vertices) {
-                verticesBuffer.put(v.convertToFloatArray())
-            }
-            verticesBuffer.flip() // flip resets position to 0
-
-            val indicesBuffer: IntBuffer = MemoryUtil.memAllocInt(mesh.indices!!.size)
-            indicesBuffer
-                .put(mesh.indices)
-                .flip()
-
-            glBindVertexArray(vao)
-
-            glBindBuffer(GL_ARRAY_BUFFER, vbo)
-            glBufferData(GL_ARRAY_BUFFER, verticesBuffer, GL_STATIC_DRAW)
-            MemoryUtil.memFree(verticesBuffer)
-
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo)
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesBuffer, GL_STATIC_DRAW)
-            MemoryUtil.memFree(indicesBuffer)
+            uploadVertices(mesh!!, ModelDefault.VERTEX_SIZE)
+            uploadIndices(mesh!!)
 
             // 3 Float vertex coordinates
             glVertexAttribPointer(0, 3, GL_FLOAT, false, VERTEX_SIZE * Float.SIZE_BYTES, 0)
@@ -89,7 +70,7 @@ class Terrain(
             glBindVertexArray(0)
 
             Debug.logd(TAG, "models.models.Base.Terrain created!")
-        } ?: run {
+        } else {
             throw RuntimeException("Can't create Model without added Mesh!")
         }
     }
@@ -104,15 +85,77 @@ class Terrain(
         glDrawElements(GL_TRIANGLES, getIndicesCount(), GL_UNSIGNED_INT, 0)
     }
 
-    /**
-     * Returns terrain height at given world coordinates (X, Z)
-     */
-    fun getHeightAt(x: Int, z: Int): Float {
-        this.mesh?.let { mesh ->
-            return mesh.vertices[((-z / tileSize.toInt()) * (size + 1)) + (x / tileSize.toInt())].position.y
-//        return this.mesh.vertices[(z * (size + 1)) + x].position.y
-        } ?: run {
+    @Throws
+    fun getHeightAt(x: Float, z: Float): Float {
+        if (this.mesh != null) {
+            /*
+                     v3         v2
+                      |--------/
+                      |      /
+                      |    /
+                      |  /
+                      |/
+                     v1
+            */
+            val t = getTriangleAt(x = x, z = z)
+
+            // Calculate plane ax + by + cz + d = 0
+            val pA = t.v1.position
+            val pB = t.v2.position
+            val pC = t.v3.position
+
+            val a: Float = (pB.y - pA.y) * (pC.z - pA.z) - (pC.y - pA.y) * (pB.z - pA.z)
+            val b: Float = (pB.z - pA.z) * (pC.x - pA.x) - (pC.z - pA.z) * (pB.x - pA.x)
+            val c: Float = (pB.x - pA.x) * (pC.y - pA.y) - (pC.x - pA.x) * (pB.y - pA.y)
+            val d: Float = -(a * pA.x + b * pA.y + c * pA.z)
+
+            return (-d - a * x - c * z) / b
+        } else {
+            println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa")
             throw RuntimeException("Can't get terrain height without added Mesh!")
         }
     }
+
+    private fun getVertexAt(z: Int, x: Int): Vertex {
+
+        if ((z >= size) || (x >= size) || (z < 0) || (x < 0))
+            throw RuntimeException("Index out of vertices")
+
+        return mesh!!.vertices[z * (size + 1) + x]
+    }
+
+    private fun getTriangleAt(x: Float, z: Float): Triangle {
+        // 1. Calculate corners of two triangles:
+        /*
+               v4             v3
+             (z+1,x)       (z+1,x+1)
+                  |--------/|
+                  |      /  |
+                  |    /    |
+                  |  /      |
+                  |/--------|
+             (z,x)         (z,x+1)
+              v1             v2
+        */
+        val xFloor = floor(x / tileSize).toInt()
+        val xCeil = xFloor + 1
+        val zFloor = floor(-z / tileSize).toInt()
+        val zCeil = zFloor + 1
+
+        val v1 = getVertexAt(x = xFloor, z = zFloor)
+        val v2 = getVertexAt(x = xCeil, z = zFloor)
+        val v3 = getVertexAt(x = xCeil, z = zCeil)
+        val v4 = getVertexAt(x = xFloor, z = zCeil)
+
+        // 2. Check if given position is in
+        //    triangle (v4, v1, v3) or (v2, v3, v1):
+        return if (z < ((v1.position.z - v3.position.z) / (v1.position.x - v3.position.x)) * (x - v1.position.x) + v1.position.z) {
+            // We are in(v4, v1, v3)
+            Triangle(v4, v1, v3)
+        } else {
+            // We are in (v2, v3, v1)
+            Triangle(v2, v3, v1)
+        }
+    }
+
 }

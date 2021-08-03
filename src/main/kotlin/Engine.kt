@@ -21,6 +21,8 @@ import kotlin.random.Random
 class Engine {
     companion object {
         val TAG: String = this::class.java.name
+
+        var gravity = false
     }
 
     private val window: Long
@@ -70,8 +72,18 @@ class Engine {
 
             world.modelsNoLight.first().rotatePitchBy(0.01f)
             world.modelsNoLight.first().rotateRollBy(0.01f)
-            world.modelsDefault.first().rotateYawBy(0.1f)
+            world.modelsDefault.first().rotateYawBy(0.01f)
+
             inputManager.update()
+
+            if (gravity) {
+                val terrain = world.terrains.first()
+                val posX = camera.position.x
+                val posZ = camera.position.z
+
+                camera.position.y = terrain.getHeightAt(x = posX, z = posZ) + 2f
+            }
+
             renderer.render(world, camera)
 
             // Read OpenGL error
@@ -128,7 +140,7 @@ class Engine {
         val colorPaletteTexture = Texture.getDefaultColorPalette()
 
         // models.Base.Terrain
-        val terrain = Terrain(10, 0.05f, 2.0f)
+        val terrain = Terrain(10, 0.1f, 5.0f)
         world.addTerrain(terrain)
 
         // Coordinate system origin helpful model
@@ -137,24 +149,24 @@ class Engine {
 
         // Tree
         val tree1 = Tree(TreeType.TYPE_1)
-        tree1.moveTo(10f, terrain.getHeightAt(10, -6), -6f)
+        tree1.moveTo(10f, terrain.getHeightAt(10f, -10f), -10f)
         world.addModelDefault(tree1)
         val tree2 = Tree(TreeType.TYPE_2)
-        tree2.moveTo(13f, terrain.getHeightAt(13, -6), -6f)
+        tree2.moveTo(20f, terrain.getHeightAt(20f, -10f), -10f)
         world.addModelDefault(tree2)
         val tree3 = Tree(TreeType.TYPE_3)
-        tree3.moveTo(7f, terrain.getHeightAt(7, -6), -6f)
+        tree3.moveTo(30f, terrain.getHeightAt(30f, -10f), -10f)
         world.addModelDefault(tree3)
 
         // Rock
         val rock1 = Rock(RockType.TYPE_1)
-        rock1.moveTo(5f, terrain.getHeightAt(5, -12), -12f)
+        rock1.moveTo(10f, terrain.getHeightAt(10f, -20f), -20f)
         world.addModelDefault(rock1)
         val rock2 = Rock(RockType.TYPE_2)
-        rock2.moveTo(15f, terrain.getHeightAt(15, -12), -12f)
+        rock2.moveTo(20f, terrain.getHeightAt(20f, -20f), -20f)
         world.addModelDefault(rock2)
         val rock3 = Rock(RockType.TYPE_3)
-        rock3.moveTo(15f, terrain.getHeightAt(15, -4), -4f)
+        rock3.moveTo(30f, terrain.getHeightAt(30f, -20f), -20f)
         world.addModelDefault(rock3)
 
         // Pig model from: http://quaternius.com/
@@ -164,28 +176,28 @@ class Engine {
             val scale = r.nextInt(8, 10) / 10f
             val randX = r.nextFloat() * terrain.size * terrain.tileSize
             val randZ = -r.nextFloat() * terrain.size * terrain.tileSize
-            val height = terrain.getHeightAt(randX.toInt(), randZ.toInt())
+            val height = terrain.getHeightAt(randX, randZ)
             pig.rotateTo(r.nextFloat() * 360f, 0f, 0f)
             pig.scaleTo(scale)
             pig.moveTo(randX, height, randZ)
-            world.addModelDefault(pig)
+//            world.addModelDefault(pig)
         }
 
         // Light source model
         val lampModel1 = SphereLamp()
         lampModel1.addTexture(colorPaletteTexture)
         lampModel1.scaleTo(0.3f, 0.3f, 0.3f)
-        lampModel1.moveTo(2f, terrain.getHeightAt(2, -2) + 3f, -2f)
+        lampModel1.moveTo(2f, terrain.getHeightAt(2f, -2f) + 3f, -2f)
         world.addModelNoLight(lampModel1)
 
         val lampModel2 = SphereLamp()
         lampModel2.addTexture(colorPaletteTexture)
         lampModel2.scaleTo(0.3f, 0.3f, 0.3f)
-        lampModel2.moveTo(19f, terrain.getHeightAt(19, -19) + 3f, -19f)
+        lampModel2.moveTo(19f, terrain.getHeightAt(19f, -19f) + 3f, -19f)
         world.addModelNoLight(lampModel2)
 
         val streetLamp = StreetLamp()
-        streetLamp.moveTo(10f, terrain.getHeightAt(10, -10), -10f)
+        streetLamp.moveTo(5f, terrain.getHeightAt(5f, -5f), -5f)
         world.addModelDefault(streetLamp)
 
         // Lighting

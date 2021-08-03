@@ -3,8 +3,10 @@ package utils
 import data.Mesh
 import data.Vertex
 import glm_.glm
+import glm_.random
 import glm_.vec2.Vec2
 import glm_.vec3.Vec3
+import kotlin.random.Random
 
 object TerrainUtils {
 
@@ -25,6 +27,7 @@ object TerrainUtils {
                     Vertex(
                         position = tilePosition,
                         normal = null, // calculated in geometry shader
+//                        color = Vec3(0f, tilePosition.x/3f,  tilePosition.y/3f),
                         color = tileColor,
                         textureCoordinates = null
                     )
@@ -34,27 +37,38 @@ object TerrainUtils {
 
         // Calculate indices
         val indices = arrayListOf<Int>()
-
-        //   (z+1,x)     (z+1,x+1)
-        //      |------- -|
-        //      |      -  |
-        //      |    -    |
-        //      |  -      |
-        //      |- ------ |
-        //   (z,x)      (z,x+1)
+        /*
+           (z+1,x)     (z+1,x+1)
+              |------- -|
+              |      -  |
+              |    -    |
+              |  -      |
+              |- ------ |
+           (z,x)      (z,x+1)
+        */
         for (z in 0 until size) {
             for (x in 0 until size) {
                 val lb = z * (size + 1) + x
                 val rb = z * (size + 1) + x + 1
                 val lt = (z + 1) * (size + 1) + x
                 val rt = (z + 1) * (size + 1) + x + 1
+                /*
+                       lt         rt
+                        |--------/|
+                        |      /  |
+                        |    /    |
+                        |  /      |
+                        |/--------|
 
-                // triangle 1 -> lb, rt, lt
+                      lb          rb
+                */
+                // First vertex is always rt/lb for easier normal calculation
+                // triangle 1 -> lt, lb, rt
                 indices.add(lt)
                 indices.add(lb)
                 indices.add(rt)
 
-                // triangle 2 -> lb, rb, rt
+                // triangle 2 -> rb, rt, lb
                 indices.add(rb)
                 indices.add(rt)
                 indices.add(lb)
