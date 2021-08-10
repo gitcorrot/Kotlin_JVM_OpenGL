@@ -15,6 +15,7 @@ import org.lwjgl.opengl.GL33.glGetString
 import org.lwjgl.system.MemoryUtil
 import utils.Debug
 import utils.OpenGLUtils.readOpenGLError
+import kotlin.math.roundToInt
 import kotlin.random.Random
 
 
@@ -180,7 +181,7 @@ class Engine {
             pig.rotateTo(r.nextFloat() * 360f, 0f, 0f)
             pig.scaleTo(scale)
             pig.moveTo(randX, height, randZ)
-//            world.addModelDefault(pig)
+            world.addModelDefault(pig)
         }
 
         // Light source model

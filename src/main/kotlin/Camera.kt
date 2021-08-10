@@ -74,7 +74,7 @@ class Camera : Movable, Rotatable {
                 // Q, E - decreasing/increasing camera speed
                 GLFW_KEY_Q -> {
                     if (cameraSpeed > CAMERA_SPEED_MIN) {
-                        Debug.logd(TAG, (CAMERA_SPEED_CHANGE_STEP * deltaTime.toFloat()).toString())
+//                        Debug.logd(TAG, (CAMERA_SPEED_CHANGE_STEP * deltaTime.toFloat()).toString())
                         cameraSpeed -= CAMERA_SPEED_CHANGE_STEP * deltaTime.toFloat()
                     }
                 }

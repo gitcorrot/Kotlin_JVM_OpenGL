@@ -118,7 +118,7 @@ class Terrain(
 
     private fun getVertexAt(z: Int, x: Int): Vertex {
 
-        if ((z >= size) || (x >= size) || (z < 0) || (x < 0))
+        if ((z >= size + 1) || (x >= size + 1) || (z < 0) || (x < 0))
             throw RuntimeException("Index out of vertices")
 
         return mesh!!.vertices[z * (size + 1) + x]
