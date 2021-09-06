@@ -30,6 +30,7 @@ class Camera : Movable, Rotatable {
 
     var yaw = 45f
     var pitch = 45f
+    private var firstCursorMoved = false
 
     val viewMat: Mat4
         get() = rotation.toMat4().translate(-position)
@@ -88,17 +89,21 @@ class Camera : Movable, Rotatable {
         }
 
         override fun cursorMoved(deltaX: Int, deltaY: Int) {
-            yaw += deltaX * MOUSE_SENSITIVITY
-            pitch -= deltaY * MOUSE_SENSITIVITY
+            if (firstCursorMoved) {
+                yaw += deltaX * MOUSE_SENSITIVITY
+                pitch -= deltaY * MOUSE_SENSITIVITY
 
-            if (pitch > 90f) pitch = 90f
-            if (pitch < -90f) pitch = -90f
+                if (pitch > 90f) pitch = 90f
+                if (pitch < -90f) pitch = -90f
 
-            yaw %= 360
+                yaw %= 360
+            } else {
+                firstCursorMoved = true
+            }
 
             updateOrientation()
 
-            // Debug.logd(TAG, "Yaw: $yaw, Pitch: $pitch, Quat: $rotation")
+//            Debug.logd(TAG, "deltaX=$deltaX, deltaY=$deltaY")
         }
 
         override fun mouseButtonPressed(mouseButton: Int) {
@@ -112,5 +117,7 @@ class Camera : Movable, Rotatable {
         val yawQuat = Quat.angleAxis(glm.radians(yaw), Vec3(0, 1, 0))
 
         rotation = pitchQuat.times(yawQuat).normalize()
+
+//        Debug.logd(TAG, "Yaw: $yaw, Pitch: $pitch, Quat: $rotation")
     }
 }
