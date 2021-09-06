@@ -20,11 +20,12 @@ abstract class Model : Movable, Rotatable, Scalable {
         val TAG: String = this::class.java.name
     }
 
-    override val scale: Vec3 = Vec3(1f)
     override val position: Vec3 = Vec3(0f)
     override var rotation: Quat = Quat()
+    override val scale: Vec3 = Vec3(1f)
 
     var transformationMat = Mat4(1f)
+    var texture = Texture()
 
     protected abstract var mesh: Mesh?
     protected abstract fun addMesh(mesh: Mesh)
@@ -53,8 +54,6 @@ abstract class Model : Movable, Rotatable, Scalable {
                 throw Exception("Model EBO id not assigned!")
             return field
         }
-
-    var texture = Texture()
 
 
     fun getIndicesCount() = this.mesh?.indices?.size ?: 0
