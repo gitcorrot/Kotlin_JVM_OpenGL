@@ -1,11 +1,11 @@
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWCursorPosCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import org.lwjgl.glfw.GLFWMouseButtonCallback
 
-class InputManager(
-    private val window: Long,
-) {
+class InputManager : KoinComponent {
     companion object {
         private val TAG: String = this::class.java.name
     }
@@ -17,25 +17,27 @@ class InputManager(
             GLFW_KEY_Q, GLFW_KEY_E
         )
 
-    private var cameraCallback: ICameraInputCallback? = null
-    private var keyCb: GLFWKeyCallback?
-    private var cursorPosCb: GLFWCursorPosCallback?
-//    private var cursorBtnCb: GLFWMouseButtonCallback?
+    private val camera by inject<Camera>()
+
+    private var window: Long? = null
+
+    private var cameraCallback: ICameraInputCallback = camera.inputCallback
+    private var keyCallback: GLFWKeyCallback? = null
+    private var cursorPosCallback: GLFWCursorPosCallback? = null
+    private var cursorBtnCallback: GLFWMouseButtonCallback? = null
 
     private var lastCursorX: Double = 0.0
     private var lastCursorY: Double = 0.0
     private var previousTime: Double = 0.0
 
-    init {
-        keyCb = glfwSetKeyCallback(window, ::keyCallback)
-        cursorPosCb = glfwSetCursorPosCallback(window, ::cursorPosCallback)
-//        cursorBtnCb = glfwSetMouseButtonCallback(window, ::mouseButtonCallback)
+    fun attachWindow(window: Long) {
+        this.window = window
+
+        keyCallback = glfwSetKeyCallback(window, ::keyCallback)
+        cursorPosCallback = glfwSetCursorPosCallback(window, ::cursorPosCallback)
+        cursorBtnCallback = glfwSetMouseButtonCallback(window, ::mouseButtonCallback)
         previousTime = glfwGetTime()
         glfwPollEvents()
-    }
-
-    fun setCamera(camera: Camera) {
-        this.cameraCallback = camera.iCameraInput
     }
 
     private fun keyCallback(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
@@ -48,23 +50,20 @@ class InputManager(
     }
 
     private fun cursorPosCallback(window: Long, xPos: Double, yPos: Double) {
+        val deltaX = (xPos - lastCursorX).toInt()
+        val deltaY = (lastCursorY - yPos).toInt()
 
-        cameraCallback?.let {
-            val deltaX = (xPos - lastCursorX).toInt()
-            val deltaY = (lastCursorY - yPos).toInt()
-
-            it.cursorMoved(deltaX, deltaY)
-        }
+        cameraCallback.cursorMoved(deltaX, deltaY)
 
         lastCursorX = xPos
         lastCursorY = yPos
     }
 
-//    private fun mouseButtonCallback(window: Long, button: Int, action: Int, mods: Int) {
-//        if (action == GLFW_PRESS) {
-//            cameraCallback?.mouseButtonPressed(GLFW_MOUSE_BUTTON_RIGHT)
-//        }
-//    }
+    private fun mouseButtonCallback(window: Long, button: Int, action: Int, mods: Int) {
+        if (action == GLFW_PRESS) {
+            cameraCallback.mouseButtonPressed(button)
+        }
+    }
 
     fun update() {
         glfwPollEvents()
@@ -72,11 +71,9 @@ class InputManager(
         val currentTime = glfwGetTime() // delta seconds
 
         // Camera keys
-        cameraCallback?.let {
-            for (k in cameraKeys) {
-                if (glfwGetKey(window, k) == GLFW_PRESS) {
-                    it.keyPressed(k, currentTime - previousTime)
-                }
+        for (k in cameraKeys) {
+            if (glfwGetKey(window!!, k) == GLFW_PRESS) {
+                cameraCallback.keyPressed(k, currentTime - previousTime)
             }
         }
 
@@ -84,7 +81,7 @@ class InputManager(
     }
 
     fun cleanup() {
-        keyCb?.free()
-        cursorPosCb?.free()
+        keyCallback?.free()
+        cursorPosCallback?.free()
     }
 }

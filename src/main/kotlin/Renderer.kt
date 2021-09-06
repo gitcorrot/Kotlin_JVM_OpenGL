@@ -1,5 +1,8 @@
 import glm_.glm
 import glm_.mat4x4.Mat4
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+import org.koin.java.KoinJavaComponent.inject
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL33.*
 import ui.LoadingView
@@ -9,7 +12,7 @@ import utils.ResourcesUtils
 
 class Renderer(
     private val window: Long
-) {
+) : KoinComponent {
     companion object {
         private val TAG: String = this::class.java.name
 
@@ -17,6 +20,9 @@ class Renderer(
         const val Z_NEAR = 0.1f
         const val Z_FAR = 1000.0f
     }
+
+    private val camera by inject<Camera>()
+    private val world by inject<World>()
 
     private val lightingPassShader = ShaderProgram()
 
@@ -68,7 +74,7 @@ class Renderer(
     }
 
 
-    fun render(world: World?, camera: Camera) {
+    fun render() {
         defaultBuffer.bind()
         defaultBuffer.clear()
 

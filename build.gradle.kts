@@ -11,6 +11,7 @@ version = "1.0-SNAPSHOT"
 val glmVersion = "v1.0.1"
 val lwjglVersion = "3.2.3"
 val lwjglNatives = "natives-linux"
+val koinVersion = "3.1.2"
 
 application {
     mainClassName = "MainKt"
@@ -45,6 +46,10 @@ dependencies {
     // GLM Math
     implementation("com.github.kotlin-graphics:glm:$glmVersion")
     implementation(kotlin("stdlib-jdk8"))
+
+    // Koin
+    implementation("io.insert-koin:koin-core:$koinVersion")
+
 }
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {

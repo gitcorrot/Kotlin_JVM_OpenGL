@@ -11,7 +11,7 @@ import utils.Debug
 interface ICameraInputCallback {
     fun keyPressed(key: Int, deltaTime: Double)
     fun cursorMoved(deltaX: Int, deltaY: Int)
-//    fun mouseButtonPressed(mouseButton: Int)
+    fun mouseButtonPressed(mouseButton: Int)
 }
 
 private const val MOUSE_SENSITIVITY = 0.1f
@@ -39,7 +39,7 @@ class Camera : Movable, Rotatable {
     }
 
 
-    val iCameraInput = object : ICameraInputCallback {
+    val inputCallback = object : ICameraInputCallback {
         override fun keyPressed(key: Int, deltaTime: Double) {
             when (key) {
 
@@ -99,6 +99,10 @@ class Camera : Movable, Rotatable {
             updateOrientation()
 
             // Debug.logd(TAG, "Yaw: $yaw, Pitch: $pitch, Quat: $rotation")
+        }
+
+        override fun mouseButtonPressed(mouseButton: Int) {
+            Debug.logd(TAG, "Mouse button pressed ($mouseButton)")
         }
     }
 

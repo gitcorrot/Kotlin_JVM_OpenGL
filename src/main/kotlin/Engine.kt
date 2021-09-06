@@ -6,6 +6,8 @@ import light.LightPoint
 import light.LightSpot
 import models.*
 import models.base.Terrain
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.lwjgl.Version.getVersion
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
@@ -15,22 +17,22 @@ import org.lwjgl.opengl.GL33.glGetString
 import org.lwjgl.system.MemoryUtil
 import utils.Debug
 import utils.OpenGLUtils.readOpenGLError
-import kotlin.math.roundToInt
 import kotlin.random.Random
 
 
-class Engine {
+class Engine : KoinComponent{
     companion object {
         val TAG: String = this::class.java.name
 
         var gravity = false
     }
 
-    private val window: Long
-    private val camera: Camera
-    private val inputManager: InputManager
+    private val window: Long?
     private val renderer: Renderer
-    private val world: World
+
+    private val inputManager by inject<InputManager>()
+    private val camera by inject<Camera>()
+    private val world by inject<World>()
 
     private val defaultWindowWidth = 1000
     private val defaultWindowHeight = 800
@@ -57,11 +59,8 @@ class Engine {
         Debug.logi(TAG, "JLWGL Version: ${getVersion()}")
         Debug.logi(TAG, "OpenGL Version: ${glGetString(GL_VERSION)}")
 
-        camera = Camera()
-        inputManager = InputManager(window)
-        inputManager.setCamera(camera)
+        inputManager.attachWindow(window)
         renderer = Renderer(window)
-        world = World()
 
         initWorld()
     }
@@ -69,7 +68,7 @@ class Engine {
     fun run() {
 
         // Main engine loop
-        while (!glfwWindowShouldClose(window)) {
+        while (!glfwWindowShouldClose(window!!)) {
 
             world.modelsNoLight.first().rotatePitchBy(0.01f)
             world.modelsNoLight.first().rotateRollBy(0.01f)
@@ -85,7 +84,7 @@ class Engine {
                 camera.position.y = terrain.getHeightAt(x = posX, z = posZ) + 2f
             }
 
-            renderer.render(world, camera)
+            renderer.render()
 
             // Read OpenGL error
             readOpenGLError()?.let { openGlError ->
@@ -100,7 +99,7 @@ class Engine {
         world.cleanup()
         inputManager.cleanup()
         errCallback?.free()
-        glfwDestroyWindow(window)
+        window?.let { glfwDestroyWindow(it) }
         glfwTerminate()
         glfwSetErrorCallback(null)?.free()
     }
