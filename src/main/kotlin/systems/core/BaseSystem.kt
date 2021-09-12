@@ -4,13 +4,13 @@ abstract class BaseSystem {
 
     var isStarted: Boolean = false
 
-    fun start() {
+    open fun start() {
         isStarted = true
     }
 
     abstract fun update(deltaTime: Float)
 
-    fun stop() {
+    open fun stop() {
         isStarted = false
     }
 }

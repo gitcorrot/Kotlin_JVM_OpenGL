@@ -1,5 +1,5 @@
 package nodes.core
 
-abstract class BaseNode(
-    val entityId: String
-)
+abstract class BaseNode() {
+    abstract val entityId: String
+}

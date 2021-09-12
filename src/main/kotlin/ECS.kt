@@ -1,5 +1,6 @@
 import nodes.MoveNode
 import nodes.core.BaseNode
+import systems.PhysicsSystem
 import systems.core.BaseSystem
 import utils.Debug
 
@@ -23,6 +24,11 @@ class ECS {
                 nodes[MoveNode::class.java.name] = mutableListOf()
             }
             nodes[MoveNode::class.java.name]!!.add(moveNode)
+
+            // update system targets
+            getSystemOfClass(PhysicsSystem::class.java.name)?.let {
+                (it as PhysicsSystem).targets.add(moveNode)
+            }
         }
 
         // TODO: observe entity if any component was added/removed
@@ -41,6 +47,10 @@ class ECS {
         Debug.logi(TAG, "System added! ($system)")
         systems.add(system)
         system.start()
+    }
+
+    fun getSystemOfClass(systemClass: String): BaseSystem? {
+        return systems.find { it::class.java.name == systemClass }
     }
 
     fun removeSystem(system: BaseSystem) {

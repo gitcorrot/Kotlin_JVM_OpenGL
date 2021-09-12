@@ -2,21 +2,19 @@ package nodes
 
 import Entity
 import components.PositionComponent
-import components.VelocityComponent
 import nodes.core.BaseNode
 
-data class MoveNode(
+data class RenderNode(
     override val entityId: String,
+//    val positionComponent: PositionComponent,
     val positionComponent: PositionComponent,
-    val velocityComponent: VelocityComponent
 ) : BaseNode() {
     companion object {
-        fun fromEntity(entity: Entity): MoveNode? {
+        fun fromEntity(entity: Entity): RenderNode? {
             val pc = entity.getComponent(PositionComponent::class.java.name) as PositionComponent?
-            val vc = entity.getComponent(VelocityComponent::class.java.name) as VelocityComponent?
 
-            return if (pc != null && vc != null) {
-                MoveNode(entity.id, pc, vc)
+            return if (pc != null) {
+                RenderNode(entity.id, pc)
             } else {
                 null
             }

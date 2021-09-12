@@ -111,7 +111,6 @@ class Terrain(
 
             return (-d - a * x - c * z) / b
         } else {
-            println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa")
             throw RuntimeException("Can't get terrain height without added Mesh!")
         }
     }
