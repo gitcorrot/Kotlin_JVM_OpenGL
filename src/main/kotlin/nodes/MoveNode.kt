@@ -10,6 +10,10 @@ data class MoveNode(
     val positionComponent: PositionComponent,
     val velocityComponent: VelocityComponent
 ) : BaseNode() {
+
+    // tu mozna zmienic na List<Any> w base klasie zeby latwiej iterowac po komponentach
+//    val components: List<Any> = listOf(positionComponent, positionComponent)
+
     companion object {
         fun fromEntity(entity: Entity): MoveNode? {
             val pc = entity.getComponent(PositionComponent::class.java.name) as PositionComponent?

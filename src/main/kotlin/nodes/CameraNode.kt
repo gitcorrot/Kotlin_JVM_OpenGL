@@ -1,23 +1,23 @@
 package nodes
 
 import Entity
-import components.ModelComponent
+import components.CameraComponent
 import components.PositionComponent
 import nodes.core.BaseNode
 
-data class RenderNode(
+data class CameraNode(
     override val entityId: String,
     val positionComponent: PositionComponent,
-    val modelComponent: ModelComponent
+    val cameraComponent: CameraComponent
 ) : BaseNode() {
 
     companion object {
-        fun fromEntity(entity: Entity): RenderNode? {
+        fun fromEntity(entity: Entity): CameraNode? {
             val pc = entity.getComponent(PositionComponent::class.java.name) as PositionComponent?
-            val mc = entity.getComponent(ModelComponent::class.java.name) as ModelComponent?
+            val cc = entity.getComponent(CameraComponent::class.java.name) as CameraComponent?
 
-            return if (pc != null && mc != null) {
-                RenderNode(entity.id, pc, mc)
+            return if (pc != null && cc != null) {
+                CameraNode(entity.id, pc, cc)
             } else {
                 null
             }

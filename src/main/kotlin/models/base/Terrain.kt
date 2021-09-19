@@ -1,10 +1,8 @@
 package models.base
 
 import ShaderProgram
-import data.Mesh
 import data.Triangle
 import data.Vertex
-import glm_.mat4x4.Mat4
 import org.lwjgl.opengl.GL33.*
 import utils.Debug
 import utils.ResourcesUtils
@@ -15,7 +13,11 @@ class Terrain(
     val size: Int,
     val a: Float,
     val tileSize: Float
-) : Model() {
+) : Model(
+    mesh = TerrainUtils.generateMesh(size, tileSize, a),
+    texture = null
+) {
+
     companion object {
         val TAG: String = this::class.java.name
         val shaderProgram = ShaderProgram()
@@ -38,89 +40,69 @@ class Terrain(
         }
     }
 
-    override var mesh: Mesh? = null
-
-    override fun addMesh(mesh: Mesh) {
-        this.mesh = TerrainUtils.generateMesh(size, tileSize, a)
-    }
-
     init {
-        this.mesh = TerrainUtils.generateMesh(size, tileSize, a)
-        this.create()
+        this.vao = glGenVertexArrays()
+        this.vbo = glGenBuffers()
+        this.ebo = glGenBuffers()
+
+        uploadVertices(mesh, ModelDefault.VERTEX_SIZE)
+        uploadIndices(mesh)
+
+        // 3 Float vertex coordinates
+        glVertexAttribPointer(0, 3, GL_FLOAT, false, VERTEX_SIZE * Float.SIZE_BYTES, 0)
+        glEnableVertexAttribArray(0)
+        // 3 Float vertex colors
+        glVertexAttribPointer(1, 3, GL_FLOAT, false, VERTEX_SIZE * Float.SIZE_BYTES, 3L * Float.SIZE_BYTES)
+        glEnableVertexAttribArray(1)
+
+        // Unbind VBO and VAO
+        glBindBuffer(GL_ARRAY_BUFFER, 0)
+        glBindVertexArray(0)
+
+        Debug.logd(TAG, "Terrain created!")
     }
 
-    override fun create() {
-        if (mesh != null) {
-            this.vao = glGenVertexArrays()
-            this.vbo = glGenBuffers()
-            this.ebo = glGenBuffers()
-
-            uploadVertices(mesh!!, ModelDefault.VERTEX_SIZE)
-            uploadIndices(mesh!!)
-
-            // 3 Float vertex coordinates
-            glVertexAttribPointer(0, 3, GL_FLOAT, false, VERTEX_SIZE * Float.SIZE_BYTES, 0)
-            glEnableVertexAttribArray(0)
-            // 3 Float vertex colors
-            glVertexAttribPointer(1, 3, GL_FLOAT, false, VERTEX_SIZE * Float.SIZE_BYTES, 3L * Float.SIZE_BYTES)
-            glEnableVertexAttribArray(1)
-
-            // Unbind VBO and VAO
-            glBindBuffer(GL_ARRAY_BUFFER, 0)
-            glBindVertexArray(0)
-
-            Debug.logd(TAG, "models.models.Base.Terrain created!")
-        } else {
-            throw RuntimeException("Can't create Model without added Mesh!")
-        }
-    }
-
-    fun draw(viewMat: Mat4, projectionMat: Mat4) {
-        shaderProgram.use()
-        shaderProgram.setUniformMat4f("m", transformationMat)
-        shaderProgram.setUniformMat4f("v", viewMat)
-        shaderProgram.setUniformMat4f("p", projectionMat)
-
-        bind()
-        glDrawElements(GL_TRIANGLES, getIndicesCount(), GL_UNSIGNED_INT, 0)
-    }
+//    fun draw(viewMat: Mat4, projectionMat: Mat4) {
+//        shaderProgram.use()
+//        shaderProgram.setUniformMat4f("m", transformationMat)
+//        shaderProgram.setUniformMat4f("v", viewMat)
+//        shaderProgram.setUniformMat4f("p", projectionMat)
+//
+//        bind()
+//        glDrawElements(GL_TRIANGLES, getIndicesCount(), GL_UNSIGNED_INT, 0)
+//    }
 
     @Throws
     fun getHeightAt(x: Float, z: Float): Float {
-        if (this.mesh != null) {
-            /*
-                     v3         v2
-                      |--------/
-                      |      /
-                      |    /
-                      |  /
-                      |/
-                     v1
-            */
-            val t = getTriangleAt(x = x, z = z)
+        /*
+                 v3         v2
+                  |--------/
+                  |      /
+                  |    /
+                  |  /
+                  |/
+                 v1
+        */
+        val t = getTriangleAt(x = x, z = z)
 
-            // Calculate plane ax + by + cz + d = 0
-            val pA = t.v1.position
-            val pB = t.v2.position
-            val pC = t.v3.position
+        // Calculate plane ax + by + cz + d = 0
+        val pA = t.v1.position
+        val pB = t.v2.position
+        val pC = t.v3.position
 
-            val a: Float = (pB.y - pA.y) * (pC.z - pA.z) - (pC.y - pA.y) * (pB.z - pA.z)
-            val b: Float = (pB.z - pA.z) * (pC.x - pA.x) - (pC.z - pA.z) * (pB.x - pA.x)
-            val c: Float = (pB.x - pA.x) * (pC.y - pA.y) - (pC.x - pA.x) * (pB.y - pA.y)
-            val d: Float = -(a * pA.x + b * pA.y + c * pA.z)
+        val a: Float = (pB.y - pA.y) * (pC.z - pA.z) - (pC.y - pA.y) * (pB.z - pA.z)
+        val b: Float = (pB.z - pA.z) * (pC.x - pA.x) - (pC.z - pA.z) * (pB.x - pA.x)
+        val c: Float = (pB.x - pA.x) * (pC.y - pA.y) - (pC.x - pA.x) * (pB.y - pA.y)
+        val d: Float = -(a * pA.x + b * pA.y + c * pA.z)
 
-            return (-d - a * x - c * z) / b
-        } else {
-            throw RuntimeException("Can't get terrain height without added Mesh!")
-        }
+        return (-d - a * x - c * z) / b
     }
 
     private fun getVertexAt(z: Int, x: Int): Vertex {
-
         if ((z >= size + 1) || (x >= size + 1) || (z < 0) || (x < 0))
             throw RuntimeException("Index out of vertices")
 
-        return mesh!!.vertices[z * (size + 1) + x]
+        return mesh.vertices[z * (size + 1) + x]
     }
 
     private fun getTriangleAt(x: Float, z: Float): Triangle {

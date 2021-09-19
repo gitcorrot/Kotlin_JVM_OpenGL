@@ -10,12 +10,9 @@ enum class RockType(val path: String) {
     TYPE_3("src/main/resources/Models/rock3.obj")
 }
 
-class Rock(rockType: RockType) : ModelDefault() {
-
-    init {
-        val rockMesh = ModelLoader.loadStaticModel(rockType.path)
-        super.addMesh(rockMesh)
-        addTexture(Texture.getDefaultColorPalette())
-        super.create()
-    }
-}
+class Rock(
+    rockType: RockType
+) : ModelDefault(
+    mesh = ModelLoader.loadStaticModel(rockType.path),
+    texture = Texture.getDefaultColorPalette()
+)

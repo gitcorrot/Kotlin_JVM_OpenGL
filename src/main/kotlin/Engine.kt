@@ -28,15 +28,11 @@ import kotlin.random.Random
 class Engine {
     companion object {
         val TAG: String = this::class.java.name
-
-        var gravity = false
     }
 
     private val window: Long
     private val camera: Camera
     private val inputManager: InputManager
-    private val renderer: Renderer
-//    private val world: World
 
     private val defaultWindowWidth = 1000
     private val defaultWindowHeight = 800
@@ -66,7 +62,6 @@ class Engine {
         camera = Camera()
         inputManager = InputManager(window)
         inputManager.setCamera(camera)
-        renderer = Renderer(window)
 
         val posComponent = PositionComponent()
         posComponent.position = Vec3(5f, 5f, 5f)
@@ -80,10 +75,12 @@ class Engine {
         testEntity.addComponent(velComponent)
 
         val ecs = ECS()
+        RenderSystem.attachToWindow(window)
         ecs.addSystem(PhysicsSystem)
         ecs.addSystem(RenderSystem)
         ecs.addEntity(testEntity)
         ecs.update(16.6f)
+
 
 //        val moveNode = MoveNode(
 //            testEntity.id,
@@ -108,6 +105,11 @@ class Engine {
 
     fun run() {
 
+
+        val world = World()
+        val terrain = Terrain(10, 0.1f, 5.0f)
+        world.addTerrain(terrain)
+
         // Main engine loop
         while (!glfwWindowShouldClose(window)) {
 
@@ -117,13 +119,13 @@ class Engine {
 
             inputManager.update()
 
-            if (gravity) {
+//            if (gravity) {
 //                val terrain = world.terrains.first()
-                val posX = camera.position.x
-                val posZ = camera.position.z
-
+//                val posX = camera.position.x
+//                val posZ = camera.position.z
+//
 //                camera.position.y = terrain.getHeightAt(x = posX, z = posZ) + 2f
-            }
+//            }
 
 //            renderer.render(world, camera)
 

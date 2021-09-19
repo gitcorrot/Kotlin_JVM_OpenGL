@@ -42,9 +42,9 @@ class InputManager(
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
             glfwSetWindowShouldClose(window, true)
         }
-        if (key == GLFW_KEY_G && action == GLFW_PRESS) {
-            Engine.gravity = !Engine.gravity
-        }
+//        if (key == GLFW_KEY_G && action == GLFW_PRESS) {
+//            Engine.gravity = !Engine.gravity
+//        }
     }
 
     private fun cursorPosCallback(window: Long, xPos: Double, yPos: Double) {
