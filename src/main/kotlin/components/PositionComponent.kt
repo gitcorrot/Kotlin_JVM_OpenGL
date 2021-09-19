@@ -6,5 +6,5 @@ import glm_.vec3.Vec3
 data class PositionComponent(
     var position: Vec3 = Vec3(),
     var rotation: Quat = Quat(),
-    var scale: Vec3 = Vec3()
+    var scale: Vec3 = Vec3(1f)
 )

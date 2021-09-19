@@ -7,7 +7,7 @@ import org.lwjgl.opengl.GL33.*
 import utils.Debug
 import utils.ResourcesUtils
 
-abstract class ModelNoLight(
+class ModelNoLight(
     mesh: Mesh,
     texture: Texture
 ) : Model(mesh, texture) {

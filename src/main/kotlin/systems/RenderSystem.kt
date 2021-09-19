@@ -18,6 +18,7 @@ import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL33.*
 import systems.core.BaseSystem
 import ui.LoadingView
+import utils.Debug
 import utils.OpenGLUtils.getWindowSize
 import utils.ResourcesUtils
 
@@ -37,8 +38,8 @@ object RenderSystem : BaseSystem() {
 
     private val lightingPassShader = ShaderProgram()
 
-    private var gBuffer: GBuffer = GBuffer(0, 0)
-    private var defaultBuffer: Framebuffer = DefaultBuffer(0, 0)
+    private lateinit var gBuffer: GBuffer
+    private lateinit var defaultBuffer: Framebuffer
 
     private var projectionMat: Mat4 = Mat4()
     private var windowWidth: Int = 0
@@ -92,7 +93,12 @@ object RenderSystem : BaseSystem() {
     }
 
     override fun update(deltaTime: Float) {
-        if (!isStarted || !isAttachedToWindow) return
+        if (!isStarted || !isAttachedToWindow || cameraNodes.size == 0) return
+        Debug.logd(TAG, "update (deltaTime=$deltaTime)")
+
+//        Debug.logi(TAG, "renderNodes=${renderNodes.size}")
+//        Debug.logi(TAG, "cameraNodes=${cameraNodes.size}")
+//        Debug.logi(TAG, "lightNodes=${lightNodes.size}")
 
         defaultBuffer.bind()
         defaultBuffer.clear()
@@ -104,7 +110,7 @@ object RenderSystem : BaseSystem() {
         glActiveTexture(GL_TEXTURE2)
 
         // TODO: later you can implement multiple cameras and check which one is active
-        val viewMat = cameraNodes.first().cameraComponent.viewMat
+        val viewMat = cameraNodes.first().cameraComponent.camera.viewMat
 
         for (renderNode in renderNodes) {
             val transformationMat = Mat4(1f)

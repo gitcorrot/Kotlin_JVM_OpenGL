@@ -1,15 +1,15 @@
-import components.PositionComponent
-import components.VelocityComponent
+import components.*
 import glm_.glm
 import glm_.quat.Quat
+import glm_.toFloat
 import glm_.vec3.Vec3
 import light.LightAmbient
 import light.LightDirectional
 import light.LightPoint
 import light.LightSpot
-import models.*
+import models.base.ModelDefault
+import models.base.ModelNoLight
 import models.base.Terrain
-import nodes.MoveNode
 import org.lwjgl.Version.getVersion
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
@@ -17,26 +17,23 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL33.GL_VERSION
 import org.lwjgl.opengl.GL33.glGetString
 import org.lwjgl.system.MemoryUtil
-import systems.PhysicsSystem
+import systems.InputSystem
+import systems.MoveSystem
 import systems.RenderSystem
 import utils.Debug
+import utils.ModelLoader
 import utils.OpenGLUtils.readOpenGLError
-import kotlin.math.roundToInt
-import kotlin.random.Random
 
 
 class Engine {
     companion object {
         val TAG: String = this::class.java.name
+        private const val defaultWindowWidth = 1000
+        private const val defaultWindowHeight = 800
     }
 
     private val window: Long
-    private val camera: Camera
-    private val inputManager: InputManager
-
-    private val defaultWindowWidth = 1000
-    private val defaultWindowHeight = 800
-
+    private val ecs = ECS()
     private val errCallback: GLFWErrorCallback?
 
     init {
@@ -58,89 +55,41 @@ class Engine {
 
         Debug.logi(TAG, "JLWGL Version: ${getVersion()}")
         Debug.logi(TAG, "OpenGL Version: ${glGetString(GL_VERSION)}")
+        Debug.logi(TAG, "------------------------------------------------")
 
-        camera = Camera()
-        inputManager = InputManager(window)
-        inputManager.setCamera(camera)
-
-        val posComponent = PositionComponent()
-        posComponent.position = Vec3(5f, 5f, 5f)
-        posComponent.rotation = Quat(glm.radians(Vec3(45f, 0f, 0f)))
-
-        val velComponent = VelocityComponent()
-        velComponent.velocity = Vec3(1f, 0f, 0f)
-
-        val testEntity = Entity()
-        testEntity.addComponent(posComponent)
-        testEntity.addComponent(velComponent)
-
-        val ecs = ECS()
+        InputSystem.attachToWindow(window)
         RenderSystem.attachToWindow(window)
-        ecs.addSystem(PhysicsSystem)
+
+        // order is important!
+        ecs.addSystem(InputSystem)
+        ecs.addSystem(MoveSystem)
         ecs.addSystem(RenderSystem)
-        ecs.addEntity(testEntity)
-        ecs.update(16.6f)
 
-
-//        val moveNode = MoveNode(
-//            testEntity.id,
-//            testEntity.getComponent(PositionComponent::class.java.name) as PositionComponent,
-//            testEntity.getComponent(VelocityComponent::class.java.name) as VelocityComponent
-//        )
-//        moveNode.positionComponent.position.y = 123f
-//        moveNode.velocityComponent.velocity.y = 234f
-//        println("-----------------------")
-//        println(posComponent)
-//        println(velComponent)
-//        println(moveNode)
-//        println("-----------------------")
-//        println(ecs.getSystemOfClass(PhysicsSystem::class.java.name) as PhysicsSystem)
-//        println(ecs.getNodesOfClass(MoveNode::class.java.name))
-//        ecs.removeEntity(testEntity)
-//        println(ecs.getNodesOfClass(MoveNode::class.java.name))
-
-//        world = World()
-//        initWorld()
+        initWorld()
     }
 
     fun run() {
+        var currentTime: Double
+        var lastFrameTime = glfwGetTime() - 16.6f
 
-
-        val world = World()
-        val terrain = Terrain(10, 0.1f, 5.0f)
-        world.addTerrain(terrain)
-
-        // Main engine loop
         while (!glfwWindowShouldClose(window)) {
+            currentTime = glfwGetTime()
 
-//            world.modelsNoLight.first().rotatePitchBy(0.01f)
-//            world.modelsNoLight.first().rotateRollBy(0.01f)
-//            world.modelsDefault.first().rotateYawBy(0.01f)
-
-            inputManager.update()
-
-//            if (gravity) {
-//                val terrain = world.terrains.first()
-//                val posX = camera.position.x
-//                val posZ = camera.position.z
-//
-//                camera.position.y = terrain.getHeightAt(x = posX, z = posZ) + 2f
-//            }
-
-//            renderer.render(world, camera)
+            ecs.update((currentTime - lastFrameTime).toFloat * 1000f)
 
             // Read OpenGL error
             readOpenGLError()?.let { openGlError ->
                 Debug.loge(TAG, openGlError)
             }
+
+            lastFrameTime = currentTime
         }
 
         cleanup()
     }
 
     private fun cleanup() {
-//        world.cleanup()
-        inputManager.cleanup()
+        ecs.cleanup()
         errCallback?.free()
         glfwDestroyWindow(window)
         glfwTerminate()
@@ -179,7 +128,114 @@ class Engine {
         return window
     }
 
-//    private fun initWorld() {
+    private fun initWorld() {
+        val terrain = Terrain(10, 0.1f, 1f)
+
+        ecs.addEntity(
+            Entity()
+                .addComponent(
+                    PositionComponent().apply {
+                        position = Vec3(5f, terrain.getHeightAt(5f, -5f), -5f)
+                        rotation = Quat(glm.radians(Vec3(0f)))
+                    })
+                .addComponent(
+                    ModelComponent(
+                        ModelDefault(
+                            mesh = ModelLoader.loadStaticModel("src/main/resources/Models/tree1.obj"),
+                            texture = Texture.getDefaultColorPalette()
+                        )
+                    )
+                )
+                .addComponent(
+                    VelocityComponent(Vec3(-0.001f, 0f, -0.001f))
+                )
+        )
+
+        ecs.addEntity(
+            Entity()
+                .addComponent(
+                    PositionComponent().apply {
+                        position = Vec3(0f, 0f, 0f)
+                        rotation = Quat(glm.radians(Vec3(0f)))
+                    })
+                .addComponent(
+                    ModelComponent(
+                        ModelNoLight(
+                            mesh = ModelLoader.loadStaticModel("src/main/resources/Models/cs2.obj"),
+                            texture = Texture.getDefaultColorPalette()
+                        )
+                    )
+                )
+        )
+        ecs.addEntity(
+            Entity()
+                .addComponent(
+                    PositionComponent().apply {
+                        position = Vec3(0f)
+                    }
+                )
+                .addComponent(
+                    ModelComponent(terrain)
+                )
+        )
+        ecs.addEntity(
+            Entity()
+                .addComponent(
+                    CameraComponent()
+                )
+        )
+        // Lights
+        ecs.addEntity(
+            Entity()
+                .addComponent(
+                    LightComponent(
+                        LightAmbient().apply {
+                            color = Vec3(1f, 1f, 1f)
+                            intensity = 0.7f
+                        })
+                )
+        )
+        ecs.addEntity(
+            Entity()
+                .addComponent(
+                    LightComponent(
+                        LightDirectional().apply {
+                            color = Vec3(1f, 1f, 1f)
+                            intensity = 0.2f
+                            direction = Vec3(-1.0f, -0.5f, -0.5f)
+                        }
+                    )
+                )
+        )
+        ecs.addEntity(
+            Entity()
+                .addComponent(
+                    LightComponent(
+                        LightPoint(0, Vec3(0f, 2f, 0f)).apply {
+                            color = Vec3(0f, 0f, 1f)
+                            intensity = 1f
+                            kc = 1.0f
+                            kl = 0.14f
+                            kq = 0.07f
+                        }
+                    )
+                )
+        )
+        ecs.addEntity(
+            Entity()
+                .addComponent(
+                    LightComponent(
+                        LightSpot(0, Vec3(5f, 2f, 0f)).apply {
+                            color = Vec3(0.8f, 0.65f, 0.4f)
+                            intensity = 0.3f
+                            direction = Vec3(0f, -1f, 0f)
+                            outerAngle = glm.cos(glm.radians(50f))
+                            innerAngle = glm.cos(glm.radians(20f))
+                        }
+                    )
+                ))
+
+    }
 //        val colorPaletteTexture = Texture.getDefaultColorPalette()
 //
 //        // models.Base.Terrain

@@ -3,6 +3,7 @@ package light
 import ShaderProgram
 import glm_.vec3.Vec3
 import interfaces.Movable
+import interfaces.Scalable
 
 class LightPoint(
     val index: Int,

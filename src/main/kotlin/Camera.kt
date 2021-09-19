@@ -5,29 +5,23 @@ import glm_.vec3.Vec3
 import interfaces.Movable
 import interfaces.Rotatable
 import org.lwjgl.glfw.GLFW.*
-import utils.Debug
 
-
-interface ICameraInputCallback {
-    fun keyPressed(key: Int, deltaTime: Double)
-    fun cursorMoved(deltaX: Int, deltaY: Int)
-//    fun mouseButtonPressed(mouseButton: Int)
-}
-
-private const val MOUSE_SENSITIVITY = 0.1f
-private const val CAMERA_SPEED_CHANGE_STEP = 25f
-private const val CAMERA_SPEED_MAX = 50f
-private const val CAMERA_SPEED_MIN = 1f
-
+// TODO: make movable and rotatable variables of Camera
 class Camera : Movable, Rotatable {
     companion object {
         private val TAG: String = this::class.java.name
+
+        private const val MOUSE_SENSITIVITY = 0.1f
+        private const val CAMERA_SPEED_MAX = 0.05f
+        private const val CAMERA_SPEED_MIN = 0.005f
+        private const val CAMERA_SPEED_CHANGE_STEP = 0.00001f
     }
 
-    private var cameraSpeed = 20.0f
+    private var cameraSpeed = 0.01f
     override val position = Vec3(-15f, 30, 15f)
     override var rotation: Quat = Quat()
 
+    private var firstCursorMoved = false
     var yaw = 45f
     var pitch = 45f
 
@@ -38,56 +32,54 @@ class Camera : Movable, Rotatable {
         updateOrientation()
     }
 
+    fun keyPressed(key: Int, deltaTime: Float) {
+        when (key) {
 
-    val iCameraInput = object : ICameraInputCallback {
-        override fun keyPressed(key: Int, deltaTime: Double) {
-            when (key) {
+            // W, S, A, D - moving in x and z-axis
+            GLFW_KEY_W -> {
+                val dPos = getForward() * cameraSpeed * deltaTime
+                moveBy(dPos)
+            }
+            GLFW_KEY_S -> {
+                val dPos = -getForward() * cameraSpeed * deltaTime
+                moveBy(dPos)
+            }
+            GLFW_KEY_A -> {
+                val dPos = -getRight() * cameraSpeed * deltaTime
+                moveBy(dPos)
+            }
+            GLFW_KEY_D -> {
+                val dPos = getRight() * cameraSpeed * deltaTime
+                moveBy(dPos)
+            }
 
-                // W, S, A, D - moving in x and z-axis
-                GLFW_KEY_W -> {
-                    val dPos = getForward() * cameraSpeed * deltaTime
-                    moveBy(dPos)
-                }
-                GLFW_KEY_S -> {
-                    val dPos = -getForward() * cameraSpeed * deltaTime
-                    moveBy(dPos)
-                }
-                GLFW_KEY_A -> {
-                    val dPos = -getRight() * cameraSpeed * deltaTime
-                    moveBy(dPos)
-                }
-                GLFW_KEY_D -> {
-                    val dPos = getRight() * cameraSpeed * deltaTime
-                    moveBy(dPos)
-                }
+            // Shift, Space - moving in y-axis
+            GLFW_KEY_LEFT_SHIFT -> {
+                val dPos = Vec3(0f, -1f, 0) * cameraSpeed * deltaTime
+                moveBy(dPos)
+            }
+            GLFW_KEY_SPACE -> {
+                val dPos = Vec3(0f, 1f, 0) * cameraSpeed * deltaTime
+                moveBy(dPos)
+            }
 
-                // Shift, Space - moving in y-axis
-                GLFW_KEY_LEFT_SHIFT -> {
-                    val dPos = Vec3(0f, -1f, 0) * cameraSpeed * deltaTime
-                    moveBy(dPos)
-                }
-                GLFW_KEY_SPACE -> {
-                    val dPos = Vec3(0f, 1f, 0) * cameraSpeed * deltaTime
-                    moveBy(dPos)
-                }
-
-                // Q, E - decreasing/increasing camera speed
-                GLFW_KEY_Q -> {
-                    if (cameraSpeed > CAMERA_SPEED_MIN) {
-//                        Debug.logd(TAG, (CAMERA_SPEED_CHANGE_STEP * deltaTime.toFloat()).toString())
-                        cameraSpeed -= CAMERA_SPEED_CHANGE_STEP * deltaTime.toFloat()
-                    }
-                }
-                GLFW_KEY_E -> {
-                    if (cameraSpeed < CAMERA_SPEED_MAX) {
-                        cameraSpeed += CAMERA_SPEED_CHANGE_STEP * deltaTime.toFloat()
-                    }
+            // Q, E - decreasing/increasing camera speed
+            GLFW_KEY_Q -> {
+                if (cameraSpeed > CAMERA_SPEED_MIN) {
+                    cameraSpeed -= CAMERA_SPEED_CHANGE_STEP * deltaTime
                 }
             }
-            // Debug.logd(TAG, "CAMERA POSITION: $position")
+            GLFW_KEY_E -> {
+                if (cameraSpeed < CAMERA_SPEED_MAX) {
+                    cameraSpeed += CAMERA_SPEED_CHANGE_STEP * deltaTime
+                }
+            }
         }
+        // Debug.logd(TAG, "CAMERA POSITION: $position")
+    }
 
-        override fun cursorMoved(deltaX: Int, deltaY: Int) {
+    fun cursorMoved(deltaX: Int, deltaY: Int) {
+        if (firstCursorMoved) {
             yaw += deltaX * MOUSE_SENSITIVITY
             pitch -= deltaY * MOUSE_SENSITIVITY
 
@@ -95,11 +87,13 @@ class Camera : Movable, Rotatable {
             if (pitch < -90f) pitch = -90f
 
             yaw %= 360
-
-            updateOrientation()
-
-            // Debug.logd(TAG, "Yaw: $yaw, Pitch: $pitch, Quat: $rotation")
+        } else {
+            firstCursorMoved = true
         }
+
+        updateOrientation()
+
+        // Debug.logd(TAG, "Yaw: $yaw, Pitch: $pitch, Quat: $rotation")
     }
 
     private fun updateOrientation() {
