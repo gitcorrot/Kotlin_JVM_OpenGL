@@ -1,5 +1,6 @@
 import components.*
 import data.Movable
+import data.Rotatable
 import glm_.glm
 import glm_.quat.Quat
 import glm_.toFloat
@@ -36,6 +37,9 @@ class Engine {
     private val window: Long
     private val ecs = ECS()
     private val errCallback: GLFWErrorCallback?
+
+    // debugging
+    lateinit var coordinateSystemEntity: Entity
 
     init {
         if (!glfwInit()) {
@@ -76,6 +80,10 @@ class Engine {
         while (!glfwWindowShouldClose(window)) {
             currentTime = glfwGetTime()
 
+            (coordinateSystemEntity.getComponent(TransformComponent::class.java.name) as TransformComponent).rotatable.rotateBy(
+                1f,
+                Vec3(0, 0.01f, 0)
+            )
             ecs.update((currentTime - lastFrameTime).toFloat * 1000f)
 
             // Read OpenGL error
@@ -136,8 +144,8 @@ class Engine {
             Entity()
                 .addComponent(
                     TransformComponent().apply {
-                        position = Vec3(5f, terrain.getHeightAt(5f, -5f), -5f)
-                        rotation = Quat(glm.radians(Vec3(0f)))
+                        movable = Movable(Vec3(5f, terrain.getHeightAt(5f, -5f), -5f))
+                        rotatable = Rotatable(Quat(glm.radians(Vec3(0f))))
                     })
                 .addComponent(
                     ModelComponent(
@@ -152,28 +160,32 @@ class Engine {
                 )
         )
 
-        ecs.addEntity(
-            Entity()
-                .addComponent(
-                    TransformComponent().apply {
-                        position = Vec3(0f, 0f, 0f)
-                        rotation = Quat(glm.radians(Vec3(0f)))
-                    })
-                .addComponent(
-                    ModelComponent(
-                        ModelNoLight(
-                            mesh = ModelLoader.loadStaticModel("src/main/resources/Models/cs2.obj"),
-                            texture = Texture.getDefaultColorPalette()
-                        )
+        val csMesh = ModelLoader.loadStaticModel("src/main/resources/Models/cs2.obj")
+        coordinateSystemEntity = Entity()
+            .addComponent(
+                TransformComponent()
+            )
+            .addComponent(
+                ModelComponent(
+                    ModelNoLight(
+                        mesh = csMesh,
+                        texture = Texture.getDefaultColorPalette()
                     )
                 )
-        )
+            )
+            .addComponent(
+                CollisionComponent(
+                    modelMesh = csMesh,
+                    type = CollisionComponentType.AXIS_ALIGNED
+                )
+            )
+        ecs.addEntity(coordinateSystemEntity)
+//        (coordinateSystemEntity.getComponent(TransformComponent::class.java.name) as TransformComponent).rotatable.rotateBy(1f, Vec3(0, 1.11f, 0))
+
         ecs.addEntity(
             Entity()
                 .addComponent(
-                    TransformComponent().apply {
-                        position = Vec3(0f)
-                    }
+                    TransformComponent()
                 )
                 .addComponent(
                     ModelComponent(terrain)
@@ -184,6 +196,11 @@ class Engine {
             Entity()
                 .addComponent(
                     CameraComponent(window)
+                )
+                .addComponent(
+                    TransformComponent().apply {
+                        movable.moveTo(0f, 5f, 0f)
+                    }
                 )
         )
         // Lights

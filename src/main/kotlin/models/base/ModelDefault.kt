@@ -2,6 +2,8 @@ package models.base
 
 import ShaderProgram
 import Texture
+import collision.AxisAlignedBoundingBox
+import collision.OrientedBoundingBox
 import data.Mesh
 import org.lwjgl.opengl.GL33.*
 import utils.Debug
@@ -34,8 +36,8 @@ class ModelDefault(
         }
     }
 
-//    lateinit var axisAlignedBoundingBox: AxisAlignedBoundingBox
-//    lateinit var orientedBoundingBox: OrientedBoundingBox
+    lateinit var axisAlignedBoundingBox: AxisAlignedBoundingBox
+    lateinit var orientedBoundingBox: OrientedBoundingBox
 
     init {
         this.vao = glGenVertexArrays()
@@ -59,23 +61,11 @@ class ModelDefault(
         glBindBuffer(GL_ARRAY_BUFFER, 0)
         glBindVertexArray(0)
 
+        axisAlignedBoundingBox = AxisAlignedBoundingBox(mesh)
+        orientedBoundingBox = OrientedBoundingBox(mesh)
+
         Debug.logd(TAG, "models.Base.ModelDefault created!")
     }
-
-//    fun draw(viewMat: Mat4, projectionMat: Mat4) {
-//        shaderProgram.use()
-//        shaderProgram.setUniformMat4f("m", transformationMat)
-//        shaderProgram.setUniformMat4f("v", viewMat)
-//        shaderProgram.setUniformMat4f("p", projectionMat)
-//
-//        val modelNormalMat = glm.transpose(glm.inverse(transformationMat.toMat3()))
-//        shaderProgram.setUniformMat3f("normalMatrix", modelNormalMat)
-//
-//        bind()
-//        texture.bind()
-//
-//        glDrawElements(GL_TRIANGLES, getIndicesCount(), GL_UNSIGNED_INT, 0)
-//    }
 
 //    fun drawBoundingBoxes() {
 //        ModelNoLight.shaderProgram.use()

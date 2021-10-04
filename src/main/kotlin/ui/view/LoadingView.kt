@@ -1,4 +1,4 @@
-package ui
+package ui.view
 
 import ShaderProgram
 import org.lwjgl.glfw.GLFW

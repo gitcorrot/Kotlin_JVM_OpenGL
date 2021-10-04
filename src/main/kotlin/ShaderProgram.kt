@@ -11,7 +11,7 @@ class ShaderProgram {
         private val TAG: String = this::class.java.name
     }
 
-    public var programID: Int = 0
+    var programID: Int = 0
     private var vertexShaderID: Int = 0
     private var geometryShaderID: Int = 0
     private var fragmentShaderID: Int = 0

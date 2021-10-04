@@ -17,7 +17,7 @@ import nodes.RenderNode
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL33.*
 import systems.core.BaseSystem
-import ui.LoadingView
+import ui.view.LoadingView
 import utils.Debug
 import utils.OpenGLUtils.getWindowSize
 import utils.ResourcesUtils
@@ -102,25 +102,28 @@ object RenderSystem : BaseSystem() {
         glEnable(GL_DEPTH_TEST)
         glActiveTexture(GL_TEXTURE2)
 
-        val camera = cameraNodes.find { it.cameraComponent.isActive }?.cameraComponent
+        val cameraNode = cameraNodes.find { it.cameraComponent.isActive }
             ?: throw RuntimeException("Can't find any active camera!")
 
-        if (camera.projectionMat == null) {
-            throw RuntimeException("Camera's projection matrix is null!")
-        }
+        val projectionMat = cameraNode.cameraComponent.projectionMat
+            ?: throw RuntimeException("Camera's projection matrix is null!")
 
+        val viewMat = cameraNode.transformComponent.rotatable.rotation.toMat4()
+            .translate(-cameraNode.transformComponent.movable.position)
+
+        // Draw terrain and default models
         for (renderNode in renderNodes) {
             val transformationMat = Mat4(1f)
-                .translate(renderNode.transformComponent.position)
-                .times(renderNode.transformComponent.rotation.toMat4())
-                .scale_(renderNode.transformComponent.scale)
+                .translate(renderNode.transformComponent.movable.position)
+                .times(renderNode.transformComponent.rotatable.rotation.toMat4())
+                .scale_(renderNode.transformComponent.scalable.scale)
 
             when (renderNode.modelComponent.model) {
                 is Terrain -> {
                     Terrain.shaderProgram.use()
                     Terrain.shaderProgram.setUniformMat4f("m", transformationMat)
-                    Terrain.shaderProgram.setUniformMat4f("v", camera.viewMat)
-                    Terrain.shaderProgram.setUniformMat4f("p", camera.projectionMat!!)
+                    Terrain.shaderProgram.setUniformMat4f("v", viewMat)
+                    Terrain.shaderProgram.setUniformMat4f("p", projectionMat)
 
                     renderNode.modelComponent.model.bind()
                     glDrawElements(
@@ -133,8 +136,8 @@ object RenderSystem : BaseSystem() {
                 is ModelDefault -> {
                     ModelDefault.shaderProgram.use()
                     ModelDefault.shaderProgram.setUniformMat4f("m", transformationMat)
-                    ModelDefault.shaderProgram.setUniformMat4f("v", camera.viewMat)
-                    ModelDefault.shaderProgram.setUniformMat4f("p", camera.projectionMat!!)
+                    ModelDefault.shaderProgram.setUniformMat4f("v", viewMat)
+                    ModelDefault.shaderProgram.setUniformMat4f("p", projectionMat)
 
                     val modelNormalMat = glm.transpose(glm.inverse(transformationMat.toMat3()))
                     ModelDefault.shaderProgram.setUniformMat3f("normalMatrix", modelNormalMat)
@@ -188,16 +191,16 @@ object RenderSystem : BaseSystem() {
         // Draw no light models
         for (renderNode in renderNodes) {
             val transformationMat = Mat4(1f)
-                .translate(renderNode.transformComponent.position)
-                .times(renderNode.transformComponent.rotation.toMat4())
-                .scale_(renderNode.transformComponent.scale)
+                .translate(renderNode.transformComponent.movable.position)
+                .times(renderNode.transformComponent.rotatable.rotation.toMat4())
+                .scale_(renderNode.transformComponent.scalable.scale)
 
             when (renderNode.modelComponent.model) {
                 is ModelNoLight -> {
                     ModelNoLight.shaderProgram.use()
                     ModelNoLight.shaderProgram.setUniformMat4f("m", transformationMat)
-                    ModelNoLight.shaderProgram.setUniformMat4f("v", camera.viewMat)
-                    ModelNoLight.shaderProgram.setUniformMat4f("p", camera.projectionMat!!)
+                    ModelNoLight.shaderProgram.setUniformMat4f("v", viewMat)
+                    ModelNoLight.shaderProgram.setUniformMat4f("p", projectionMat)
                     renderNode.modelComponent.model.bind()
                     renderNode.modelComponent.model.texture!!.bind()
                     glDrawElements(
@@ -211,12 +214,40 @@ object RenderSystem : BaseSystem() {
         }
 
         // Draw bounding boxes
-        // for (model in world.modelsNoLight) {
-        //     model.drawBoundingBoxes()
-        // }
-        // for (model in world.modelsDefault) {
-        //     model.drawBoundingBoxes()
-        // }
+        for (renderNode in renderNodes) {
+            val oobb = when(renderNode.modelComponent.model) {
+                is ModelNoLight -> { ((renderNode.modelComponent.model) as ModelNoLight).orientedBoundingBox }
+                is ModelDefault -> { ((renderNode.modelComponent.model) as ModelDefault).orientedBoundingBox }
+                else -> null
+            }
+
+            val aabb = when (renderNode.modelComponent.model) {
+                is ModelNoLight -> { ((renderNode.modelComponent.model) as ModelNoLight).axisAlignedBoundingBox }
+                is ModelDefault -> { ((renderNode.modelComponent.model) as ModelDefault).axisAlignedBoundingBox }
+                else -> null
+            }
+
+            if (oobb == null || aabb == null) continue
+
+            val transformationMat = Mat4(1f)
+                .translate(renderNode.transformComponent.movable.position)
+                .times(renderNode.transformComponent.rotatable.rotation.toMat4())
+                .scale_(renderNode.transformComponent.scalable.scale)
+
+            ModelNoLight.shaderProgram.use()
+            ModelNoLight.shaderProgram.setUniformMat4f("m", Mat4(1f))
+
+            aabb.update(transformationMat) // TODO: Update in CollisionSystem
+            aabb.bind()
+            aabb.texture!!.bind()
+            glDrawElements(GL_LINES, aabb.primaryMesh.indices!!.size, GL_UNSIGNED_INT, 0)
+
+            ModelNoLight.shaderProgram.setUniformMat4f("m", transformationMat)
+            oobb.update(transformationMat) // TODO: Update in CollisionSystem
+            oobb.bind()
+            oobb.texture!!.bind()
+            glDrawElements(GL_LINES, oobb.primaryMesh.indices!!.size, GL_UNSIGNED_INT, 0)
+        }
 
         // Draw skybox
         // world.skybox?.let { skybox ->

@@ -2,6 +2,8 @@ package models.base
 
 import ShaderProgram
 import Texture
+import collision.AxisAlignedBoundingBox
+import collision.OrientedBoundingBox
 import data.Mesh
 import org.lwjgl.opengl.GL33.*
 import utils.Debug
@@ -34,9 +36,6 @@ class ModelNoLight(
         }
     }
 
-//    lateinit var axisAlignedBoundingBox: AxisAlignedBoundingBox
-//    lateinit var orientedBoundingBox: OrientedBoundingBox
-
     init {
         this.vao = glGenVertexArrays()
         this.vbo = glGenBuffers()
@@ -58,20 +57,4 @@ class ModelNoLight(
 
         Debug.logd(TAG, "ModelNoLight created!")
     }
-
-//    fun draw(viewMat: Mat4, projectionMat: Mat4) {
-//        shaderProgram.use()
-//        shaderProgram.setUniformMat4f("m", transformationMat)
-//        shaderProgram.setUniformMat4f("v", viewMat)
-//        shaderProgram.setUniformMat4f("p", projectionMat)
-//        bind()
-//        texture.bind()
-//        glDrawElements(GL_TRIANGLES, getIndicesCount(), GL_UNSIGNED_INT, 0)
-//    }
-
-//    fun drawBoundingBoxes() {
-//        shaderProgram.use()
-//        axisAlignedBoundingBox.draw()
-//        orientedBoundingBox.draw()
-//    }
 }

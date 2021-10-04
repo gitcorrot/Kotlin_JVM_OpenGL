@@ -42,8 +42,8 @@ abstract class Model(
 
 
     fun uploadVertices(mesh: Mesh, vertexSize: Int) {
-        val verticesBuffer: FloatBuffer =
-            MemoryUtil.memAllocFloat(mesh.vertices.size * vertexSize)
+        val verticesBuffer: FloatBuffer = MemoryUtil.memAllocFloat(mesh.vertices.size * vertexSize)
+
         for (v in mesh.vertices) {
             verticesBuffer.put(v.convertToFloatArray())
         }
@@ -57,7 +57,6 @@ abstract class Model(
     }
 
     fun uploadIndices(mesh: Mesh) {
-
         val indicesBuffer: IntBuffer = MemoryUtil.memAllocInt(mesh.indices!!.size)
         indicesBuffer
             .put(mesh.indices)
