@@ -3,5 +3,5 @@ package components
 import Camera
 
 data class CameraComponent(
-    var camera: Camera = Camera()
+    var camera: Camera
 )

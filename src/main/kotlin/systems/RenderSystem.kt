@@ -32,16 +32,11 @@ object RenderSystem : BaseSystem() {
     private var window: Long = -1
     private var isAttachedToWindow = false
 
-    private const val FOV_DEG = 60f
-    private const val Z_NEAR = 0.1f
-    private const val Z_FAR = 1000.0f
-
     private val lightingPassShader = ShaderProgram()
 
     private lateinit var gBuffer: GBuffer
     private lateinit var defaultBuffer: Framebuffer
 
-    private var projectionMat: Mat4 = Mat4()
     private var windowWidth: Int = 0
     private var windowHeight: Int = 0
     private var aspectRatio: Float = 0f
@@ -63,8 +58,6 @@ object RenderSystem : BaseSystem() {
             windowHeight = y.toInt()
             aspectRatio = x / y
         }
-        // TODO: get projection mat from CameraNode
-        projectionMat = glm.perspective(glm.radians(FOV_DEG), aspectRatio, Z_NEAR, Z_FAR)
         loadingView = LoadingView(aspectRatio)
         gBuffer = GBuffer(windowWidth, windowHeight)
         defaultBuffer = DefaultBuffer(windowWidth, windowHeight)
@@ -110,7 +103,12 @@ object RenderSystem : BaseSystem() {
         glActiveTexture(GL_TEXTURE2)
 
         // TODO: later you can implement multiple cameras and check which one is active
-        val viewMat = cameraNodes.first().cameraComponent.camera.viewMat
+        val camera = cameraNodes.first().cameraComponent.camera
+        val viewMat = camera.viewMat
+
+        if (camera.projectionMat == null) {
+            throw RuntimeException("Camera's projection matrix is null!")
+        }
 
         for (renderNode in renderNodes) {
             val transformationMat = Mat4(1f)
@@ -123,7 +121,7 @@ object RenderSystem : BaseSystem() {
                     Terrain.shaderProgram.use()
                     Terrain.shaderProgram.setUniformMat4f("m", transformationMat)
                     Terrain.shaderProgram.setUniformMat4f("v", viewMat)
-                    Terrain.shaderProgram.setUniformMat4f("p", projectionMat)
+                    Terrain.shaderProgram.setUniformMat4f("p", camera.projectionMat!!)
 
                     renderNode.modelComponent.model.bind()
                     glDrawElements(
@@ -137,7 +135,7 @@ object RenderSystem : BaseSystem() {
                     ModelDefault.shaderProgram.use()
                     ModelDefault.shaderProgram.setUniformMat4f("m", transformationMat)
                     ModelDefault.shaderProgram.setUniformMat4f("v", viewMat)
-                    ModelDefault.shaderProgram.setUniformMat4f("p", projectionMat)
+                    ModelDefault.shaderProgram.setUniformMat4f("p", camera.projectionMat!!)
 
                     val modelNormalMat = glm.transpose(glm.inverse(transformationMat.toMat3()))
                     ModelDefault.shaderProgram.setUniformMat3f("normalMatrix", modelNormalMat)
@@ -200,7 +198,7 @@ object RenderSystem : BaseSystem() {
                     ModelNoLight.shaderProgram.use()
                     ModelNoLight.shaderProgram.setUniformMat4f("m", transformationMat)
                     ModelNoLight.shaderProgram.setUniformMat4f("v", viewMat)
-                    ModelNoLight.shaderProgram.setUniformMat4f("p", projectionMat)
+                    ModelNoLight.shaderProgram.setUniformMat4f("p", camera.projectionMat!!)
                     renderNode.modelComponent.model.bind()
                     renderNode.modelComponent.model.texture!!.bind()
                     glDrawElements(

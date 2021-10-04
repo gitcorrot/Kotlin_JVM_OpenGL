@@ -1,13 +1,13 @@
+import data.Movable
+import data.Rotatable
 import glm_.glm
 import glm_.mat4x4.Mat4
 import glm_.quat.Quat
 import glm_.vec3.Vec3
-import data.Movable
-import data.Rotatable
 import org.lwjgl.glfw.GLFW.*
+import utils.OpenGLUtils.getWindowSize
 
-// TODO: make movable and rotatable variables of Camera
-class Camera {
+class Camera(window: Long) {
     companion object {
         private val TAG: String = this::class.java.name
 
@@ -15,6 +15,10 @@ class Camera {
         private const val CAMERA_SPEED_MAX = 0.05f
         private const val CAMERA_SPEED_MIN = 0.005f
         private const val CAMERA_SPEED_CHANGE_STEP = 0.00001f
+
+        private const val FOV_DEG = 60f
+        private const val Z_NEAR = 0.1f
+        private const val Z_FAR = 1000.0f
     }
 
     private var cameraSpeed = 0.01f
@@ -25,12 +29,18 @@ class Camera {
     var yaw = 45f
     var pitch = 45f
 
+    var projectionMat: Mat4? = null
+
     val viewMat: Mat4
         get() = rotatable.rotation.toMat4().translate(-movable.position)
 
     init {
         updateOrientation()
+        val windowSize = getWindowSize(window)
+        val aspectRatio = windowSize.x / windowSize.y
+        projectionMat = glm.perspective(glm.radians(FOV_DEG), aspectRatio, Z_NEAR, Z_FAR)
     }
+
 
     fun keyPressed(key: Int, deltaTime: Float) {
         when (key) {
