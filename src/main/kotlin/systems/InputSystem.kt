@@ -1,5 +1,8 @@
 package systems
 
+import components.CameraComponent
+import glm_.func.common.clamp
+import glm_.vec3.Vec3
 import nodes.CameraNode
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWCursorPosCallback
@@ -8,6 +11,8 @@ import systems.core.BaseSystem
 import utils.Debug
 
 object InputSystem : BaseSystem() {
+    private const val MOUSE_SENSITIVITY = 0.1f
+
     val TAG: String = this::class.java.name
 
     var cameraNodes = mutableListOf<CameraNode>()
@@ -63,20 +68,77 @@ object InputSystem : BaseSystem() {
         glfwPollEvents()
 
         for (cameraNode in cameraNodes) {
-            val deltaX = (currentCursorX - lastCursorX).toInt()
-            val deltaY = (lastCursorY - currentCursorY).toInt()
-            if (deltaX != 0 || deltaY != 0) {
-                cameraNode.cameraComponent.camera.cursorMoved(deltaX, deltaY)
-            }
-
-            for (k in cameraKeys) {
-                if (glfwGetKey(window, k) == GLFW_PRESS) {
-                    cameraNode.cameraComponent.camera.keyPressed(k, deltaTime)
-                }
+            if (cameraNode.cameraComponent.isActive) {
+                updateCamera(cameraNode, deltaTime)
             }
         }
 
         lastCursorX = currentCursorX
         lastCursorY = currentCursorY
+    }
+
+    private fun updateCamera(cameraNode: CameraNode, deltaTime: Float) {
+        val deltaX = (currentCursorX - lastCursorX).toInt()
+        val deltaY = (lastCursorY - currentCursorY).toInt()
+
+        with(cameraNode.cameraComponent) {
+            if (deltaX != 0 || deltaY != 0) {
+                if (firstCursorMoved) {
+                    yaw += deltaX * MOUSE_SENSITIVITY
+                    pitch -= deltaY * MOUSE_SENSITIVITY
+                    pitch = pitch.clamp(-90f, 90f)
+                    yaw %= 360
+                } else {
+                    firstCursorMoved = true
+                }
+
+                updateOrientation()
+            }
+
+            for (key in cameraKeys) {
+                if (glfwGetKey(window, key) == GLFW_PRESS) {
+                    when (key) {
+                        // W, S, A, D - moving in x and z-axis
+                        GLFW_KEY_W -> {
+                            val dPos = rotatable.getForward() * cameraSpeed * deltaTime
+                            movable.moveBy(dPos)
+                        }
+                        GLFW_KEY_S -> {
+                            val dPos = -rotatable.getForward() * cameraSpeed * deltaTime
+                            movable.moveBy(dPos)
+                        }
+                        GLFW_KEY_A -> {
+                            val dPos = -rotatable.getRight() * cameraSpeed * deltaTime
+                            movable.moveBy(dPos)
+                        }
+                        GLFW_KEY_D -> {
+                            val dPos = rotatable.getRight() * cameraSpeed * deltaTime
+                            movable.moveBy(dPos)
+                        }
+                        // Shift, Space - moving in y-axis
+                        GLFW_KEY_LEFT_SHIFT -> {
+                            val dPos = Vec3(0f, -1f, 0) * cameraSpeed * deltaTime
+                            movable.moveBy(dPos)
+                        }
+                        GLFW_KEY_SPACE -> {
+                            val dPos = Vec3(0f, 1f, 0) * cameraSpeed * deltaTime
+                            movable.moveBy(dPos)
+                        }
+
+                        // Q, E - decreasing/increasing camera speed
+                        GLFW_KEY_Q -> {
+                            if (cameraSpeed > CameraComponent.CAMERA_SPEED_MIN) {
+                                cameraSpeed -= CameraComponent.CAMERA_SPEED_CHANGE_STEP * deltaTime
+                            }
+                        }
+                        GLFW_KEY_E -> {
+                            if (cameraSpeed < CameraComponent.CAMERA_SPEED_MAX) {
+                                cameraSpeed += CameraComponent.CAMERA_SPEED_CHANGE_STEP * deltaTime
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

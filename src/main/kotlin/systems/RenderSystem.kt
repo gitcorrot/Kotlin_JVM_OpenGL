@@ -102,9 +102,8 @@ object RenderSystem : BaseSystem() {
         glEnable(GL_DEPTH_TEST)
         glActiveTexture(GL_TEXTURE2)
 
-        // TODO: later you can implement multiple cameras and check which one is active
-        val camera = cameraNodes.first().cameraComponent.camera
-        val viewMat = camera.viewMat
+        val camera = cameraNodes.find { it.cameraComponent.isActive }?.cameraComponent
+            ?: throw RuntimeException("Can't find any active camera!")
 
         if (camera.projectionMat == null) {
             throw RuntimeException("Camera's projection matrix is null!")
@@ -120,7 +119,7 @@ object RenderSystem : BaseSystem() {
                 is Terrain -> {
                     Terrain.shaderProgram.use()
                     Terrain.shaderProgram.setUniformMat4f("m", transformationMat)
-                    Terrain.shaderProgram.setUniformMat4f("v", viewMat)
+                    Terrain.shaderProgram.setUniformMat4f("v", camera.viewMat)
                     Terrain.shaderProgram.setUniformMat4f("p", camera.projectionMat!!)
 
                     renderNode.modelComponent.model.bind()
@@ -134,7 +133,7 @@ object RenderSystem : BaseSystem() {
                 is ModelDefault -> {
                     ModelDefault.shaderProgram.use()
                     ModelDefault.shaderProgram.setUniformMat4f("m", transformationMat)
-                    ModelDefault.shaderProgram.setUniformMat4f("v", viewMat)
+                    ModelDefault.shaderProgram.setUniformMat4f("v", camera.viewMat)
                     ModelDefault.shaderProgram.setUniformMat4f("p", camera.projectionMat!!)
 
                     val modelNormalMat = glm.transpose(glm.inverse(transformationMat.toMat3()))
@@ -197,7 +196,7 @@ object RenderSystem : BaseSystem() {
                 is ModelNoLight -> {
                     ModelNoLight.shaderProgram.use()
                     ModelNoLight.shaderProgram.setUniformMat4f("m", transformationMat)
-                    ModelNoLight.shaderProgram.setUniformMat4f("v", viewMat)
+                    ModelNoLight.shaderProgram.setUniformMat4f("v", camera.viewMat)
                     ModelNoLight.shaderProgram.setUniformMat4f("p", camera.projectionMat!!)
                     renderNode.modelComponent.model.bind()
                     renderNode.modelComponent.model.texture!!.bind()

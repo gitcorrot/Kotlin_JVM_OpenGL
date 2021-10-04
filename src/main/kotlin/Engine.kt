@@ -183,9 +183,7 @@ class Engine {
         ecs.addEntity(
             Entity()
                 .addComponent(
-                    CameraComponent(
-                        Camera(window)
-                    )
+                    CameraComponent(window)
                 )
         )
         // Lights
