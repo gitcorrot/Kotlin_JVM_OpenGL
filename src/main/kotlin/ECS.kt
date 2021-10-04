@@ -118,7 +118,12 @@ class ECS {
         Debug.logd(TAG, "---------------------------------------------------------------------")
         Debug.logd(TAG, "ECS update")
         for (s in systems) {
-            s.update(deltaTime)
+            try {
+                s.update(deltaTime)
+            } catch (e: Exception) {
+                Debug.loge(TAG, e.localizedMessage)
+                e.printStackTrace()
+            }
         }
     }
 

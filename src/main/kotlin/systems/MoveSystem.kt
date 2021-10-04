@@ -14,7 +14,8 @@ object MoveSystem : BaseSystem() {
         Debug.logd(TAG, "update (deltaTime=$deltaTime)")
 
         for (moveNode in moveNodes) {
-            moveNode.transformComponent.position.plusAssign(moveNode.velocityComponent.velocity)
+            val velocity = moveNode.velocityComponent.velocity
+            moveNode.transformComponent.movable.moveBy(velocity)
         }
     }
 }

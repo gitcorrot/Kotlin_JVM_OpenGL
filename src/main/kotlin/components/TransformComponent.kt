@@ -1,10 +1,11 @@
 package components
 
-import glm_.quat.Quat
-import glm_.vec3.Vec3
+import data.Movable
+import data.Rotatable
+import data.Scalable
 
 data class TransformComponent(
-    var position: Vec3 = Vec3(),
-    var rotation: Quat = Quat(),
-    var scale: Vec3 = Vec3(1f)
+    var movable: Movable = Movable(),
+    var rotatable: Rotatable = Rotatable(),
+    var scalable: Scalable = Scalable()
 )

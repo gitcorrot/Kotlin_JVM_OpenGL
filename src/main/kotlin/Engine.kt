@@ -1,5 +1,6 @@
 import components.*
 import data.Movable
+import data.Rotatable
 import glm_.glm
 import glm_.quat.Quat
 import glm_.toFloat
@@ -136,8 +137,8 @@ class Engine {
             Entity()
                 .addComponent(
                     TransformComponent().apply {
-                        position = Vec3(5f, terrain.getHeightAt(5f, -5f), -5f)
-                        rotation = Quat(glm.radians(Vec3(0f)))
+                        movable = Movable(Vec3(5f, terrain.getHeightAt(5f, -5f), -5f))
+                        rotatable = Rotatable(Quat(glm.radians(Vec3(0f))))
                     })
                 .addComponent(
                     ModelComponent(
@@ -155,10 +156,8 @@ class Engine {
         ecs.addEntity(
             Entity()
                 .addComponent(
-                    TransformComponent().apply {
-                        position = Vec3(0f, 0f, 0f)
-                        rotation = Quat(glm.radians(Vec3(0f)))
-                    })
+                    TransformComponent()
+                )
                 .addComponent(
                     ModelComponent(
                         ModelNoLight(
@@ -171,9 +170,7 @@ class Engine {
         ecs.addEntity(
             Entity()
                 .addComponent(
-                    TransformComponent().apply {
-                        position = Vec3(0f)
-                    }
+                    TransformComponent()
                 )
                 .addComponent(
                     ModelComponent(terrain)
@@ -184,6 +181,11 @@ class Engine {
             Entity()
                 .addComponent(
                     CameraComponent(window)
+                )
+                .addComponent(
+                    TransformComponent().apply {
+                        movable.moveTo(0f, 5f, 0f)
+                    }
                 )
         )
         // Lights

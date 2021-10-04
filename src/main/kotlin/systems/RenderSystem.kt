@@ -102,25 +102,27 @@ object RenderSystem : BaseSystem() {
         glEnable(GL_DEPTH_TEST)
         glActiveTexture(GL_TEXTURE2)
 
-        val camera = cameraNodes.find { it.cameraComponent.isActive }?.cameraComponent
+        val cameraNode = cameraNodes.find { it.cameraComponent.isActive }
             ?: throw RuntimeException("Can't find any active camera!")
 
-        if (camera.projectionMat == null) {
-            throw RuntimeException("Camera's projection matrix is null!")
-        }
+        val projectionMat = cameraNode.cameraComponent.projectionMat
+            ?: throw RuntimeException("Camera's projection matrix is null!")
+
+        val viewMat = cameraNode.transformComponent.rotatable.rotation.toMat4()
+            .translate(-cameraNode.transformComponent.movable.position)
 
         for (renderNode in renderNodes) {
             val transformationMat = Mat4(1f)
-                .translate(renderNode.transformComponent.position)
-                .times(renderNode.transformComponent.rotation.toMat4())
-                .scale_(renderNode.transformComponent.scale)
+                .translate(renderNode.transformComponent.movable.position)
+                .times(renderNode.transformComponent.rotatable.rotation.toMat4())
+                .scale_(renderNode.transformComponent.scalable.scale)
 
             when (renderNode.modelComponent.model) {
                 is Terrain -> {
                     Terrain.shaderProgram.use()
                     Terrain.shaderProgram.setUniformMat4f("m", transformationMat)
-                    Terrain.shaderProgram.setUniformMat4f("v", camera.viewMat)
-                    Terrain.shaderProgram.setUniformMat4f("p", camera.projectionMat!!)
+                    Terrain.shaderProgram.setUniformMat4f("v", viewMat)
+                    Terrain.shaderProgram.setUniformMat4f("p", projectionMat)
 
                     renderNode.modelComponent.model.bind()
                     glDrawElements(
@@ -133,8 +135,8 @@ object RenderSystem : BaseSystem() {
                 is ModelDefault -> {
                     ModelDefault.shaderProgram.use()
                     ModelDefault.shaderProgram.setUniformMat4f("m", transformationMat)
-                    ModelDefault.shaderProgram.setUniformMat4f("v", camera.viewMat)
-                    ModelDefault.shaderProgram.setUniformMat4f("p", camera.projectionMat!!)
+                    ModelDefault.shaderProgram.setUniformMat4f("v", viewMat)
+                    ModelDefault.shaderProgram.setUniformMat4f("p", projectionMat)
 
                     val modelNormalMat = glm.transpose(glm.inverse(transformationMat.toMat3()))
                     ModelDefault.shaderProgram.setUniformMat3f("normalMatrix", modelNormalMat)
@@ -188,16 +190,16 @@ object RenderSystem : BaseSystem() {
         // Draw no light models
         for (renderNode in renderNodes) {
             val transformationMat = Mat4(1f)
-                .translate(renderNode.transformComponent.position)
-                .times(renderNode.transformComponent.rotation.toMat4())
-                .scale_(renderNode.transformComponent.scale)
+                .translate(renderNode.transformComponent.movable.position)
+                .times(renderNode.transformComponent.rotatable.rotation.toMat4())
+                .scale_(renderNode.transformComponent.scalable.scale)
 
             when (renderNode.modelComponent.model) {
                 is ModelNoLight -> {
                     ModelNoLight.shaderProgram.use()
                     ModelNoLight.shaderProgram.setUniformMat4f("m", transformationMat)
-                    ModelNoLight.shaderProgram.setUniformMat4f("v", camera.viewMat)
-                    ModelNoLight.shaderProgram.setUniformMat4f("p", camera.projectionMat!!)
+                    ModelNoLight.shaderProgram.setUniformMat4f("v", viewMat)
+                    ModelNoLight.shaderProgram.setUniformMat4f("p", projectionMat)
                     renderNode.modelComponent.model.bind()
                     renderNode.modelComponent.model.texture!!.bind()
                     glDrawElements(
