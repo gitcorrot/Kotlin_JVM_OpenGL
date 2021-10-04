@@ -1,13 +1,13 @@
 package nodes
 
 import Entity
-import components.PositionComponent
+import components.TransformComponent
 import components.VelocityComponent
 import nodes.core.BaseNode
 
 data class MoveNode(
     override val entityId: String,
-    val positionComponent: PositionComponent,
+    val transformComponent: TransformComponent,
     val velocityComponent: VelocityComponent
 ) : BaseNode() {
 
@@ -16,11 +16,11 @@ data class MoveNode(
 
     companion object {
         fun fromEntity(entity: Entity): MoveNode? {
-            val pc = entity.getComponent(PositionComponent::class.java.name) as PositionComponent?
+            val tc = entity.getComponent(TransformComponent::class.java.name) as TransformComponent?
             val vc = entity.getComponent(VelocityComponent::class.java.name) as VelocityComponent?
 
-            return if (pc != null && vc != null) {
-                MoveNode(entity.id, pc, vc)
+            return if (tc != null && vc != null) {
+                MoveNode(entity.id, tc, vc)
             } else {
                 null
             }

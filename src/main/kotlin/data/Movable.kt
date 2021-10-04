@@ -1,10 +1,8 @@
-package interfaces
+package data
 
 import glm_.vec3.Vec3
 
-interface Movable {
-
-    val position: Vec3
+data class Movable(val position: Vec3 = Vec3(0f)) {
 
     fun moveBy(x: Float, y: Float, z: Float) {
         position.x += x

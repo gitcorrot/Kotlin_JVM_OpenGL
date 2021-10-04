@@ -114,9 +114,9 @@ object RenderSystem : BaseSystem() {
 
         for (renderNode in renderNodes) {
             val transformationMat = Mat4(1f)
-                .translate(renderNode.positionComponent.position)
-                .times(renderNode.positionComponent.rotation.toMat4())
-                .scale_(renderNode.positionComponent.scale)
+                .translate(renderNode.transformComponent.position)
+                .times(renderNode.transformComponent.rotation.toMat4())
+                .scale_(renderNode.transformComponent.scale)
 
             when (renderNode.modelComponent.model) {
                 is Terrain -> {
@@ -191,9 +191,9 @@ object RenderSystem : BaseSystem() {
         // Draw no light models
         for (renderNode in renderNodes) {
             val transformationMat = Mat4(1f)
-                .translate(renderNode.positionComponent.position)
-                .times(renderNode.positionComponent.rotation.toMat4())
-                .scale_(renderNode.positionComponent.scale)
+                .translate(renderNode.transformComponent.position)
+                .times(renderNode.transformComponent.rotation.toMat4())
+                .scale_(renderNode.transformComponent.scale)
 
             when (renderNode.modelComponent.model) {
                 is ModelNoLight -> {

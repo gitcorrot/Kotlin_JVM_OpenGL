@@ -1,11 +1,9 @@
-package interfaces
+package data
 
 import glm_.quat.Quat
 import glm_.vec3.Vec3
 
-interface Rotatable {
-
-    var rotation: Quat
+data class Rotatable(var rotation: Quat = Quat()) {
 
     fun rotatePitchBy(angle: Float) {
         rotateBy(angle, Vec3(1f, 0f, 0f))

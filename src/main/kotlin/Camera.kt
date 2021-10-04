@@ -2,12 +2,12 @@ import glm_.glm
 import glm_.mat4x4.Mat4
 import glm_.quat.Quat
 import glm_.vec3.Vec3
-import interfaces.Movable
-import interfaces.Rotatable
+import data.Movable
+import data.Rotatable
 import org.lwjgl.glfw.GLFW.*
 
 // TODO: make movable and rotatable variables of Camera
-class Camera : Movable, Rotatable {
+class Camera {
     companion object {
         private val TAG: String = this::class.java.name
 
@@ -18,15 +18,15 @@ class Camera : Movable, Rotatable {
     }
 
     private var cameraSpeed = 0.01f
-    override val position = Vec3(-15f, 30, 15f)
-    override var rotation: Quat = Quat()
+    private val movable = Movable(Vec3(0f, 5f, 0f))
+    private var rotatable = Rotatable()
 
     private var firstCursorMoved = false
     var yaw = 45f
     var pitch = 45f
 
     val viewMat: Mat4
-        get() = rotation.toMat4().translate(-position)
+        get() = rotatable.rotation.toMat4().translate(-movable.position)
 
     init {
         updateOrientation()
@@ -37,30 +37,30 @@ class Camera : Movable, Rotatable {
 
             // W, S, A, D - moving in x and z-axis
             GLFW_KEY_W -> {
-                val dPos = getForward() * cameraSpeed * deltaTime
-                moveBy(dPos)
+                val dPos = rotatable.getForward() * cameraSpeed * deltaTime
+                movable.moveBy(dPos)
             }
             GLFW_KEY_S -> {
-                val dPos = -getForward() * cameraSpeed * deltaTime
-                moveBy(dPos)
+                val dPos = -rotatable.getForward() * cameraSpeed * deltaTime
+                movable.moveBy(dPos)
             }
             GLFW_KEY_A -> {
-                val dPos = -getRight() * cameraSpeed * deltaTime
-                moveBy(dPos)
+                val dPos = -rotatable.getRight() * cameraSpeed * deltaTime
+                movable.moveBy(dPos)
             }
             GLFW_KEY_D -> {
-                val dPos = getRight() * cameraSpeed * deltaTime
-                moveBy(dPos)
+                val dPos = rotatable.getRight() * cameraSpeed * deltaTime
+                movable.moveBy(dPos)
             }
 
             // Shift, Space - moving in y-axis
             GLFW_KEY_LEFT_SHIFT -> {
                 val dPos = Vec3(0f, -1f, 0) * cameraSpeed * deltaTime
-                moveBy(dPos)
+                movable.moveBy(dPos)
             }
             GLFW_KEY_SPACE -> {
                 val dPos = Vec3(0f, 1f, 0) * cameraSpeed * deltaTime
-                moveBy(dPos)
+                movable.moveBy(dPos)
             }
 
             // Q, E - decreasing/increasing camera speed
@@ -101,6 +101,6 @@ class Camera : Movable, Rotatable {
         val pitchQuat = Quat.angleAxis(glm.radians(pitch), Vec3(1, 0, 0))
         val yawQuat = Quat.angleAxis(glm.radians(yaw), Vec3(0, 1, 0))
 
-        rotation = pitchQuat.times(yawQuat).normalize()
+        rotatable.rotation = pitchQuat.times(yawQuat).normalize()
     }
 }

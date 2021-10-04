@@ -1,14 +1,12 @@
 package light
 
 import ShaderProgram
-import glm_.vec3.Vec3
-import interfaces.Movable
-import interfaces.Scalable
+import data.Movable
 
 class LightPoint(
-    val index: Int,
-    override val position: Vec3
-) : Light(), Movable {
+    private val index: Int,
+    val movable: Movable
+) : Light() {
 
     // Attenuation gains
     var kc = 0f
@@ -17,7 +15,7 @@ class LightPoint(
 
     override fun apply(shaderProgram: ShaderProgram) {
         shaderProgram.setUniformVec3f("pointLights[$index].color", color)
-        shaderProgram.setUniformVec3f("pointLights[$index].position", position)
+        shaderProgram.setUniformVec3f("pointLights[$index].position", movable.position)
         shaderProgram.setUniformFloat("pointLights[$index].kc", kc)
         shaderProgram.setUniformFloat("pointLights[$index].kl", kl)
         shaderProgram.setUniformFloat("pointLights[$index].kq", kq)

@@ -1,4 +1,5 @@
 import components.*
+import data.Movable
 import glm_.glm
 import glm_.quat.Quat
 import glm_.toFloat
@@ -60,7 +61,7 @@ class Engine {
         InputSystem.attachToWindow(window)
         RenderSystem.attachToWindow(window)
 
-        // order is important!
+        // order of systems is important!
         ecs.addSystem(InputSystem)
         ecs.addSystem(MoveSystem)
         ecs.addSystem(RenderSystem)
@@ -134,7 +135,7 @@ class Engine {
         ecs.addEntity(
             Entity()
                 .addComponent(
-                    PositionComponent().apply {
+                    TransformComponent().apply {
                         position = Vec3(5f, terrain.getHeightAt(5f, -5f), -5f)
                         rotation = Quat(glm.radians(Vec3(0f)))
                     })
@@ -154,7 +155,7 @@ class Engine {
         ecs.addEntity(
             Entity()
                 .addComponent(
-                    PositionComponent().apply {
+                    TransformComponent().apply {
                         position = Vec3(0f, 0f, 0f)
                         rotation = Quat(glm.radians(Vec3(0f)))
                     })
@@ -170,7 +171,7 @@ class Engine {
         ecs.addEntity(
             Entity()
                 .addComponent(
-                    PositionComponent().apply {
+                    TransformComponent().apply {
                         position = Vec3(0f)
                     }
                 )
@@ -178,6 +179,7 @@ class Engine {
                     ModelComponent(terrain)
                 )
         )
+        // Camera
         ecs.addEntity(
             Entity()
                 .addComponent(
@@ -211,7 +213,7 @@ class Engine {
             Entity()
                 .addComponent(
                     LightComponent(
-                        LightPoint(0, Vec3(0f, 2f, 0f)).apply {
+                        LightPoint(0, Movable(Vec3(0f, 2f, 0f))).apply {
                             color = Vec3(0f, 0f, 1f)
                             intensity = 1f
                             kc = 1.0f
@@ -225,7 +227,7 @@ class Engine {
             Entity()
                 .addComponent(
                     LightComponent(
-                        LightSpot(0, Vec3(5f, 2f, 0f)).apply {
+                        LightSpot(0, Movable(Vec3(5f, 2f, 0f))).apply {
                             color = Vec3(0.8f, 0.65f, 0.4f)
                             intensity = 0.3f
                             direction = Vec3(0f, -1f, 0f)

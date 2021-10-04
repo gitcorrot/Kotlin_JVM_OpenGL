@@ -1,10 +1,8 @@
-package interfaces
+package data
 
 import glm_.vec3.Vec3
 
-interface Scalable {
-
-    val scale: Vec3
+data class Scalable(val scale: Vec3 = Vec3(1f, 1f, 1f)) {
 
     fun scaleBy(x: Float, y: Float, z: Float) {
         this.scale.x += x
