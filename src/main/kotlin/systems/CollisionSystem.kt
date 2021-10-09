@@ -2,12 +2,11 @@ package systems
 
 import Texture
 import collision.BoundingBoxUtils
-import components.CollisionComponentType
+import components.BoundingBoxType
 import glm_.vec2.Vec2
 import models.base.ModelNoLight
 import nodes.CollisionNode
 import systems.core.BaseSystem
-import utils.Debug
 
 object CollisionSystem : BaseSystem() {
     val TAG: String = this::class.java.name
@@ -28,8 +27,8 @@ object CollisionSystem : BaseSystem() {
     }
 
     private fun initializeCollisionComponent(collisionNode: CollisionNode) {
-        when (collisionNode.collisionComponent.type) {
-            CollisionComponentType.AXIS_ALIGNED -> {
+        when (collisionNode.collisionComponent.boundingBoxType) {
+            BoundingBoxType.AXIS_ALIGNED -> {
                 val modelVertices = collisionNode.modelComponent.model.mesh.vertices
                 val boundingPoints = BoundingBoxUtils.calculateBoundingPoints(modelVertices)
                 val primaryMesh = BoundingBoxUtils.createMesh(boundingPoints, Vec2(0f, 0f))
@@ -40,19 +39,28 @@ object CollisionSystem : BaseSystem() {
                     ModelNoLight(primaryMesh, Texture.getDefaultColorPalette())
                 collisionNode.collisionComponent.isInitialized = true
             }
-            CollisionComponentType.OBJECT_ORIENTED -> TODO()
+            BoundingBoxType.OBJECT_ORIENTED -> TODO()
         }
     }
 
     private fun updateCollisionComponent(collisionNode: CollisionNode) {
-        when (collisionNode.collisionComponent.type) {
-            CollisionComponentType.AXIS_ALIGNED -> {
+        when (collisionNode.collisionComponent.boundingBoxType) {
+            BoundingBoxType.AXIS_ALIGNED -> {
                 val transformationMat = collisionNode.transformComponent.getTransformationMat()
 
                 // Calculate oriented bounding box
-                val transformedVertices = BoundingBoxUtils.calculateTransformedMeshVertices(
-                    collisionNode.collisionComponent.primaryMesh, transformationMat
-                )
+                val transformedVertices = when {
+                    collisionNode.collisionComponent.optimize -> {
+                        BoundingBoxUtils.calculateTransformedMeshVertices(
+                            collisionNode.collisionComponent.primaryMesh, transformationMat
+                        )
+                    }
+                    else -> {
+                        BoundingBoxUtils.calculateTransformedMeshVertices(
+                            collisionNode.modelComponent.model.mesh, transformationMat
+                        )
+                    }
+                }
 
                 // Calculate axis aligned bounding box over oriented one
                 val newBoundingPoints = BoundingBoxUtils.calculateBoundingPoints(transformedVertices)
@@ -60,7 +68,7 @@ object CollisionSystem : BaseSystem() {
                 collisionNode.collisionComponent.boundingPoints = newBoundingPoints
                 collisionNode.collisionComponent.boundingBoxModel.uploadVertices(newBoundingMesh)
             }
-            CollisionComponentType.OBJECT_ORIENTED -> TODO()
+            BoundingBoxType.OBJECT_ORIENTED -> TODO()
         }
     }
 }

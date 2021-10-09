@@ -3,6 +3,7 @@ import data.Movable
 import data.Rotatable
 import glm_.glm
 import glm_.quat.Quat
+import glm_.vec2.Vec2i
 import glm_.vec3.Vec3
 import light.LightAmbient
 import light.LightDirectional
@@ -25,14 +26,14 @@ import systems.RenderSystem
 import utils.Debug
 import utils.ModelLoader
 import utils.OpenGLUtils.readOpenGLError
+import java.lang.Long.max
 
 
-class Engine {
-    companion object {
-        val TAG: String = this::class.java.name
-        private const val defaultWindowWidth = 1000
-        private const val defaultWindowHeight = 800
-    }
+class Engine(
+    private val windowSize: Vec2i,
+    private val vSyncEnabled: Boolean
+) {
+    private val TAG: String = this.javaClass.name
 
     private val window: Long
     private val ecs = ECS()
@@ -50,12 +51,12 @@ class Engine {
             Debug.loge(TAG, "Error $error: $description")
         })
 
-        window = createWindow(defaultWindowWidth, defaultWindowHeight)
+        window = createWindow(windowSize.x, windowSize.y)
 
         glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE)
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
         glfwMakeContextCurrent(window)
-        glfwSwapInterval(1) // 1 to Enable v-sync
+        glfwSwapInterval(if (vSyncEnabled) 1 else 0)
         GL.createCapabilities()
 
         Debug.logi(TAG, "JLWGL Version: ${getVersion()}")
@@ -84,9 +85,12 @@ class Engine {
             deltaTime = (startTime - lastFrameTime).toFloat() * 1000f // ms
             lastFrameTime = startTime
 
-            Debug.loge(TAG, deltaTime.toString())
+            Debug.logd(TAG, "deltaTime: $deltaTime")
 
-            (coordinateSystemEntity.getComponent(TransformComponent::class.java.name) as TransformComponent).rotatable.rotateBy(1f, Vec3(0, 0.01f, 0))
+            (coordinateSystemEntity.getComponent(TransformComponent::class.java.name) as TransformComponent).rotatable.rotateBy(
+                0.001f * deltaTime,
+                Vec3(0f, 1f, 0f)
+            )
             ecs.update(deltaTime)
 
             // Read OpenGL error
@@ -94,6 +98,11 @@ class Engine {
                 Debug.loge(TAG, openGlError)
             }
 
+            if (!vSyncEnabled) {
+                val sleepTime = max(0L, (16.6f - deltaTime).toLong())
+                Debug.loge(TAG, "Sleeping for $sleepTime ms")
+                Thread.sleep(sleepTime)
+            }
         }
 
         cleanup()
@@ -130,8 +139,8 @@ class Engine {
             // Center our window
             glfwSetWindowPos(
                 window,
-                (it.width() - defaultWindowWidth) / 2,
-                (it.height() - defaultWindowHeight) / 2
+                (it.width() - windowSize.x) / 2,
+                (it.height() - windowSize.y) / 2
             )
             Debug.logd(TAG, "Detected display resolution ${it.width()}x${it.height()}")
         }
@@ -162,7 +171,8 @@ class Engine {
                 )
                 .addComponent(
                     CollisionComponent(
-                        type = CollisionComponentType.AXIS_ALIGNED
+                        boundingBoxType = BoundingBoxType.AXIS_ALIGNED,
+                        optimize = false
                     )
                 )
         )
@@ -181,11 +191,11 @@ class Engine {
             )
             .addComponent(
                 CollisionComponent(
-                    type = CollisionComponentType.AXIS_ALIGNED
+                    boundingBoxType = BoundingBoxType.AXIS_ALIGNED,
+                    optimize = false
                 )
             )
         ecs.addEntity(coordinateSystemEntity)
-//        (coordinateSystemEntity.getComponent(TransformComponent::class.java.name) as TransformComponent).rotatable.rotateBy(1f, Vec3(0, 1.11f, 0))
 
         ecs.addEntity(
             Entity()
