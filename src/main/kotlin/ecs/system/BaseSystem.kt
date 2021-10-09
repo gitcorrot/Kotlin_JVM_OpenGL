@@ -1,4 +1,4 @@
-package systems.core
+package ecs.system
 
 abstract class BaseSystem {
 

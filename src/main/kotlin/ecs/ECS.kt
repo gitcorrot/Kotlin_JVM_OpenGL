@@ -1,10 +1,12 @@
-import nodes.*
-import nodes.core.BaseNode
-import systems.CollisionSystem
-import systems.InputSystem
-import systems.MoveSystem
-import systems.RenderSystem
-import systems.core.BaseSystem
+package ecs
+
+import Entity
+import ecs.node.*
+import ecs.system.CollisionSystem
+import ecs.system.InputSystem
+import ecs.system.MoveSystem
+import ecs.system.RenderSystem
+import ecs.system.BaseSystem
 import utils.Debug
 import kotlin.system.measureNanoTime
 

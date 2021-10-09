@@ -1,8 +1,6 @@
-package systems
+package ecs.system
 
-import nodes.MoveNode
-import systems.core.BaseSystem
-import utils.Debug
+import ecs.node.MoveNode
 
 object MoveSystem : BaseSystem() {
     val TAG: String = this::class.java.name

@@ -1,9 +1,8 @@
-package nodes
+package ecs.node
 
 import Entity
-import components.CameraComponent
-import components.TransformComponent
-import nodes.core.BaseNode
+import ecs.component.CameraComponent
+import ecs.component.TransformComponent
 
 data class CameraNode(
     override val entityId: String,

@@ -1,9 +1,8 @@
-package nodes
+package ecs.node
 
 import Entity
-import components.ModelComponent
-import components.TransformComponent
-import nodes.core.BaseNode
+import ecs.component.ModelComponent
+import ecs.component.TransformComponent
 
 data class RenderNode(
     override val entityId: String,

@@ -1,4 +1,4 @@
-package components
+package ecs.component
 
 import data.Movable
 import data.Rotatable

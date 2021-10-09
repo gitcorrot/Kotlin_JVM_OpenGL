@@ -1,9 +1,8 @@
-package nodes
+package ecs.node
 
 import Entity
-import components.TransformComponent
-import components.VelocityComponent
-import nodes.core.BaseNode
+import ecs.component.TransformComponent
+import ecs.component.VelocityComponent
 
 data class MoveNode(
     override val entityId: String,

@@ -1,10 +1,9 @@
-package nodes
+package ecs.node
 
 import Entity
-import components.CollisionComponent
-import components.ModelComponent
-import components.TransformComponent
-import nodes.core.BaseNode
+import ecs.component.CollisionComponent
+import ecs.component.ModelComponent
+import ecs.component.TransformComponent
 
 data class CollisionNode(
     override val entityId: String,

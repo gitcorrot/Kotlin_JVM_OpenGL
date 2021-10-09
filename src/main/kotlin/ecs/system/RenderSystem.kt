@@ -1,4 +1,4 @@
-package systems
+package ecs.system
 
 import DefaultBuffer
 import Framebuffer
@@ -11,15 +11,13 @@ import light.LightSpot
 import models.base.ModelDefault
 import models.base.ModelNoLight
 import models.base.Terrain
-import nodes.CameraNode
-import nodes.CollisionNode
-import nodes.LightNode
-import nodes.RenderNode
+import ecs.node.CameraNode
+import ecs.node.CollisionNode
+import ecs.node.LightNode
+import ecs.node.RenderNode
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL33.*
-import systems.core.BaseSystem
 import ui.view.LoadingView
-import utils.Debug
 import utils.OpenGLUtils.getWindowSize
 import utils.ResourcesUtils
 
@@ -52,8 +50,8 @@ object RenderSystem : BaseSystem() {
     }
 
     fun attachToWindow(window: Long) {
-        this.window = window
-        this.isAttachedToWindow = true
+        RenderSystem.window = window
+        isAttachedToWindow = true
 
         with(getWindowSize(window)) {
             windowWidth = x.toInt()

@@ -1,8 +1,7 @@
-package nodes
+package ecs.node
 
 import Entity
-import components.LightComponent
-import nodes.core.BaseNode
+import ecs.component.LightComponent
 
 data class LightNode(
     override val entityId: String,

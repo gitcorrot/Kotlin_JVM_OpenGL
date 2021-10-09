@@ -1,12 +1,11 @@
-package systems
+package ecs.system
 
 import Texture
 import collision.BoundingBoxUtils
-import components.BoundingBoxType
+import collision.BoundingBoxType
 import glm_.vec2.Vec2
 import models.base.ModelNoLight
-import nodes.CollisionNode
-import systems.core.BaseSystem
+import ecs.node.CollisionNode
 
 object CollisionSystem : BaseSystem() {
     val TAG: String = this::class.java.name

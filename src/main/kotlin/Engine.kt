@@ -1,6 +1,12 @@
-import components.*
+import collision.BoundingBoxType
 import data.Movable
 import data.Rotatable
+import ecs.ECS
+import ecs.component.*
+import ecs.system.CollisionSystem
+import ecs.system.InputSystem
+import ecs.system.MoveSystem
+import ecs.system.RenderSystem
 import glm_.glm
 import glm_.quat.Quat
 import glm_.vec2.Vec2i
@@ -19,10 +25,6 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL33.GL_VERSION
 import org.lwjgl.opengl.GL33.glGetString
 import org.lwjgl.system.MemoryUtil
-import systems.CollisionSystem
-import systems.InputSystem
-import systems.MoveSystem
-import systems.RenderSystem
 import utils.Debug
 import utils.ModelLoader
 import utils.OpenGLUtils.readOpenGLError

@@ -1,15 +1,13 @@
-package systems
+package ecs.system
 
-import components.CameraComponent
+import ecs.component.CameraComponent
 import glm_.func.common.clamp
 import glm_.glm
 import glm_.vec3.Vec3
-import nodes.CameraNode
+import ecs.node.CameraNode
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWCursorPosCallback
 import org.lwjgl.glfw.GLFWKeyCallback
-import systems.core.BaseSystem
-import utils.Debug
 import utils.OpenGLUtils
 
 object InputSystem : BaseSystem() {
@@ -43,10 +41,10 @@ object InputSystem : BaseSystem() {
     }
 
     fun attachToWindow(window: Long) {
-        this.window = window
+        InputSystem.window = window
         isAttachedToWindow = true
-        this.keyCb = glfwSetKeyCallback(window, ::keyCallback)
-        this.cursorPosCb = glfwSetCursorPosCallback(window, ::cursorPosCallback)
+        keyCb = glfwSetKeyCallback(window, InputSystem::keyCallback)
+        cursorPosCb = glfwSetCursorPosCallback(window, InputSystem::cursorPosCallback)
         // this.cursorBtnCb = glfwSetMouseButtonCallback(window, ::mouseButtonCallback)
     }
 

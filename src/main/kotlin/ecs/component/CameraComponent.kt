@@ -1,4 +1,4 @@
-package components
+package ecs.component
 
 import glm_.glm
 import glm_.mat4x4.Mat4

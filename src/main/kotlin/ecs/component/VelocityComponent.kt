@@ -1,4 +1,4 @@
-package components
+package ecs.component
 
 import glm_.vec3.Vec3
 
