@@ -12,6 +12,7 @@ import models.base.ModelDefault
 import models.base.ModelNoLight
 import models.base.Terrain
 import nodes.CameraNode
+import nodes.CollisionNode
 import nodes.LightNode
 import nodes.RenderNode
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
@@ -28,6 +29,7 @@ object RenderSystem : BaseSystem() {
     var cameraNodes = mutableListOf<CameraNode>()
     var renderNodes = mutableListOf<RenderNode>()
     var lightNodes = mutableListOf<LightNode>()
+    var collisionNodes = mutableListOf<CollisionNode>()
 
     private var window: Long = -1
     private var isAttachedToWindow = false
@@ -113,10 +115,7 @@ object RenderSystem : BaseSystem() {
 
         // Draw terrain and default models
         for (renderNode in renderNodes) {
-            val transformationMat = Mat4(1f)
-                .translate(renderNode.transformComponent.movable.position)
-                .times(renderNode.transformComponent.rotatable.rotation.toMat4())
-                .scale_(renderNode.transformComponent.scalable.scale)
+            val transformationMat = renderNode.transformComponent.getTransformationMat()
 
             when (renderNode.modelComponent.model) {
                 is Terrain -> {
@@ -190,10 +189,7 @@ object RenderSystem : BaseSystem() {
 
         // Draw no light models
         for (renderNode in renderNodes) {
-            val transformationMat = Mat4(1f)
-                .translate(renderNode.transformComponent.movable.position)
-                .times(renderNode.transformComponent.rotatable.rotation.toMat4())
-                .scale_(renderNode.transformComponent.scalable.scale)
+            val transformationMat = renderNode.transformComponent.getTransformationMat()
 
             when (renderNode.modelComponent.model) {
                 is ModelNoLight -> {
@@ -214,40 +210,52 @@ object RenderSystem : BaseSystem() {
         }
 
         // Draw bounding boxes
-        for (renderNode in renderNodes) {
-            val oobb = when(renderNode.modelComponent.model) {
-                is ModelNoLight -> { ((renderNode.modelComponent.model) as ModelNoLight).orientedBoundingBox }
-                is ModelDefault -> { ((renderNode.modelComponent.model) as ModelDefault).orientedBoundingBox }
-                else -> null
-            }
-
-            val aabb = when (renderNode.modelComponent.model) {
-                is ModelNoLight -> { ((renderNode.modelComponent.model) as ModelNoLight).axisAlignedBoundingBox }
-                is ModelDefault -> { ((renderNode.modelComponent.model) as ModelDefault).axisAlignedBoundingBox }
-                else -> null
-            }
-
-            if (oobb == null || aabb == null) continue
-
-            val transformationMat = Mat4(1f)
-                .translate(renderNode.transformComponent.movable.position)
-                .times(renderNode.transformComponent.rotatable.rotation.toMat4())
-                .scale_(renderNode.transformComponent.scalable.scale)
-
-            ModelNoLight.shaderProgram.use()
-            ModelNoLight.shaderProgram.setUniformMat4f("m", Mat4(1f))
-
-            aabb.update(transformationMat) // TODO: Update in CollisionSystem
-            aabb.bind()
-            aabb.texture!!.bind()
-            glDrawElements(GL_LINES, aabb.primaryMesh.indices!!.size, GL_UNSIGNED_INT, 0)
-
-            ModelNoLight.shaderProgram.setUniformMat4f("m", transformationMat)
-            oobb.update(transformationMat) // TODO: Update in CollisionSystem
-            oobb.bind()
-            oobb.texture!!.bind()
-            glDrawElements(GL_LINES, oobb.primaryMesh.indices!!.size, GL_UNSIGNED_INT, 0)
-        }
+//        ModelNoLight.shaderProgram.use()
+//        ModelNoLight.shaderProgram.setUniformMat4f("m", Mat4(1f))
+//        for (collisionNode in collisionNodes) {
+//            collisionNode.collisionComponent.boundingBoxModel.bind()
+//            collisionNode.collisionComponent.boundingBoxModel.texture!!.bind()
+//            glDrawElements(GL_LINES, collisionNode.collisionComponent.primaryMesh.indices!!.size, GL_UNSIGNED_INT, 0)
+//        }
+//        for (renderNode in renderNodes) {
+//            val oobb = when (renderNode.modelComponent.model) {
+//                is ModelNoLight -> {
+//                    ((renderNode.modelComponent.model) as ModelNoLight).orientedBoundingBox
+//                }
+//                is ModelDefault -> {
+//                    ((renderNode.modelComponent.model) as ModelDefault).orientedBoundingBox
+//                }
+//                else -> null
+//            }
+//
+//            val aabb = when (renderNode.modelComponent.model) {
+//                is ModelNoLight -> {
+//                    ((renderNode.modelComponent.model) as ModelNoLight).axisAlignedBoundingBox
+//                }
+//                is ModelDefault -> {
+//                    ((renderNode.modelComponent.model) as ModelDefault).axisAlignedBoundingBox
+//                }
+//                else -> null
+//            }
+//
+//            if (oobb == null || aabb == null) continue
+//
+//            val transformationMat = renderNode.transformComponent.getTransformationMat()
+//
+//            ModelNoLight.shaderProgram.use()
+//            ModelNoLight.shaderProgram.setUniformMat4f("m", Mat4(1f))
+//
+//            aabb.update(transformationMat) // TODO: Update in CollisionSystem
+//            aabb.bind()
+//            aabb.texture!!.bind()
+//            glDrawElements(GL_LINES, aabb.primaryMesh.indices!!.size, GL_UNSIGNED_INT, 0)
+//
+//            ModelNoLight.shaderProgram.setUniformMat4f("m", transformationMat)
+//            oobb.update(transformationMat) // TODO: Update in CollisionSystem
+//            oobb.bind()
+//            oobb.texture!!.bind()
+//            glDrawElements(GL_LINES, oobb.primaryMesh.indices!!.size, GL_UNSIGNED_INT, 0)
+//        }
 
         // Draw skybox
         // world.skybox?.let { skybox ->

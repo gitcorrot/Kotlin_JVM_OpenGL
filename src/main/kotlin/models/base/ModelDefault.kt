@@ -2,8 +2,6 @@ package models.base
 
 import ShaderProgram
 import Texture
-import collision.AxisAlignedBoundingBox
-import collision.OrientedBoundingBox
 import data.Mesh
 import org.lwjgl.opengl.GL33.*
 import utils.Debug
@@ -36,9 +34,6 @@ class ModelDefault(
         }
     }
 
-    lateinit var axisAlignedBoundingBox: AxisAlignedBoundingBox
-    lateinit var orientedBoundingBox: OrientedBoundingBox
-
     init {
         this.vao = glGenVertexArrays()
         this.vbo = glGenBuffers()
@@ -61,15 +56,6 @@ class ModelDefault(
         glBindBuffer(GL_ARRAY_BUFFER, 0)
         glBindVertexArray(0)
 
-        axisAlignedBoundingBox = AxisAlignedBoundingBox(mesh)
-        orientedBoundingBox = OrientedBoundingBox(mesh)
-
         Debug.logd(TAG, "models.Base.ModelDefault created!")
     }
-
-//    fun drawBoundingBoxes() {
-//        ModelNoLight.shaderProgram.use()
-//        axisAlignedBoundingBox.draw()
-//        orientedBoundingBox.draw()
-//    }
 }

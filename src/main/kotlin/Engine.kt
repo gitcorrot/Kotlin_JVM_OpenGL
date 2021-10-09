@@ -3,7 +3,6 @@ import data.Movable
 import data.Rotatable
 import glm_.glm
 import glm_.quat.Quat
-import glm_.toFloat
 import glm_.vec3.Vec3
 import light.LightAmbient
 import light.LightDirectional
@@ -19,6 +18,7 @@ import org.lwjgl.opengl.GL
 import org.lwjgl.opengl.GL33.GL_VERSION
 import org.lwjgl.opengl.GL33.glGetString
 import org.lwjgl.system.MemoryUtil
+import systems.CollisionSystem
 import systems.InputSystem
 import systems.MoveSystem
 import systems.RenderSystem
@@ -55,7 +55,7 @@ class Engine {
         glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE)
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
         glfwMakeContextCurrent(window)
-        glfwSwapInterval(1) // Enable v-sync
+        glfwSwapInterval(1) // 1 to Enable v-sync
         GL.createCapabilities()
 
         Debug.logi(TAG, "JLWGL Version: ${getVersion()}")
@@ -68,30 +68,32 @@ class Engine {
         // order of systems is important!
         ecs.addSystem(InputSystem)
         ecs.addSystem(MoveSystem)
+        ecs.addSystem(CollisionSystem)
         ecs.addSystem(RenderSystem)
 
         initWorld()
     }
 
     fun run() {
-        var currentTime: Double
-        var lastFrameTime = glfwGetTime() - 16.6f
+        var startTime: Double
+        var lastFrameTime = glfwGetTime() - 0.0166f
+        var deltaTime: Float
 
         while (!glfwWindowShouldClose(window)) {
-            currentTime = glfwGetTime()
+            startTime = glfwGetTime()
+            deltaTime = (startTime - lastFrameTime).toFloat() * 1000f // ms
+            lastFrameTime = startTime
 
-            (coordinateSystemEntity.getComponent(TransformComponent::class.java.name) as TransformComponent).rotatable.rotateBy(
-                1f,
-                Vec3(0, 0.01f, 0)
-            )
-            ecs.update((currentTime - lastFrameTime).toFloat * 1000f)
+            Debug.loge(TAG, deltaTime.toString())
+
+            (coordinateSystemEntity.getComponent(TransformComponent::class.java.name) as TransformComponent).rotatable.rotateBy(1f, Vec3(0, 0.01f, 0))
+            ecs.update(deltaTime)
 
             // Read OpenGL error
             readOpenGLError()?.let { openGlError ->
                 Debug.loge(TAG, openGlError)
             }
 
-            lastFrameTime = currentTime
         }
 
         cleanup()
@@ -156,11 +158,15 @@ class Engine {
                     )
                 )
                 .addComponent(
-                    VelocityComponent(Vec3(-0.001f, 0f, -0.001f))
+                    VelocityComponent(Vec3(-0.0001f, 0f, -0.0001f)) // TODO: refactor to 1m/s
+                )
+                .addComponent(
+                    CollisionComponent(
+                        type = CollisionComponentType.AXIS_ALIGNED
+                    )
                 )
         )
 
-        val csMesh = ModelLoader.loadStaticModel("src/main/resources/Models/cs2.obj")
         coordinateSystemEntity = Entity()
             .addComponent(
                 TransformComponent()
@@ -168,14 +174,13 @@ class Engine {
             .addComponent(
                 ModelComponent(
                     ModelNoLight(
-                        mesh = csMesh,
+                        mesh = ModelLoader.loadStaticModel("src/main/resources/Models/cs2.obj"),
                         texture = Texture.getDefaultColorPalette()
                     )
                 )
             )
             .addComponent(
                 CollisionComponent(
-                    modelMesh = csMesh,
                     type = CollisionComponentType.AXIS_ALIGNED
                 )
             )

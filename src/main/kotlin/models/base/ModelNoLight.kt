@@ -2,8 +2,6 @@ package models.base
 
 import ShaderProgram
 import Texture
-import collision.AxisAlignedBoundingBox
-import collision.OrientedBoundingBox
 import data.Mesh
 import org.lwjgl.opengl.GL33.*
 import utils.Debug
@@ -18,7 +16,7 @@ class ModelNoLight(
         val TAG: String = this::class.java.name
         val shaderProgram = ShaderProgram()
 
-        const val VERTEX_SIZE = 5
+        private const val VERTEX_SIZE = 5
 
         private const val vertexShaderPath = "model_no_light_vertex_shader.glsl"
         private const val fragmentShaderPath = "model_no_light_fragment_shader.glsl"
@@ -41,7 +39,7 @@ class ModelNoLight(
         this.vbo = glGenBuffers()
         this.ebo = glGenBuffers()
 
-        uploadVertices(mesh, vertexSize = 5)
+        uploadVertices(mesh)
         uploadIndices(mesh)
 
         // 3 Float vertex coordinates
@@ -56,5 +54,9 @@ class ModelNoLight(
         glBindVertexArray(0)
 
         Debug.logd(TAG, "ModelNoLight created!")
+    }
+
+    fun uploadVertices(mesh: Mesh) {
+        super.uploadVertices(mesh, VERTEX_SIZE)
     }
 }

@@ -1,8 +1,6 @@
-import nodes.CameraNode
-import nodes.LightNode
-import nodes.MoveNode
-import nodes.RenderNode
+import nodes.*
 import nodes.core.BaseNode
+import systems.CollisionSystem
 import systems.InputSystem
 import systems.MoveSystem
 import systems.RenderSystem
@@ -19,6 +17,7 @@ class ECS {
         LightNode::class.java.name to mutableListOf(),
         RenderNode::class.java.name to mutableListOf(),
         MoveNode::class.java.name to mutableListOf(),
+        CollisionNode::class.java.name to mutableListOf()
     )
 
     fun addEntity(entity: Entity) {
@@ -31,34 +30,25 @@ class ECS {
         // and add then to proper systems
         CameraNode.fromEntity(entity)?.let { cameraNode ->
             nodes[CameraNode::class.java.name]!!.add(cameraNode)
-
-            getSystemOfClass(InputSystem::class.java.name)?.let {
-                (it as InputSystem).cameraNodes.add(cameraNode)
-            }
-            getSystemOfClass(RenderSystem::class.java.name)?.let {
-                (it as RenderSystem).cameraNodes.add(cameraNode)
-            }
+            getSystemOfClass<InputSystem>()?.cameraNodes?.add(cameraNode)
+            getSystemOfClass<RenderSystem>()?.cameraNodes?.add(cameraNode)
         }
         LightNode.fromEntity(entity)?.let { lightNode ->
             nodes[LightNode::class.java.name]!!.add(lightNode)
-
-            getSystemOfClass(RenderSystem::class.java.name)?.let {
-                (it as RenderSystem).lightNodes.add(lightNode)
-            }
+            getSystemOfClass<RenderSystem>()?.lightNodes?.add(lightNode)
         }
         MoveNode.fromEntity(entity)?.let { moveNode ->
             nodes[MoveNode::class.java.name]!!.add(moveNode)
-
-            getSystemOfClass(MoveSystem::class.java.name)?.let {
-                (it as MoveSystem).moveNodes.add(moveNode)
-            }
+            getSystemOfClass<MoveSystem>()?.moveNodes?.add(moveNode)
         }
         RenderNode.fromEntity(entity)?.let { renderNode ->
             nodes[RenderNode::class.java.name]!!.add(renderNode)
-
-            getSystemOfClass(RenderSystem::class.java.name)?.let {
-                (it as RenderSystem).renderNodes.add(renderNode)
-            }
+            getSystemOfClass<RenderSystem>()?.renderNodes?.add(renderNode)
+        }
+        CollisionNode.fromEntity(entity)?.let { collisionNode ->
+            nodes[CollisionNode::class.java.name]!!.add(collisionNode)
+            getSystemOfClass<RenderSystem>()?.collisionNodes?.add(collisionNode)
+            getSystemOfClass<CollisionSystem>()?.collisionNodes?.add(collisionNode)
         }
 
         // TODO: observe entity if any component was added/removed
@@ -100,8 +90,8 @@ class ECS {
         system.start()
     }
 
-    private fun getSystemOfClass(systemClass: String): BaseSystem? {
-        return systems.find { it::class.java.name == systemClass }
+    private inline fun <reified T : Any> getSystemOfClass(): T? {
+        return systems.find { it.javaClass.name == T::class.java.name } as? T
     }
 
     fun removeSystem(system: BaseSystem) {
