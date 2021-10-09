@@ -6,6 +6,12 @@ object Debug {
         ERROR, DEBUG, INFO, NONE
     }
 
+    private const val ANSI_BLACK_BOLD = "\u001B[1;30m"
+    private const val ANSI_RED = "\u001B[0;31m"
+    private const val ANSI_GREEN = "\u001B[0;32m"
+    private const val ANSI_BLUE = "\u001B[0;34m";
+
+
     /*          |  ERROR  | INFO  |  DEBUG
        NONE     |    -    |   -   |   -   |
        DEBUG    |    -    |   -   |   x   |
@@ -22,16 +28,16 @@ object Debug {
 
     fun logd(tag: String, msg: String) {
         if (DEBUG_LEVEL == DebugLevel.DEBUG)
-            println("$tag: $msg")
+            println("$ANSI_BLACK_BOLD$tag: $ANSI_GREEN $msg")
     }
 
     fun logi(tag: String, msg: String) {
         if (DEBUG_LEVEL == DebugLevel.INFO || DEBUG_LEVEL == DebugLevel.DEBUG)
-            println("$tag: $msg")
+            println("$ANSI_BLACK_BOLD$tag: $ANSI_BLUE $msg")
     }
 
     fun loge(tag: String, msg: String) {
         if (DEBUG_LEVEL != DebugLevel.NONE)
-            System.err.println("$tag: $msg")
+            System.err.println("$ANSI_BLACK_BOLD$tag: $ANSI_RED $msg")
     }
 }
