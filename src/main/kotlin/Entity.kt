@@ -4,10 +4,7 @@ import java.util.*
 data class Entity(
     val id: String = UUID.randomUUID().toString()
 ) {
-    companion object {
-        val TAG: String = this::class.java.name
-    }
-
+    private val TAG: String = this::class.java.name
     private val components = mutableMapOf<String, Any>()
 
     fun addComponent(component: Any) = apply {

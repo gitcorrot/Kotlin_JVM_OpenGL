@@ -17,9 +17,7 @@ class Terrain(
     mesh = TerrainUtils.generateMesh(size, tileSize, a),
     texture = null
 ) {
-
     companion object {
-        val TAG: String = this::class.java.name
         val shaderProgram = ShaderProgram()
 
         const val VERTEX_SIZE = 6
@@ -39,6 +37,8 @@ class Terrain(
             shaderProgram.use()
         }
     }
+
+    private val TAG: String = this::class.java.name
 
     init {
         this.vao = glGenVertexArrays()

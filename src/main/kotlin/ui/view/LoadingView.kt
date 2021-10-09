@@ -11,7 +11,6 @@ class LoadingView(
     private val aspectRatio: Float
 ) {
     companion object {
-        val TAG: String = this::class.java.name
         val shaderProgram = ShaderProgram()
 
         private const val vertexShaderPath = "loading_vertex_shader.glsl"
@@ -31,6 +30,7 @@ class LoadingView(
         }
     }
 
+    private val TAG: String = this::class.java.name
     private var vao = -1
     private var vbo = -1
 

@@ -11,7 +11,7 @@ object MoveSystem : BaseSystem() {
 
     override fun update(deltaTime: Float) {
         if (!isStarted) return
-        Debug.logd(TAG, "update (deltaTime=$deltaTime)")
+//        Debug.logd(TAG, "update (deltaTime=$deltaTime)")
 
         for (moveNode in moveNodes) {
             val velocity = moveNode.velocityComponent.velocity * deltaTime

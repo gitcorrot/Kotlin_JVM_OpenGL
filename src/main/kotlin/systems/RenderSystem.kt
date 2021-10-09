@@ -89,7 +89,7 @@ object RenderSystem : BaseSystem() {
 
     override fun update(deltaTime: Float) {
         if (!isStarted || !isAttachedToWindow || cameraNodes.size == 0) return
-        Debug.logd(TAG, "update (deltaTime=$deltaTime)")
+//        Debug.logd(TAG, "update (deltaTime=$deltaTime)")
 
 //        Debug.logi(TAG, "renderNodes=${renderNodes.size}")
 //        Debug.logi(TAG, "cameraNodes=${cameraNodes.size}")
@@ -210,52 +210,13 @@ object RenderSystem : BaseSystem() {
         }
 
         // Draw bounding boxes
-//        ModelNoLight.shaderProgram.use()
-//        ModelNoLight.shaderProgram.setUniformMat4f("m", Mat4(1f))
-//        for (collisionNode in collisionNodes) {
-//            collisionNode.collisionComponent.boundingBoxModel.bind()
-//            collisionNode.collisionComponent.boundingBoxModel.texture!!.bind()
-//            glDrawElements(GL_LINES, collisionNode.collisionComponent.primaryMesh.indices!!.size, GL_UNSIGNED_INT, 0)
-//        }
-//        for (renderNode in renderNodes) {
-//            val oobb = when (renderNode.modelComponent.model) {
-//                is ModelNoLight -> {
-//                    ((renderNode.modelComponent.model) as ModelNoLight).orientedBoundingBox
-//                }
-//                is ModelDefault -> {
-//                    ((renderNode.modelComponent.model) as ModelDefault).orientedBoundingBox
-//                }
-//                else -> null
-//            }
-//
-//            val aabb = when (renderNode.modelComponent.model) {
-//                is ModelNoLight -> {
-//                    ((renderNode.modelComponent.model) as ModelNoLight).axisAlignedBoundingBox
-//                }
-//                is ModelDefault -> {
-//                    ((renderNode.modelComponent.model) as ModelDefault).axisAlignedBoundingBox
-//                }
-//                else -> null
-//            }
-//
-//            if (oobb == null || aabb == null) continue
-//
-//            val transformationMat = renderNode.transformComponent.getTransformationMat()
-//
-//            ModelNoLight.shaderProgram.use()
-//            ModelNoLight.shaderProgram.setUniformMat4f("m", Mat4(1f))
-//
-//            aabb.update(transformationMat) // TODO: Update in CollisionSystem
-//            aabb.bind()
-//            aabb.texture!!.bind()
-//            glDrawElements(GL_LINES, aabb.primaryMesh.indices!!.size, GL_UNSIGNED_INT, 0)
-//
-//            ModelNoLight.shaderProgram.setUniformMat4f("m", transformationMat)
-//            oobb.update(transformationMat) // TODO: Update in CollisionSystem
-//            oobb.bind()
-//            oobb.texture!!.bind()
-//            glDrawElements(GL_LINES, oobb.primaryMesh.indices!!.size, GL_UNSIGNED_INT, 0)
-//        }
+        ModelNoLight.shaderProgram.use()
+        ModelNoLight.shaderProgram.setUniformMat4f("m", Mat4(1f))
+        for (collisionNode in collisionNodes) {
+            collisionNode.collisionComponent.boundingBoxModel.bind()
+            collisionNode.collisionComponent.boundingBoxModel.texture!!.bind()
+            glDrawElements(GL_LINES, collisionNode.collisionComponent.primaryMesh.indices!!.size, GL_UNSIGNED_INT, 0)
+        }
 
         // Draw skybox
         // world.skybox?.let { skybox ->

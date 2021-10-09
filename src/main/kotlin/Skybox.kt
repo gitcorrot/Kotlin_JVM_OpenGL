@@ -62,7 +62,6 @@ private val texturePaths = arrayOf(
 
 class Skybox {
     companion object {
-        val TAG: String = this::class.java.name
         val shaderProgram = ShaderProgram()
 
         init {
@@ -75,6 +74,7 @@ class Skybox {
         }
     }
 
+    private val TAG: String = this::class.java.name
     var textureID = -1
 
     private var vao: Int = -1

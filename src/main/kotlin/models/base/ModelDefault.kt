@@ -13,7 +13,6 @@ class ModelDefault(
 ) : Model(mesh, texture) {
 
     companion object {
-        val TAG: String = this::class.java.name
         val shaderProgram = ShaderProgram()
 
         const val VERTEX_SIZE = 8
@@ -33,6 +32,8 @@ class ModelDefault(
             shaderProgram.setUniformInt("colorPaletteTexture", 2)
         }
     }
+
+    private val TAG: String = this::class.java.name
 
     init {
         this.vao = glGenVertexArrays()

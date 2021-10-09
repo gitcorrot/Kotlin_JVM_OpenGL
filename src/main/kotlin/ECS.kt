@@ -6,6 +6,7 @@ import systems.MoveSystem
 import systems.RenderSystem
 import systems.core.BaseSystem
 import utils.Debug
+import kotlin.system.measureNanoTime
 
 class ECS {
     val TAG: String = this::class.java.name
@@ -105,11 +106,13 @@ class ECS {
     }
 
     fun update(deltaTime: Float) {
-        Debug.logd(TAG, "---------------------------------------------------------------------")
-        Debug.logd(TAG, "ECS update")
+        Debug.logi(TAG, "-------------------------- Update --------------------------")
         for (s in systems) {
             try {
-                s.update(deltaTime)
+                val updateTime = measureNanoTime {
+                    s.update(deltaTime)
+                }
+                Debug.logd(TAG, "${s.javaClass.name} update time:\t\t${updateTime/1000000f}ms")
             } catch (e: Exception) {
                 Debug.loge(TAG, e.localizedMessage)
                 e.printStackTrace()

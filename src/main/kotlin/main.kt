@@ -1,9 +1,9 @@
 import utils.Debug
 
 fun main() {
-//    Debug.DEBUG_LEVEL = Debug.DebugLevel.DEBUG
+    Debug.DEBUG_LEVEL = Debug.DebugLevel.DEBUG
 //    Debug.DEBUG_LEVEL = Debug.DebugLevel.INFO
-    Debug.DEBUG_LEVEL = Debug.DebugLevel.ERROR
+//    Debug.DEBUG_LEVEL = Debug.DebugLevel.ERROR
 
     Debug.logi("main.kt", "App started!")
 

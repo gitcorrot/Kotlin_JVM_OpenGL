@@ -12,9 +12,7 @@ abstract class Model(
     val mesh: Mesh,
     val texture: Texture?
 ) {
-    companion object {
-        val TAG: String = this::class.java.name
-    }
+    private val TAG: String = this::class.java.name
 
     var vao: Int = -1
         @Throws

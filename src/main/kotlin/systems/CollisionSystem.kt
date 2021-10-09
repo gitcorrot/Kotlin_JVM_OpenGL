@@ -16,7 +16,7 @@ object CollisionSystem : BaseSystem() {
 
     override fun update(deltaTime: Float) {
         if (!isStarted) return
-        Debug.logd(TAG, "update (deltaTime=$deltaTime)")
+//        Debug.logd(TAG, "update (deltaTime=$deltaTime)")
 
         for (collisionNode in collisionNodes) {
             if (!collisionNode.collisionComponent.isInitialized) {

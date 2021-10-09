@@ -7,9 +7,7 @@ import org.lwjgl.system.MemoryUtil.memFree
 import utils.Debug
 
 class ShaderProgram {
-    companion object {
-        private val TAG: String = this::class.java.name
-    }
+    private val TAG: String = this::class.java.name
 
     var programID: Int = 0
     private var vertexShaderID: Int = 0

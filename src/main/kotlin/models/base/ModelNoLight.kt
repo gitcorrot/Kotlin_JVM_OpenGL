@@ -11,9 +11,7 @@ class ModelNoLight(
     mesh: Mesh,
     texture: Texture
 ) : Model(mesh, texture) {
-
     companion object {
-        val TAG: String = this::class.java.name
         val shaderProgram = ShaderProgram()
 
         private const val VERTEX_SIZE = 5
@@ -33,6 +31,8 @@ class ModelNoLight(
             shaderProgram.setUniformInt("colorPaletteTexture", 2)
         }
     }
+
+    private val TAG: String = this::class.java.name
 
     init {
         this.vao = glGenVertexArrays()
