@@ -9,10 +9,10 @@ fun main() {
     Debug.logi("main.kt", "App started!")
 
     val engine = Engine(
-        windowSize = Vec2i(1000, 800),
+        windowSize = Vec2i(2000, 1500),
         vSyncEnabled = true,
     )
     engine.run()
 
-    Debug.logi("main.kt", "App finished!")
+    Debug.logi("main.kt", "App finished! \uD83D\uDC4B")
 }

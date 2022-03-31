@@ -12,11 +12,11 @@ data class RenderNode(
 
     companion object {
         fun fromEntity(entity: Entity): RenderNode? {
-            val pc = entity.getComponent(TransformComponent::class.java.name) as TransformComponent?
+            val tc = entity.getComponent(TransformComponent::class.java.name) as TransformComponent?
             val mc = entity.getComponent(ModelComponent::class.java.name) as ModelComponent?
 
-            return if (pc != null && mc != null) {
-                RenderNode(entity.id, pc, mc)
+            return if (tc != null && mc != null) {
+                RenderNode(entity.id, tc, mc)
             } else {
                 null
             }

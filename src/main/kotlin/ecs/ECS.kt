@@ -2,11 +2,7 @@ package ecs
 
 import Entity
 import ecs.node.*
-import ecs.system.CollisionSystem
-import ecs.system.InputSystem
-import ecs.system.MoveSystem
-import ecs.system.RenderSystem
-import ecs.system.BaseSystem
+import ecs.system.*
 import utils.Debug
 import kotlin.system.measureNanoTime
 
@@ -87,10 +83,12 @@ class ECS {
         Debug.logi(TAG, "Entity removed! ($entity)")
     }
 
-    fun addSystem(system: BaseSystem) {
+    fun addSystem(system: BaseSystem, autoStart: Boolean = false) {
         Debug.logi(TAG, "System added! ($system)")
         systems.add(system)
-        system.start()
+        if (autoStart) {
+            system.start()
+        }
     }
 
     private inline fun <reified T : Any> getSystemOfClass(): T? {
@@ -109,17 +107,21 @@ class ECS {
 
     fun update(deltaTime: Float) {
         Debug.logi(TAG, "-------------------------- Update --------------------------")
+        var totalTime = 0f
         for (s in systems) {
             try {
                 val updateTime = measureNanoTime {
                     s.update(deltaTime)
                 }
-                Debug.logd(TAG, "${s.javaClass.name} update time:\t\t${updateTime/1000000f}ms")
+                totalTime += updateTime / 1000000f
+                Debug.logd(TAG, "${s.javaClass.name} update time:\t\t\t%.3f ms".format(updateTime / 1000000f))
             } catch (e: Exception) {
                 Debug.loge(TAG, e.localizedMessage)
                 e.printStackTrace()
             }
         }
+        Debug.logi(TAG, "Total update time: %.3f ms %s".format(totalTime, if (totalTime < 16f) "✔️" else "❌️"))
+        println()
     }
 
     fun cleanup() {

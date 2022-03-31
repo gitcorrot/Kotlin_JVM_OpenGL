@@ -4,6 +4,11 @@ import DefaultBuffer
 import Framebuffer
 import GBuffer
 import ShaderProgram
+import Skybox
+import ecs.node.CameraNode
+import ecs.node.CollisionNode
+import ecs.node.LightNode
+import ecs.node.RenderNode
 import glm_.glm
 import glm_.mat4x4.Mat4
 import light.LightPoint
@@ -11,13 +16,10 @@ import light.LightSpot
 import models.base.ModelDefault
 import models.base.ModelNoLight
 import models.base.Terrain
-import ecs.node.CameraNode
-import ecs.node.CollisionNode
-import ecs.node.LightNode
-import ecs.node.RenderNode
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL33.*
 import ui.view.LoadingView
+import utils.Debug
 import utils.OpenGLUtils.getWindowSize
 import utils.ResourcesUtils
 
@@ -43,6 +45,9 @@ object RenderSystem : BaseSystem() {
 
     private var loadingView: LoadingView? = null
 
+    var drawBoundingBoxes = false
+
+    private val skybox = Skybox() // TODO: Move it to some component (???)
 
     init {
         initLightingPassShader()
@@ -86,7 +91,16 @@ object RenderSystem : BaseSystem() {
     }
 
     override fun update(deltaTime: Float) {
-        if (!isStarted || !isAttachedToWindow || cameraNodes.size == 0) return
+        if (!isStarted || !isAttachedToWindow || cameraNodes.size == 0) {
+            loadingView?.let {
+                defaultBuffer.bind()
+                defaultBuffer.clear()
+                it.render()
+                glfwSwapBuffers(window)
+            }
+            return
+        }
+
 //        Debug.logd(TAG, "update (deltaTime=$deltaTime)")
 
 //        Debug.logi(TAG, "renderNodes=${renderNodes.size}")
@@ -95,6 +109,8 @@ object RenderSystem : BaseSystem() {
 
         defaultBuffer.bind()
         defaultBuffer.clear()
+
+        var drawCalls = 0;
 
         // --------------------------------------------- GEOMETRY PASS --------------------------------------------- //
         gBuffer.bind()
@@ -129,6 +145,7 @@ object RenderSystem : BaseSystem() {
                         GL_UNSIGNED_INT,
                         0
                     )
+                    drawCalls++
                 }
                 is ModelDefault -> {
                     ModelDefault.shaderProgram.use()
@@ -147,6 +164,7 @@ object RenderSystem : BaseSystem() {
                         GL_UNSIGNED_INT,
                         0
                     )
+                    drawCalls++
                 }
             }
         }
@@ -203,32 +221,51 @@ object RenderSystem : BaseSystem() {
                         GL_UNSIGNED_INT,
                         0
                     )
+                    drawCalls++
                 }
             }
         }
 
         // Draw bounding boxes
-        ModelNoLight.shaderProgram.use()
-        ModelNoLight.shaderProgram.setUniformMat4f("m", Mat4(1f))
-        for (collisionNode in collisionNodes) {
-            collisionNode.collisionComponent.boundingBoxModel.bind()
-            collisionNode.collisionComponent.boundingBoxModel.texture!!.bind()
-            glDrawElements(GL_LINES, collisionNode.collisionComponent.primaryMesh.indices!!.size, GL_UNSIGNED_INT, 0)
+        if (drawBoundingBoxes) {
+            ModelNoLight.shaderProgram.use()
+            ModelNoLight.shaderProgram.setUniformMat4f("m", Mat4(1f))
+            for (collisionNode in collisionNodes) {
+                collisionNode.collisionComponent.boundingBoxModel.bind()
+                collisionNode.collisionComponent.boundingBoxModel.texture!!.bind()
+                collisionNode.collisionComponent.primaryMesh.indices?.size?.let { meshIndicesCount ->
+                    glDrawElements(GL_LINES, meshIndicesCount, GL_UNSIGNED_INT, 0)
+                    drawCalls++
+                }
+            }
         }
 
+
         // Draw skybox
-        // world.skybox?.let { skybox ->
-        //     Skybox.shaderProgram.use()
-        //     Skybox.shaderProgram.setUniformMat4f("v", camera.viewMat.toMat3().toMat4())
-        //     Skybox.shaderProgram.setUniformMat4f("p", this.projectionMat)
-        //     skybox.bind()
-        //     glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.textureID)
-        //     glDepthFunc(GL_LEQUAL)
-        //     glDrawArrays(GL_TRIANGLES, 0, 36)
-        //     glDepthFunc(GL_LESS)
-        // }
+        Skybox.shaderProgram.use()
+//      Skybox.shaderProgram.setUniformMat4f("v", viewMat.toMat3().toMat4())
+        val skyboxViewMat = viewMat.apply {
+            this[3][0] = 0f
+            this[3][1] = 0f
+            this[3][2] = 0f
+            this[3][3] = 0f
+            this[2][3] = 0f
+            this[1][3] = 0f
+            this[0][3] = 0f
+        }
+        Skybox.shaderProgram.setUniformMat4f("v", skyboxViewMat)
+        Skybox.shaderProgram.setUniformMat4f("p", projectionMat)
+        skybox.bind()
+        glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.textureID)
+        glDepthFunc(GL_LEQUAL)
+        glDrawArrays(GL_TRIANGLES, 0, 36)
+        drawCalls++
+        glDepthFunc(GL_LESS)
 
         glfwSwapBuffers(window)
+
+
+        Debug.logd(TAG, "Draw calls: $drawCalls")
     }
 
     override fun stop() {
