@@ -12,7 +12,8 @@ data class CameraComponent(
     var cameraSpeed: Float = 0.01f,
     var projectionMat: Mat4? = null,
     var isActive: Boolean = true,
-    var isInitialized: Boolean = false
+    var isInitialized: Boolean = false,
+    var isMovingForward: Boolean = false
 ) {
     companion object {
         const val CAMERA_SPEED_MAX = 0.05f

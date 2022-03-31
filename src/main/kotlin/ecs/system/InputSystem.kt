@@ -1,19 +1,20 @@
 package ecs.system
 
 import ecs.component.CameraComponent
+import ecs.node.CameraNode
 import glm_.func.common.clamp
 import glm_.glm
 import glm_.vec3.Vec3
-import ecs.node.CameraNode
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWCursorPosCallback
 import org.lwjgl.glfw.GLFWKeyCallback
+import utils.Debug
 import utils.OpenGLUtils
 
 object InputSystem : BaseSystem() {
-    private const val MOUSE_SENSITIVITY = 0.1f
+    private val TAG: String = this::class.java.name
 
-    val TAG: String = this::class.java.name
+    private const val MOUSE_SENSITIVITY = 0.1f
 
     var cameraNodes = mutableListOf<CameraNode>()
 
@@ -41,6 +42,8 @@ object InputSystem : BaseSystem() {
     }
 
     fun attachToWindow(window: Long) {
+        glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE)
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
         InputSystem.window = window
         isAttachedToWindow = true
         keyCb = glfwSetKeyCallback(window, InputSystem::keyCallback)
@@ -49,9 +52,17 @@ object InputSystem : BaseSystem() {
     }
 
     private fun keyCallback(window: Long, key: Int, scancode: Int, action: Int, mods: Int) {
-        if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-            if (isAttachedToWindow) {
-                glfwSetWindowShouldClose(window, true)
+        when {
+            key == GLFW_KEY_ESCAPE && action == GLFW_PRESS -> {
+                if (isAttachedToWindow) {
+                    glfwSetWindowShouldClose(window, true)
+                }
+            }
+            key == GLFW_KEY_B && action == GLFW_PRESS -> {
+                RenderSystem.drawBoundingBoxes = !RenderSystem.drawBoundingBoxes
+            }
+            key == GLFW_KEY_F && action == GLFW_PRESS -> {
+                DynamicFovSystem.isDynamicFovEnabled = !DynamicFovSystem.isDynamicFovEnabled
             }
         }
     }
@@ -69,6 +80,12 @@ object InputSystem : BaseSystem() {
 
     override fun update(deltaTime: Float) {
         if (!isStarted) return
+
+        if (!isAttachedToWindow) {
+            Debug.loge(TAG, "Not attached to window!")
+            return
+        }
+
 //        Debug.logd(TAG, "update (deltaTime=$deltaTime)")
 
         glfwPollEvents()
@@ -116,50 +133,60 @@ object InputSystem : BaseSystem() {
             }
 
             for (key in cameraKeys) {
-                if (glfwGetKey(window, key) == GLFW_PRESS) {
-                    when (key) {
-                        // W, S, A, D - moving in x and z-axis
-                        GLFW_KEY_W -> {
-                            transformComponent.movable.moveBy(
-                                transformComponent.rotatable.getForward() * cameraComponent.cameraSpeed * deltaTime
-                            )
-                        }
-                        GLFW_KEY_S -> {
-                            transformComponent.movable.moveBy(
-                                -transformComponent.rotatable.getForward() * cameraComponent.cameraSpeed * deltaTime
-                            )
-                        }
-                        GLFW_KEY_A -> {
-                            transformComponent.movable.moveBy(
-                                -transformComponent.rotatable.getRight() * cameraComponent.cameraSpeed * deltaTime
-                            )
-                        }
-                        GLFW_KEY_D -> {
-                            transformComponent.movable.moveBy(
-                                transformComponent.rotatable.getRight() * cameraComponent.cameraSpeed * deltaTime
-                            )
-                        }
-                        // Shift, Space - moving in y-axis
-                        GLFW_KEY_LEFT_SHIFT -> {
-                            transformComponent.movable.moveBy(
-                                Vec3(0f, -1f, 0) * cameraComponent.cameraSpeed * deltaTime
-                            )
-                        }
-                        GLFW_KEY_SPACE -> {
-                            transformComponent.movable.moveBy(
-                                Vec3(0f, 1f, 0) * cameraComponent.cameraSpeed * deltaTime
-                            )
-                        }
+                when (glfwGetKey(window, key)) {
+                    GLFW_PRESS -> {
+                        when (key) {
+                            // W, S, A, D - moving in x and z-axis
+                            GLFW_KEY_W -> {
+                                cameraComponent.isMovingForward = true
+                                transformComponent.movable.moveBy(
+                                    transformComponent.rotatable.getForward() * cameraComponent.cameraSpeed * deltaTime
+                                )
+                            }
+                            GLFW_KEY_S -> {
+                                transformComponent.movable.moveBy(
+                                    -transformComponent.rotatable.getForward() * cameraComponent.cameraSpeed * deltaTime
+                                )
+                            }
+                            GLFW_KEY_A -> {
+                                transformComponent.movable.moveBy(
+                                    -transformComponent.rotatable.getRight() * cameraComponent.cameraSpeed * deltaTime
+                                )
+                            }
+                            GLFW_KEY_D -> {
+                                transformComponent.movable.moveBy(
+                                    transformComponent.rotatable.getRight() * cameraComponent.cameraSpeed * deltaTime
+                                )
+                            }
+                            // Shift, Space - moving in y-axis
+                            GLFW_KEY_LEFT_SHIFT -> {
+                                transformComponent.movable.moveBy(
+                                    Vec3(0f, -1f, 0) * cameraComponent.cameraSpeed * deltaTime
+                                )
+                            }
+                            GLFW_KEY_SPACE -> {
+                                transformComponent.movable.moveBy(
+                                    Vec3(0f, 1f, 0) * cameraComponent.cameraSpeed * deltaTime
+                                )
+                            }
 
-                        // Q, E - decreasing/increasing camera speed
-                        GLFW_KEY_Q -> {
-                            if (cameraComponent.cameraSpeed > CameraComponent.CAMERA_SPEED_MIN) {
-                                cameraComponent.cameraSpeed -= CameraComponent.CAMERA_SPEED_CHANGE_STEP * deltaTime
+                            // Q, E - decreasing/increasing camera speed
+                            GLFW_KEY_Q -> {
+                                if (cameraComponent.cameraSpeed > CameraComponent.CAMERA_SPEED_MIN) {
+                                    cameraComponent.cameraSpeed -= CameraComponent.CAMERA_SPEED_CHANGE_STEP * deltaTime
+                                }
+                            }
+                            GLFW_KEY_E -> {
+                                if (cameraComponent.cameraSpeed < CameraComponent.CAMERA_SPEED_MAX) {
+                                    cameraComponent.cameraSpeed += CameraComponent.CAMERA_SPEED_CHANGE_STEP * deltaTime
+                                }
                             }
                         }
-                        GLFW_KEY_E -> {
-                            if (cameraComponent.cameraSpeed < CameraComponent.CAMERA_SPEED_MAX) {
-                                cameraComponent.cameraSpeed += CameraComponent.CAMERA_SPEED_CHANGE_STEP * deltaTime
+                    }
+                    GLFW_RELEASE -> {
+                        when (key) {
+                            GLFW_KEY_W -> {
+                                cameraComponent.isMovingForward = false
                             }
                         }
                     }

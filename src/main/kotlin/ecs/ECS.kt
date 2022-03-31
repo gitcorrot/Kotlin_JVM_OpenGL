@@ -30,6 +30,7 @@ class ECS {
         CameraNode.fromEntity(entity)?.let { cameraNode ->
             nodes[CameraNode::class.java.name]!!.add(cameraNode)
             getSystemOfClass<InputSystem>()?.cameraNodes?.add(cameraNode)
+            getSystemOfClass<DynamicFovSystem>()?.cameraNodes?.add(cameraNode)
             getSystemOfClass<RenderSystem>()?.cameraNodes?.add(cameraNode)
         }
         LightNode.fromEntity(entity)?.let { lightNode ->
@@ -64,6 +65,7 @@ class ECS {
                 when (k) {
                     CameraNode::class.java.name -> {
                         InputSystem.cameraNodes.remove(nodeToRemove)
+                        DynamicFovSystem.cameraNodes.remove(nodeToRemove)
                         RenderSystem.cameraNodes.remove(nodeToRemove)
                     }
                     RenderNode::class.java.name -> {

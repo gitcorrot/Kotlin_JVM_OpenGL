@@ -3,10 +3,7 @@ import data.Movable
 import data.Rotatable
 import ecs.ECS
 import ecs.component.*
-import ecs.system.CollisionSystem
-import ecs.system.InputSystem
-import ecs.system.MoveSystem
-import ecs.system.RenderSystem
+import ecs.system.*
 import glm_.glm
 import glm_.quat.Quat
 import glm_.vec2.Vec2i
@@ -29,6 +26,9 @@ import utils.Debug
 import utils.ModelLoader
 import utils.OpenGLUtils.readOpenGLError
 import java.lang.Long.max
+import java.util.*
+import kotlin.concurrent.schedule
+import kotlin.system.measureNanoTime
 
 
 class Engine(
@@ -55,8 +55,6 @@ class Engine(
 
         window = createWindow(windowSize.x, windowSize.y)
 
-        glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE)
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
         glfwMakeContextCurrent(window)
         glfwSwapInterval(if (vSyncEnabled) 1 else 0)
         GL.createCapabilities()
@@ -66,15 +64,27 @@ class Engine(
         Debug.logi(TAG, "------------------------------------------------")
 
         InputSystem.attachToWindow(window)
+        DynamicFovSystem.attachToWindow(window)
         RenderSystem.attachToWindow(window)
 
         // order of systems is important!
-        ecs.addSystem(InputSystem)
-        ecs.addSystem(MoveSystem)
-        ecs.addSystem(CollisionSystem)
-        ecs.addSystem(RenderSystem)
+        ecs.addSystem(InputSystem, true)
+        ecs.addSystem(DynamicFovSystem, true)
+        ecs.addSystem(MoveSystem, false)
+        ecs.addSystem(CollisionSystem, false)
+        ecs.addSystem(RenderSystem, false)
 
-        initWorld()
+        val initWorldTime = measureNanoTime {
+            initWorld()
+        }
+        Debug.logd(TAG, "World init time:\t\t\t%.3f ms".format(initWorldTime / 1000000f))
+
+
+        Timer("SettingUp", false).schedule(500) {
+            MoveSystem.start()
+            CollisionSystem.start()
+            RenderSystem.start()
+        }
     }
 
     fun run() {
@@ -144,7 +154,7 @@ class Engine(
                 (it.width() - windowSize.x) / 2,
                 (it.height() - windowSize.y) / 2
             )
-            Debug.logd(TAG, "Detected display resolution ${it.width()}x${it.height()}")
+            Debug.logi(TAG, "Detected display resolution: ${it.width()}x${it.height()}")
         }
 
         return window
