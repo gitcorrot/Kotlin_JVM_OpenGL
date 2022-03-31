@@ -42,7 +42,7 @@ class Engine(
     private val errCallback: GLFWErrorCallback?
 
     // debugging
-    lateinit var coordinateSystemEntity: Entity
+    lateinit var rock: Entity
 
     init {
         if (!glfwInit()) {
@@ -99,10 +99,10 @@ class Engine(
 
             Debug.logd(TAG, "deltaTime: $deltaTime")
 
-//            (coordinateSystemEntity.getComponent(TransformComponent::class.java.name) as TransformComponent).rotatable.rotateBy(
-//                0.001f * deltaTime,
-//                Vec3(0f, 1f, 0f)
-//            )
+            (rock.getComponent(TransformComponent::class.java.name) as TransformComponent).rotatable.rotateBy(
+                0.001f * deltaTime,
+                Vec3(0f, 1f, 0f)
+            )
             ecs.update(deltaTime)
 
             // Read OpenGL error
@@ -175,7 +175,7 @@ class Engine(
         )
 
         // Terrain
-        val terrain = Terrain(50, 0.05f, 1f)
+        val terrain = Terrain(50, 0.1f, 1f)
         ecs.addEntity(
             Entity()
                 .addComponent(
@@ -214,41 +214,16 @@ class Engine(
         )
 
         // Rock
-        ecs.addEntity(
-            Entity()
-                .addComponent(
-                    TransformComponent().apply {
-                        movable = Movable(Vec3(10f, terrain.getHeightAt(10f, -10f), -10f))
-                        rotatable = Rotatable(Quat(glm.radians(Vec3(0f))))
-                    })
-                .addComponent(
-                    ModelComponent(
-                        ModelDefault(
-                            mesh = ModelLoader.loadStaticModel("src/main/resources/Models/rock1.obj"),
-                            texture = Texture.getDefaultColorPalette()
-                        )
-                    )
-                )
-//                .addComponent(
-//                    VelocityComponent(Vec3(-0.0001f, 0f, -0.0001f)) // TODO: refactor to 1m/s
-//                )
-                .addComponent(
-                    CollisionComponent(
-                        boundingBoxType = BoundingBoxType.AXIS_ALIGNED,
-                        optimize = false
-                    )
-                )
-        )
-
-        // Coordinate system
-        coordinateSystemEntity = Entity()
+        rock = Entity()
             .addComponent(
-                TransformComponent()
-            )
+                TransformComponent().apply {
+                    movable = Movable(Vec3(10f, terrain.getHeightAt(10f, -10f), -10f))
+                    rotatable = Rotatable(Quat(glm.radians(Vec3(0f))))
+                })
             .addComponent(
                 ModelComponent(
-                    ModelNoLight(
-                        mesh = ModelLoader.loadStaticModel("src/main/resources/Models/cs2.obj"),
+                    ModelDefault(
+                        mesh = ModelLoader.loadStaticModel("src/main/resources/Models/rock1.obj"),
                         texture = Texture.getDefaultColorPalette()
                     )
                 )
@@ -259,7 +234,29 @@ class Engine(
                     optimize = false
                 )
             )
-        ecs.addEntity(coordinateSystemEntity)
+        ecs.addEntity(rock)
+
+        // Coordinate system
+        ecs.addEntity(
+            Entity()
+                .addComponent(
+                    TransformComponent()
+                )
+                .addComponent(
+                    ModelComponent(
+                        ModelNoLight(
+                            mesh = ModelLoader.loadStaticModel("src/main/resources/Models/cs2.obj"),
+                            texture = Texture.getDefaultColorPalette()
+                        )
+                    )
+                )
+                .addComponent(
+                    CollisionComponent(
+                        boundingBoxType = BoundingBoxType.AXIS_ALIGNED,
+                        optimize = false
+                    )
+                )
+        )
 
         // Lights
         ecs.addEntity(
