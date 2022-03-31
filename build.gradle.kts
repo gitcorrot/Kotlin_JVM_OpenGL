@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.4.30"
+    kotlin("jvm") version "1.6.10"
     application
 }
 
@@ -9,8 +9,19 @@ group = "me.corrot"
 version = "1.0-SNAPSHOT"
 
 val glmVersion = "v1.0.1"
-val lwjglVersion = "3.2.3"
-val lwjglNatives = "natives-linux"
+val lwjglVersion = "3.3.1"
+//val lwjglNatives = "natives-linux"
+val lwjglNatives = "natives-windows"
+
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    jvmTarget = "1.8"
+}
+
+val compileTestKotlin: KotlinCompile by tasks
+compileTestKotlin.kotlinOptions {
+    jvmTarget = "1.8"
+}
 
 application {
     mainClassName = "MainKt"
@@ -26,6 +37,8 @@ tasks.withType<KotlinCompile>() {
 }
 
 dependencies {
+    implementation(kotlin("stdlib-jdk8"))
+
     // LWJGL
     implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
 
@@ -44,13 +57,4 @@ dependencies {
 
     // GLM Math
     implementation("com.github.kotlin-graphics:glm:$glmVersion")
-    implementation(kotlin("stdlib-jdk8"))
-}
-val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-}
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "1.8"
 }
