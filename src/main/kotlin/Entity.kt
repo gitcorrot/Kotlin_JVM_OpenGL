@@ -8,7 +8,7 @@ data class Entity(
     private val components = mutableMapOf<String, Any>()
 
     fun addComponent(component: Any) = apply {
-        Debug.logi(TAG, "Added ${component::class.java.name} to Entity id=$id!")
+        Debug.logd(TAG, "Added ${component::class.java.name} to Entity id=$id!")
         components[component::class.java.name] = component
     }
 

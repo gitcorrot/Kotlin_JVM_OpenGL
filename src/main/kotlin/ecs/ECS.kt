@@ -20,7 +20,7 @@ class ECS {
     )
 
     fun addEntity(entity: Entity) {
-        Debug.logi(TAG, "Entity added! ($entity)")
+        Debug.logd(TAG, "Entity added! ($entity)")
 
         // add entity
         entities.add(entity)

@@ -67,7 +67,7 @@ object ModelLoader {
             vertices.add(vertex)
         }
 
-        Debug.logi(TAG, "${vertices.size} vertices loaded!")
+        Debug.logd(TAG, "${vertices.size} vertices loaded!")
         return vertices
     }
 
@@ -85,7 +85,7 @@ object ModelLoader {
             }
         }
 
-        Debug.logi(TAG, "${indices.size} indices loaded!")
+        Debug.logd(TAG, "${indices.size} indices loaded!")
         return indices
     }
 }
