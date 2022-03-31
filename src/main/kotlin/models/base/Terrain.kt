@@ -19,12 +19,17 @@ class Terrain(
 ) {
     companion object {
         val shaderProgram = ShaderProgram()
+        val normalDebugShaderProgram = ShaderProgram()
 
         const val VERTEX_SIZE = 6
 
         private const val vertexShaderPath = "terrain_vertex_shader.glsl"
         private const val geometryShaderPath = "terrain_geometry_shader.glsl"
         private const val fragmentShaderPath = "terrain_fragment_shader.glsl"
+
+        private const val normalDebugVertexShaderPath = "terrain_normals_vertex_shader.glsl"
+        private const val normalDebugGeometryShaderPath = "terrain_normals_geometry_shader.glsl"
+        private const val normalDebugFragmentShaderPath = "terrain_normals_fragment_shader.glsl"
 
         init {
             val vertexShaderString = ResourcesUtils.readShader(vertexShaderPath)
@@ -35,6 +40,15 @@ class Terrain(
             shaderProgram.createShader(fragmentShaderString, GL_FRAGMENT_SHADER)
             shaderProgram.link()
             shaderProgram.use()
+
+            val normalDebugVertexShaderString = ResourcesUtils.readShader(normalDebugVertexShaderPath)
+            val normalDebugGeometryShaderString = ResourcesUtils.readShader(normalDebugGeometryShaderPath)
+            val normalDebugFragmentShaderString = ResourcesUtils.readShader(normalDebugFragmentShaderPath)
+            normalDebugShaderProgram.createShader(normalDebugVertexShaderString, GL_VERTEX_SHADER)
+            normalDebugShaderProgram.createShader(normalDebugGeometryShaderString, GL_GEOMETRY_SHADER)
+            normalDebugShaderProgram.createShader(normalDebugFragmentShaderString, GL_FRAGMENT_SHADER)
+            normalDebugShaderProgram.link()
+            normalDebugShaderProgram.use()
         }
     }
 

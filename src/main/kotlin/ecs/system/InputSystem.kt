@@ -61,6 +61,9 @@ object InputSystem : BaseSystem() {
             key == GLFW_KEY_B && action == GLFW_PRESS -> {
                 RenderSystem.drawBoundingBoxes = !RenderSystem.drawBoundingBoxes
             }
+            key == GLFW_KEY_N && action == GLFW_PRESS -> {
+                RenderSystem.drawTerrainNormals = !RenderSystem.drawTerrainNormals
+            }
             key == GLFW_KEY_F && action == GLFW_PRESS -> {
                 DynamicFovSystem.isDynamicFovEnabled = !DynamicFovSystem.isDynamicFovEnabled
             }

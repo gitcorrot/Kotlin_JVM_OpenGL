@@ -5,6 +5,7 @@ import Framebuffer
 import GBuffer
 import ShaderProgram
 import Skybox
+import ecs.component.CollisionComponent
 import ecs.node.CameraNode
 import ecs.node.CollisionNode
 import ecs.node.LightNode
@@ -24,12 +25,15 @@ import utils.OpenGLUtils.getWindowSize
 import utils.ResourcesUtils
 
 object RenderSystem : BaseSystem() {
-    val TAG: String = this::class.java.name
+    private val TAG: String = this::class.java.name
 
     var cameraNodes = mutableListOf<CameraNode>()
     var renderNodes = mutableListOf<RenderNode>()
     var lightNodes = mutableListOf<LightNode>()
     var collisionNodes = mutableListOf<CollisionNode>()
+
+    var drawBoundingBoxes = false
+    var drawTerrainNormals = false
 
     private var window: Long = -1
     private var isAttachedToWindow = false
@@ -44,9 +48,7 @@ object RenderSystem : BaseSystem() {
     private var aspectRatio: Float = 0f
 
     private var loadingView: LoadingView? = null
-
-    var drawBoundingBoxes = false
-
+    private var drawCalls = 0
     private val skybox = Skybox() // TODO: Move it to some component (???)
 
     init {
@@ -86,10 +88,6 @@ object RenderSystem : BaseSystem() {
         lightingPassShader.setUniformInt("gCol", 2)
     }
 
-    override fun start() {
-        super.start()
-    }
-
     override fun update(deltaTime: Float) {
         if (!isStarted || !isAttachedToWindow || cameraNodes.size == 0) {
             loadingView?.let {
@@ -110,13 +108,7 @@ object RenderSystem : BaseSystem() {
         defaultBuffer.bind()
         defaultBuffer.clear()
 
-        var drawCalls = 0;
-
-        // --------------------------------------------- GEOMETRY PASS --------------------------------------------- //
-        gBuffer.bind()
-        gBuffer.clear()
-        glEnable(GL_DEPTH_TEST)
-        glActiveTexture(GL_TEXTURE2)
+        drawCalls = 0
 
         val cameraNode = cameraNodes.find { it.cameraComponent.isActive }
             ?: throw RuntimeException("Can't find any active camera!")
@@ -127,44 +119,19 @@ object RenderSystem : BaseSystem() {
         val viewMat = cameraNode.transformComponent.rotatable.rotation.toMat4()
             .translate(-cameraNode.transformComponent.movable.position)
 
-        // Draw terrain and default models
-        for (renderNode in renderNodes) {
-            val transformationMat = renderNode.transformComponent.getTransformationMat()
+        // --------------------------------------------- GEOMETRY PASS --------------------------------------------- //
+        gBuffer.bind()
+        gBuffer.clear()
+        glEnable(GL_DEPTH_TEST)
+        glActiveTexture(GL_TEXTURE2)
 
+        for (renderNode in renderNodes) {
             when (renderNode.modelComponent.model) {
                 is Terrain -> {
-                    Terrain.shaderProgram.use()
-                    Terrain.shaderProgram.setUniformMat4f("m", transformationMat)
-                    Terrain.shaderProgram.setUniformMat4f("v", viewMat)
-                    Terrain.shaderProgram.setUniformMat4f("p", projectionMat)
-
-                    renderNode.modelComponent.model.bind()
-                    glDrawElements(
-                        GL_TRIANGLES,
-                        renderNode.modelComponent.model.mesh.indices!!.size,
-                        GL_UNSIGNED_INT,
-                        0
-                    )
-                    drawCalls++
+                    drawTerrain(viewMat, projectionMat, renderNode, Terrain.shaderProgram)
                 }
                 is ModelDefault -> {
-                    ModelDefault.shaderProgram.use()
-                    ModelDefault.shaderProgram.setUniformMat4f("m", transformationMat)
-                    ModelDefault.shaderProgram.setUniformMat4f("v", viewMat)
-                    ModelDefault.shaderProgram.setUniformMat4f("p", projectionMat)
-
-                    val modelNormalMat = glm.transpose(glm.inverse(transformationMat.toMat3()))
-                    ModelDefault.shaderProgram.setUniformMat3f("normalMatrix", modelNormalMat)
-
-                    renderNode.modelComponent.model.bind()
-                    renderNode.modelComponent.model.texture!!.bind()
-                    glDrawElements(
-                        GL_TRIANGLES,
-                        renderNode.modelComponent.model.mesh.indices!!.size,
-                        GL_UNSIGNED_INT,
-                        0
-                    )
-                    drawCalls++
+                    drawModelDefault(viewMat, projectionMat, renderNode)
                 }
             }
         }
@@ -174,14 +141,6 @@ object RenderSystem : BaseSystem() {
         defaultBuffer.clear()
         gBuffer.activateTextures()
 
-        // var noPointLights = 0
-        // var noSpotLights = 0
-        // lightNodes.forEach {
-        //     when (it.lightComponent.light) {
-        //         is LightPoint -> noPointLights++
-        //         is LightSpot -> noSpotLights++
-        //     }
-        // }
         val noPointLights = lightNodes.count { it.lightComponent.light is LightPoint }
         val noSpotLights = lightNodes.count { it.lightComponent.light is LightSpot }
 
@@ -205,45 +164,113 @@ object RenderSystem : BaseSystem() {
 
         // Draw no light models
         for (renderNode in renderNodes) {
-            val transformationMat = renderNode.transformComponent.getTransformationMat()
-
             when (renderNode.modelComponent.model) {
                 is ModelNoLight -> {
-                    ModelNoLight.shaderProgram.use()
-                    ModelNoLight.shaderProgram.setUniformMat4f("m", transformationMat)
-                    ModelNoLight.shaderProgram.setUniformMat4f("v", viewMat)
-                    ModelNoLight.shaderProgram.setUniformMat4f("p", projectionMat)
-                    renderNode.modelComponent.model.bind()
-                    renderNode.modelComponent.model.texture!!.bind()
-                    glDrawElements(
-                        GL_TRIANGLES,
-                        renderNode.modelComponent.model.mesh.indices!!.size,
-                        GL_UNSIGNED_INT,
-                        0
-                    )
-                    drawCalls++
+                    drawModelNoLight(viewMat, projectionMat, renderNode)
                 }
             }
         }
 
-        // Draw bounding boxes
         if (drawBoundingBoxes) {
-            ModelNoLight.shaderProgram.use()
-            ModelNoLight.shaderProgram.setUniformMat4f("m", Mat4(1f))
             for (collisionNode in collisionNodes) {
-                collisionNode.collisionComponent.boundingBoxModel.bind()
-                collisionNode.collisionComponent.boundingBoxModel.texture!!.bind()
-                collisionNode.collisionComponent.primaryMesh.indices?.size?.let { meshIndicesCount ->
-                    glDrawElements(GL_LINES, meshIndicesCount, GL_UNSIGNED_INT, 0)
-                    drawCalls++
+                drawBoundingBox(collisionNode.collisionComponent)
+            }
+        }
+
+        if (drawTerrainNormals) {
+            for (renderNode in renderNodes) {
+                when (renderNode.modelComponent.model) {
+                    is Terrain -> {
+                        drawTerrain(viewMat, projectionMat, renderNode, Terrain.normalDebugShaderProgram)
+                    }
                 }
             }
         }
 
+        drawSkybox(viewMat, projectionMat)
 
-        // Draw skybox
-        Skybox.shaderProgram.use()
-//      Skybox.shaderProgram.setUniformMat4f("v", viewMat.toMat3().toMat4())
+        glfwSwapBuffers(window)
+
+        Debug.logd(TAG, "Draw calls: $drawCalls")
+    }
+
+    private fun drawTerrain(
+        viewMat: Mat4,
+        projectionMat: Mat4,
+        renderNode: RenderNode,
+        shaderProgram: ShaderProgram
+    ) {
+        val transformationMat = renderNode.transformComponent.getTransformationMat()
+        val model = renderNode.modelComponent.model
+
+        shaderProgram.use()
+        shaderProgram.setUniformMat4f("m", transformationMat)
+        shaderProgram.setUniformMat4f("v", viewMat)
+        shaderProgram.setUniformMat4f("p", projectionMat)
+
+        model.bind()
+        glDrawElements(GL_TRIANGLES, model.mesh.indices!!.size, GL_UNSIGNED_INT, 0)
+        drawCalls++
+    }
+
+    private fun drawModelNoLight(
+        viewMat: Mat4,
+        projectionMat: Mat4,
+        renderNode: RenderNode,
+    ) {
+        val transformationMat = renderNode.transformComponent.getTransformationMat()
+        val model = renderNode.modelComponent.model
+
+        ModelNoLight.shaderProgram.use()
+        ModelNoLight.shaderProgram.setUniformMat4f("m", transformationMat)
+        ModelNoLight.shaderProgram.setUniformMat4f("v", viewMat)
+        ModelNoLight.shaderProgram.setUniformMat4f("p", projectionMat)
+
+        model.bind()
+        model.texture!!.bind()
+        glDrawElements(GL_TRIANGLES, model.mesh.indices!!.size, GL_UNSIGNED_INT, 0)
+        drawCalls++
+    }
+
+    private fun drawModelDefault(
+        viewMat: Mat4,
+        projectionMat: Mat4,
+        renderNode: RenderNode,
+    ) {
+        val transformationMat = renderNode.transformComponent.getTransformationMat()
+        val model = renderNode.modelComponent.model
+
+        ModelDefault.shaderProgram.use()
+        ModelDefault.shaderProgram.setUniformMat4f("m", transformationMat)
+        ModelDefault.shaderProgram.setUniformMat4f("v", viewMat)
+        ModelDefault.shaderProgram.setUniformMat4f("p", projectionMat)
+
+        val modelNormalMat = glm.transpose(glm.inverse(transformationMat.toMat3()))
+        ModelDefault.shaderProgram.setUniformMat3f("normalMatrix", modelNormalMat)
+
+        model.bind()
+        model.texture!!.bind()
+        glDrawElements(GL_TRIANGLES, model.mesh.indices!!.size, GL_UNSIGNED_INT, 0)
+        drawCalls++
+    }
+
+    private fun drawBoundingBox(collisionComponent: CollisionComponent) {
+        val model = collisionComponent.boundingBoxModel
+
+        ModelNoLight.shaderProgram.use()
+        ModelNoLight.shaderProgram.setUniformMat4f("m", Mat4(1f))
+
+        model.bind()
+        model.texture!!.bind()
+        glDrawElements(GL_LINES, model.mesh.indices?.size!!, GL_UNSIGNED_INT, 0)
+        drawCalls++
+
+    }
+
+    private fun drawSkybox(
+        viewMat: Mat4,
+        projectionMat: Mat4
+    ) {
         val skyboxViewMat = viewMat.apply {
             this[3][0] = 0f
             this[3][1] = 0f
@@ -253,22 +280,17 @@ object RenderSystem : BaseSystem() {
             this[1][3] = 0f
             this[0][3] = 0f
         }
+
+        Skybox.shaderProgram.use()
+//      Skybox.shaderProgram.setUniformMat4f("v", viewMat.toMat3().toMat4())
         Skybox.shaderProgram.setUniformMat4f("v", skyboxViewMat)
         Skybox.shaderProgram.setUniformMat4f("p", projectionMat)
+
         skybox.bind()
         glBindTexture(GL_TEXTURE_CUBE_MAP, skybox.textureID)
         glDepthFunc(GL_LEQUAL)
         glDrawArrays(GL_TRIANGLES, 0, 36)
-        drawCalls++
         glDepthFunc(GL_LESS)
-
-        glfwSwapBuffers(window)
-
-
-        Debug.logd(TAG, "Draw calls: $drawCalls")
-    }
-
-    override fun stop() {
-        super.stop()
+        drawCalls++
     }
 }
