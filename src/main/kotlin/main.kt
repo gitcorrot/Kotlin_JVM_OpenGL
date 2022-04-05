@@ -1,4 +1,5 @@
 import glm_.vec2.Vec2i
+import org.koin.core.context.startKoin
 import utils.Debug
 
 fun main() {
@@ -7,6 +8,10 @@ fun main() {
 //    Debug.DEBUG_LEVEL = Debug.DebugLevel.ERROR
 
     Debug.logi("main.kt", "App started!")
+
+    startKoin {
+        modules(coreModules)
+    }
 
     val engine = Engine(
         windowSize = Vec2i(2000, 1500),

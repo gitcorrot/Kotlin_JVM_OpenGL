@@ -15,6 +15,8 @@ import light.LightSpot
 import models.base.ModelDefault
 import models.base.ModelNoLight
 import models.base.Terrain
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.lwjgl.Version.getVersion
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWErrorCallback
@@ -34,8 +36,16 @@ import kotlin.system.measureNanoTime
 class Engine(
     private val windowSize: Vec2i,
     private val vSyncEnabled: Boolean
-) {
-    private val TAG: String = this.javaClass.name
+) : KoinComponent {
+    companion object {
+        private val TAG: String = this::class.java.name
+    }
+
+    private val inputSystem by inject<InputSystem>()
+    private val dynamicFovSystem by inject<DynamicFovSystem>()
+    private val moveSystem by inject<MoveSystem>()
+    private val collisionSystem by inject<CollisionSystem>()
+    private val renderSystem by inject<RenderSystem>()
 
     private val window: Long
     private val ecs = ECS()
@@ -63,16 +73,16 @@ class Engine(
         Debug.logi(TAG, "OpenGL Version: ${glGetString(GL_VERSION)}")
         Debug.logi(TAG, "------------------------------------------------")
 
-        InputSystem.attachToWindow(window)
-        DynamicFovSystem.attachToWindow(window)
-        RenderSystem.attachToWindow(window)
+        inputSystem.attachToWindow(window)
+        dynamicFovSystem.attachToWindow(window)
+        renderSystem.attachToWindow(window)
 
         // order of systems is important!
-        ecs.addSystem(InputSystem, true)
-        ecs.addSystem(DynamicFovSystem, true)
-        ecs.addSystem(MoveSystem, false)
-        ecs.addSystem(CollisionSystem, false)
-        ecs.addSystem(RenderSystem, false)
+        ecs.addSystem(inputSystem, true)
+        ecs.addSystem(dynamicFovSystem, true)
+        ecs.addSystem(moveSystem, false)
+        ecs.addSystem(collisionSystem, false)
+        ecs.addSystem(renderSystem, false)
 
         val initWorldTime = measureNanoTime {
             initWorld()
@@ -81,9 +91,9 @@ class Engine(
 
 
         Timer("SettingUp", false).schedule(500) {
-            MoveSystem.start()
-            CollisionSystem.start()
-            RenderSystem.start()
+            moveSystem.start()
+            collisionSystem.start()
+            renderSystem.start()
         }
     }
 

@@ -1,8 +1,11 @@
 package ecs.system
 
+import AppSettings
+import CameraNodes
 import ecs.component.CameraComponent
-import ecs.node.CameraNode
 import glm_.glm
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.lwjgl.glfw.GLFW
 import org.lwjgl.glfw.GLFW.glfwSetInputMode
 import utils.Debug
@@ -10,18 +13,18 @@ import utils.OpenGLUtils
 import kotlin.math.max
 import kotlin.math.min
 
-object DynamicFovSystem : BaseSystem() {
-    private val TAG: String = this::class.java.name
+class DynamicFovSystem : BaseSystem(), KoinComponent {
+    companion object {
+        private val TAG: String = this::class.java.name
+        private const val MAX_FOV_CHANGE = 10f
+    }
 
-    private const val MAX_FOV_CHANGE = 10f
-
-    var cameraNodes = mutableListOf<CameraNode>()
+    private val cameraNodes by inject<CameraNodes>()
+    private val appSettings by inject<AppSettings>()
 
     private var window: Long = -1
     private var isAttachedToWindow = false
-
-    var isDynamicFovEnabled = true
-    var fovChange = 0f
+    private var fovChange = 0f
 
     fun attachToWindow(window: Long) {
         glfwSetInputMode(window, GLFW.GLFW_RAW_MOUSE_MOTION, GLFW.GLFW_TRUE)
@@ -46,7 +49,7 @@ object DynamicFovSystem : BaseSystem() {
     }
 
     private fun updateDynamicFov(cameraComponent: CameraComponent, deltaTime: Float) {
-        if (isDynamicFovEnabled) {
+        if (appSettings.isDynamicFovEnabled) {
             val windowSize = OpenGLUtils.getWindowSize(window)
             val aspectRatio = windowSize.x / windowSize.y
             fovChange = if (cameraComponent.isMovingForward) {

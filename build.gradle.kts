@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.6.20"
     application
 }
 
@@ -57,4 +57,7 @@ dependencies {
 
     // GLM Math
     implementation("com.github.kotlin-graphics:glm:$glmVersion")
+
+    // Koin
+    implementation("io.insert-koin:koin-core:3.1.2")
 }

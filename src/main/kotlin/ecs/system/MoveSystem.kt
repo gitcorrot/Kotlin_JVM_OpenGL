@@ -1,11 +1,15 @@
 package ecs.system
 
-import ecs.node.MoveNode
+import MoveNodes
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-object MoveSystem : BaseSystem() {
-    val TAG: String = this::class.java.name
+class MoveSystem : BaseSystem(), KoinComponent {
+    companion object {
+        private val TAG: String = this::class.java.name
+    }
 
-    var moveNodes = mutableListOf<MoveNode>()
+    private val moveNodes by inject<MoveNodes>()
 
     override fun update(deltaTime: Float) {
         if (!isStarted) return

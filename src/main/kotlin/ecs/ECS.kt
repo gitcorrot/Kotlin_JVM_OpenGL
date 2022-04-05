@@ -1,55 +1,49 @@
 package ecs
 
+import CameraNodes
+import CollisionNodes
 import Entity
+import LightNodes
+import MoveNodes
+import RenderNodes
 import ecs.node.*
-import ecs.system.*
+import ecs.system.BaseSystem
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import utils.Debug
 import kotlin.system.measureNanoTime
 
-class ECS {
-    val TAG: String = this::class.java.name
+class ECS : KoinComponent {
+    companion object {
+        private val TAG: String = this::class.java.name
+    }
+
+    private val cameraNodes by inject<CameraNodes>()
+    private val lightNodes by inject<LightNodes>()
+    private val renderNodes by inject<RenderNodes>()
+    private val moveNodes by inject<MoveNodes>()
+    private val collisionNodes by inject<CollisionNodes>()
 
     private val entities = mutableSetOf<Entity>()
     private val systems = mutableSetOf<BaseSystem>()
-    private val nodes = mutableMapOf<String, MutableList<Any>>(
-        CameraNode::class.java.name to mutableListOf(),
-        LightNode::class.java.name to mutableListOf(),
-        RenderNode::class.java.name to mutableListOf(),
-        MoveNode::class.java.name to mutableListOf(),
-        CollisionNode::class.java.name to mutableListOf()
+    private val nodes = mutableMapOf(
+        CameraNode::class.java.name to cameraNodes,
+        LightNode::class.java.name to lightNodes,
+        RenderNode::class.java.name to renderNodes,
+        MoveNode::class.java.name to moveNodes,
+        CollisionNode::class.java.name to collisionNodes
     )
 
     fun addEntity(entity: Entity) {
-        Debug.logd(TAG, "Entity added! ($entity)")
-
-        // add entity
         entities.add(entity)
 
-        // create all available nodes from this entity's components
-        // and add then to proper systems
-        CameraNode.fromEntity(entity)?.let { cameraNode ->
-            nodes[CameraNode::class.java.name]!!.add(cameraNode)
-            getSystemOfClass<InputSystem>()?.cameraNodes?.add(cameraNode)
-            getSystemOfClass<DynamicFovSystem>()?.cameraNodes?.add(cameraNode)
-            getSystemOfClass<RenderSystem>()?.cameraNodes?.add(cameraNode)
-        }
-        LightNode.fromEntity(entity)?.let { lightNode ->
-            nodes[LightNode::class.java.name]!!.add(lightNode)
-            getSystemOfClass<RenderSystem>()?.lightNodes?.add(lightNode)
-        }
-        MoveNode.fromEntity(entity)?.let { moveNode ->
-            nodes[MoveNode::class.java.name]!!.add(moveNode)
-            getSystemOfClass<MoveSystem>()?.moveNodes?.add(moveNode)
-        }
-        RenderNode.fromEntity(entity)?.let { renderNode ->
-            nodes[RenderNode::class.java.name]!!.add(renderNode)
-            getSystemOfClass<RenderSystem>()?.renderNodes?.add(renderNode)
-        }
-        CollisionNode.fromEntity(entity)?.let { collisionNode ->
-            nodes[CollisionNode::class.java.name]!!.add(collisionNode)
-            getSystemOfClass<RenderSystem>()?.collisionNodes?.add(collisionNode)
-            getSystemOfClass<CollisionSystem>()?.collisionNodes?.add(collisionNode)
-        }
+        CameraNode.fromEntity(entity)?.let { cameraNodes.add(it) }
+        LightNode.fromEntity(entity)?.let { lightNodes.add(it) }
+        RenderNode.fromEntity(entity)?.let { renderNodes.add(it) }
+        MoveNode.fromEntity(entity)?.let { moveNodes.add(it) }
+        CollisionNode.fromEntity(entity)?.let { collisionNodes.add(it) }
+
+        Debug.logd(TAG, "Entity added! ($entity)")
 
         // TODO: observe entity if any component was added/removed
     }
@@ -57,27 +51,17 @@ class ECS {
     fun removeEntity(entity: Entity) {
         // remove all nodes that was created from entity
         for (k in nodes.keys) {
-            val nodeToRemove = nodes[k]?.find { (it as BaseNode).entityId == entity.id }
+            val nodeToRemove = nodes[k]?.find { it.entityId == entity.id }
 
             if (nodeToRemove != null) {
-                nodes[k]?.remove(nodeToRemove)
-
                 when (k) {
-                    CameraNode::class.java.name -> {
-                        InputSystem.cameraNodes.remove(nodeToRemove)
-                        DynamicFovSystem.cameraNodes.remove(nodeToRemove)
-                        RenderSystem.cameraNodes.remove(nodeToRemove)
-                    }
-                    RenderNode::class.java.name -> {
-                        RenderSystem.renderNodes.remove(nodeToRemove)
-                    }
-                    LightNode::class.java.name -> {
-                        RenderSystem.lightNodes.remove(nodeToRemove)
-                    }
-                    MoveNode::class.java.name -> {
-                        MoveSystem.moveNodes.remove(nodeToRemove)
-                    }
+                    CameraNode::class.java.name -> cameraNodes.remove(nodeToRemove)
+                    LightNode::class.java.name -> lightNodes.remove(nodeToRemove)
+                    RenderNode::class.java.name -> renderNodes.remove(nodeToRemove)
+                    MoveNode::class.java.name -> moveNodes.remove(nodeToRemove)
+                    CollisionNode::class.java.name -> collisionNodes.remove(nodeToRemove)
                 }
+                nodes[k]?.remove(nodeToRemove)
             }
         }
         entities.remove(entity)

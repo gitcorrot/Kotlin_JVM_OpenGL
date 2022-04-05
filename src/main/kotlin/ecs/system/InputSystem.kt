@@ -1,22 +1,28 @@
 package ecs.system
 
+import AppSettings
+import CameraNodes
 import ecs.component.CameraComponent
 import ecs.node.CameraNode
 import glm_.func.common.clamp
 import glm_.glm
 import glm_.vec3.Vec3
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.glfw.GLFWCursorPosCallback
 import org.lwjgl.glfw.GLFWKeyCallback
 import utils.Debug
 import utils.OpenGLUtils
 
-object InputSystem : BaseSystem() {
-    private val TAG: String = this::class.java.name
+class InputSystem : BaseSystem(), KoinComponent {
+    companion object {
+        private val TAG: String = this::class.java.name
+        private const val MOUSE_SENSITIVITY = 0.1f
+    }
 
-    private const val MOUSE_SENSITIVITY = 0.1f
-
-    var cameraNodes = mutableListOf<CameraNode>()
+    private val cameraNodes by inject<CameraNodes>()
+    private val appSettings by inject<AppSettings>()
 
     private var window: Long = -1
     private var isAttachedToWindow = false
@@ -44,10 +50,10 @@ object InputSystem : BaseSystem() {
     fun attachToWindow(window: Long) {
         glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE)
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED)
-        InputSystem.window = window
+        this.window = window
         isAttachedToWindow = true
-        keyCb = glfwSetKeyCallback(window, InputSystem::keyCallback)
-        cursorPosCb = glfwSetCursorPosCallback(window, InputSystem::cursorPosCallback)
+        keyCb = glfwSetKeyCallback(window, this::keyCallback)
+        cursorPosCb = glfwSetCursorPosCallback(window, this::cursorPosCallback)
         // this.cursorBtnCb = glfwSetMouseButtonCallback(window, ::mouseButtonCallback)
     }
 
@@ -59,13 +65,13 @@ object InputSystem : BaseSystem() {
                 }
             }
             key == GLFW_KEY_B && action == GLFW_PRESS -> {
-                RenderSystem.drawBoundingBoxes = !RenderSystem.drawBoundingBoxes
+                appSettings.drawBoundingBoxes = !appSettings.drawBoundingBoxes
             }
             key == GLFW_KEY_N && action == GLFW_PRESS -> {
-                RenderSystem.drawTerrainNormals = !RenderSystem.drawTerrainNormals
+                appSettings.drawTerrainNormals = !appSettings.drawTerrainNormals
             }
             key == GLFW_KEY_F && action == GLFW_PRESS -> {
-                DynamicFovSystem.isDynamicFovEnabled = !DynamicFovSystem.isDynamicFovEnabled
+                appSettings.isDynamicFovEnabled = !appSettings.isDynamicFovEnabled
             }
         }
     }

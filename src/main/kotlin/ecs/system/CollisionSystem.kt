@@ -1,16 +1,21 @@
 package ecs.system
 
+import CollisionNodes
 import Texture
 import collision.BoundingBoxUtils
 import collision.BoundingBoxType
 import glm_.vec2.Vec2
 import models.base.ModelNoLight
 import ecs.node.CollisionNode
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 
-object CollisionSystem : BaseSystem() {
-    val TAG: String = this::class.java.name
+class CollisionSystem : BaseSystem(), KoinComponent {
+    companion object{
+        private val TAG: String = this::class.java.name
+    }
 
-    var collisionNodes = mutableListOf<CollisionNode>()
+    private val collisionNodes by inject<CollisionNodes>()
 
     override fun update(deltaTime: Float) {
         if (!isStarted) return

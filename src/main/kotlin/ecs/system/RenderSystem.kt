@@ -1,14 +1,16 @@
 package ecs.system
 
+import AppSettings
+import CameraNodes
+import CollisionNodes
 import DefaultBuffer
 import Framebuffer
 import GBuffer
+import LightNodes
+import RenderNodes
 import ShaderProgram
 import Skybox
 import ecs.component.CollisionComponent
-import ecs.node.CameraNode
-import ecs.node.CollisionNode
-import ecs.node.LightNode
 import ecs.node.RenderNode
 import glm_.glm
 import glm_.mat4x4.Mat4
@@ -17,6 +19,8 @@ import light.LightSpot
 import models.base.ModelDefault
 import models.base.ModelNoLight
 import models.base.Terrain
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
 import org.lwjgl.glfw.GLFW.glfwSwapBuffers
 import org.lwjgl.opengl.GL33.*
 import ui.view.LoadingView
@@ -24,16 +28,17 @@ import utils.Debug
 import utils.OpenGLUtils.getWindowSize
 import utils.ResourcesUtils
 
-object RenderSystem : BaseSystem() {
-    private val TAG: String = this::class.java.name
+class RenderSystem : BaseSystem(), KoinComponent {
+    companion object {
+        private val TAG: String = this::class.java.name
+    }
 
-    var cameraNodes = mutableListOf<CameraNode>()
-    var renderNodes = mutableListOf<RenderNode>()
-    var lightNodes = mutableListOf<LightNode>()
-    var collisionNodes = mutableListOf<CollisionNode>()
+    private val cameraNodes by inject<CameraNodes>()
+    private val lightNodes by inject<LightNodes>()
+    private val renderNodes by inject<RenderNodes>()
+    private val collisionNodes by inject<CollisionNodes>()
 
-    var drawBoundingBoxes = false
-    var drawTerrainNormals = false
+    private val appSettings by inject<AppSettings>()
 
     private var window: Long = -1
     private var isAttachedToWindow = false
@@ -57,7 +62,7 @@ object RenderSystem : BaseSystem() {
     }
 
     fun attachToWindow(window: Long) {
-        RenderSystem.window = window
+        this.window = window
         isAttachedToWindow = true
 
         with(getWindowSize(window)) {
@@ -171,13 +176,13 @@ object RenderSystem : BaseSystem() {
             }
         }
 
-        if (drawBoundingBoxes) {
+        if (appSettings.drawBoundingBoxes) {
             for (collisionNode in collisionNodes) {
                 drawBoundingBox(collisionNode.collisionComponent)
             }
         }
 
-        if (drawTerrainNormals) {
+        if (appSettings.drawTerrainNormals) {
             for (renderNode in renderNodes) {
                 when (renderNode.modelComponent.model) {
                     is Terrain -> {
